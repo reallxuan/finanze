@@ -59,7 +59,7 @@ from domain.global_position import (
 from domain.public_key import AddressDerivationRequest, DerivedAddress
 from domain.use_cases.fetch_crypto_data import FetchCryptoData
 
-TARGET_FIAT = "EUR"
+TARGET_FIAT = "HKD"
 CRYPTO_POSITION_UPDATE_COOLDOWN = int(
     os.environ.get("CRYPTO_POSITION_UPDATE_COOLDOWN", 120)
 )

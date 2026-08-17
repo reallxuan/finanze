@@ -85,7 +85,7 @@ export default function CommoditiesInvestmentPage() {
   const { settings, showToast, exchangeRates } = useAppContext()
   const { positionsData, refreshData } = useFinancialData()
 
-  const defaultCurrency = settings?.general?.defaultCurrency ?? "EUR"
+  const defaultCurrency = settings?.general?.defaultCurrency ?? "HKD"
   const displayUnit =
     settings?.general?.defaultCommodityWeightUnit || WeightUnit.TROY_OUNCE
 
@@ -130,7 +130,7 @@ export default function CommoditiesInvestmentPage() {
   })
 
   const supportedCurrencies = useMemo(() => {
-    const base = ["EUR", "USD"]
+    const base = ["HKD", "USD"]
     if (defaultCurrency && !base.includes(defaultCurrency)) {
       base.unshift(defaultCurrency)
     }

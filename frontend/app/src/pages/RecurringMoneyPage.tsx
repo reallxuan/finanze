@@ -81,7 +81,7 @@ export default function RecurringMoneyPage() {
     ensurePeriodicFlows,
   } = useFinancialData()
   const navigate = useNavigate()
-  const defaultCurrency = settings?.general?.defaultCurrency || "EUR"
+  const defaultCurrency = settings?.general?.defaultCurrency || "HKD"
   const [loading] = useState(false)
   const [sortBy, setSortBy] = useState<"amount" | "date">("amount")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")

@@ -239,7 +239,7 @@ class MobileBackgroundApp:
         await self.ex_storage.initialize()
 
         query = NetworthTimelineQuery(
-            base_currency=base_currency or "EUR",
+            base_currency=base_currency or "HKD",
             from_date=date.fromisoformat(from_date) if from_date else None,
             to_date=date.fromisoformat(to_date) if to_date else None,
             no_calculation=no_calculation,

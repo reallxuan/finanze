@@ -291,14 +291,16 @@ export function TemplateManagerDialog({
       try {
         return Array.from(
           new Set(
-            Intl.supportedValuesOf("currency").map(code => code.toUpperCase()),
+            Intl.supportedValuesOf("currency")
+              .map(code => code.toUpperCase())
+              .filter(code => code !== "EUR"),
           ),
         ).sort()
       } catch {
         // fall through to fallback set
       }
     }
-    return ["USD", "EUR", "GBP", "JPY"]
+    return ["HKD", "USD", "GBP", "JPY"]
   }, [])
 
   const supportedCurrencySet = useMemo(

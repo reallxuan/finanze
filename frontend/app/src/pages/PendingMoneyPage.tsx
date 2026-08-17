@@ -86,7 +86,7 @@ export default function PendingMoneyPage() {
   const { showToast, settings, exchangeRates } = useAppContext()
   const { refreshPendingFlows, positionsData, refreshData } = useFinancialData()
   const navigate = useNavigate()
-  const defaultCurrency = settings?.general?.defaultCurrency || "EUR"
+  const defaultCurrency = settings?.general?.defaultCurrency || "HKD"
 
   const [activeTab, setActiveTab] = useState<FlowType>(FlowType.EARNING)
   const [statusFilter, setStatusFilter] = useState<FlowStatus[]>(

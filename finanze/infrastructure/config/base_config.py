@@ -44,7 +44,7 @@ BASE_CONFIG = Settings(
     lastUpdate=datetime.now().astimezone().isoformat(),
     version=CURRENT_VERSION,
     general=GeneralConfig(
-        defaultCurrency="EUR", defaultCommodityWeightUnit=WeightUnit.GRAM.value
+        defaultCurrency="HKD", defaultCommodityWeightUnit=WeightUnit.GRAM.value
     ),
     data=DataConfig(autoRefresh=AutoRefresh()),
     assets=AssetConfig(crypto=CryptoAssetConfig(stablecoins=DEFAULT_STABLECOINS)),

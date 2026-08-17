@@ -120,7 +120,7 @@ class AssetConfig:
 
 @dataclass
 class GeneralConfig:
-    defaultCurrency: str = "EUR"
+    defaultCurrency: str = "HKD"
     defaultCommodityWeightUnit: str = WeightUnit.GRAM.value
 
 

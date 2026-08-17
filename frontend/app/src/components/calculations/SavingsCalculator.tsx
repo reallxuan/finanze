@@ -96,7 +96,7 @@ const getPeriodsPerYear = (periodicity: SavingsPeriodicity): number => {
 export function SavingsCalculator() {
   const { t, locale } = useI18n()
   const { settings, showToast } = useAppContext()
-  const defaultCurrency = settings?.general?.defaultCurrency || "EUR"
+  const defaultCurrency = settings?.general?.defaultCurrency || "HKD"
   const currencySymbol = getCurrencySymbol(defaultCurrency)
 
   const [baseAmount, setBaseAmount] = useState("")

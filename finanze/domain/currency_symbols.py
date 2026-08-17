@@ -46,7 +46,6 @@ CURRENCY_SYMBOL_MAP = {
     "ERN": "Nfk",
     "ETB": "Br",
     "ETH": "Ξ",
-    "EUR": "€",
     "FJD": "$",
     "FKP": "£",
     "GBP": "£",

@@ -8,7 +8,7 @@ from domain.dezimal import Dezimal
 from domain.exchange_rate import ExchangeRates
 from infrastructure.client.http.http_session import get_http_session
 
-AVAILABLE_CURRENCIES = ["EUR", "USD"]
+AVAILABLE_CURRENCIES = ["USD", "HKD"]
 
 
 def _parse_rates(rates: dict) -> dict:

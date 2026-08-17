@@ -81,7 +81,7 @@ class SaveCommoditiesImpl(AtomicUCMixin, SaveCommodities):
     ) -> Commodity:
         commodity_register_dict = asdict(commodity_register)
 
-        currency = commodity_register.currency or "EUR"
+        currency = commodity_register.currency or "HKD"
         commodity_register_dict["currency"] = currency
 
         initial_investment = commodity_register.initial_investment

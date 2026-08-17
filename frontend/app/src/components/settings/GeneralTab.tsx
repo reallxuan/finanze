@@ -39,6 +39,10 @@ import {
   entityHasPin,
 } from "@/utils/autoRefreshUtils"
 import { copyToClipboard } from "@/lib/clipboard"
+import {
+  DEFAULT_MAIN_CURRENCY,
+  MAIN_CURRENCY_OPTIONS,
+} from "@/constants/currencies"
 
 const cleanObject = (obj: any): any => {
   if (obj === null || obj === undefined) {
@@ -444,12 +448,17 @@ export function GeneralTab() {
                 <div className="relative">
                   <select
                     id="default-currency"
-                    value={settings.general?.defaultCurrency || "EUR"}
+                    value={
+                      settings.general?.defaultCurrency || DEFAULT_MAIN_CURRENCY
+                    }
                     onChange={e => handleCurrencyChange(e.target.value)}
                     className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 pr-8 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                   >
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="USD">USD - US Dollar</option>
+                    {MAIN_CURRENCY_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
