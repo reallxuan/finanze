@@ -323,108 +323,31 @@ const renderSelectInput = <FormState extends ManualPositionFormBase>(
 const renderEntityField = <FormState extends ManualPositionFormBase>(
   props: ManualFormFieldRenderProps<FormState>,
 ) => {
-  const allowEntityChanges = props.canEditEntity
-  const isCreating = allowEntityChanges && props.form.entity_mode === "new"
-
-  const switchToCreate = () => {
-    if (!allowEntityChanges) return
-    props.updateField("entity_mode", "new" as FormState["entity_mode"])
-    props.updateField("entity_id", "")
-    props.clearError("entity_id")
-    props.clearError("new_entity_name" as keyof FormState)
-  }
-
-  const switchToSelect = () => {
-    if (!allowEntityChanges) return
-    props.updateField("entity_mode", "select" as FormState["entity_mode"])
-    props.updateField("new_entity_name", "")
-    props.clearError("entity_id")
-    props.clearError("new_entity_name" as keyof FormState)
-  }
-
-  const handleToggle = () => {
-    if (!allowEntityChanges) return
-    if (isCreating) {
-      switchToSelect()
-    } else {
-      switchToCreate()
-    }
-  }
-
-  const buttonLabel = isCreating
-    ? props.t("management.manualPositions.shared.cancelEntityCreation")
-    : props.t("management.manualPositions.shared.createEntity")
-
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={isCreating ? "new_entity_name" : "entity_id"}>
+      <Label htmlFor="entity_id">
         {props.t("management.manualPositions.shared.entity")}
       </Label>
-      <div className="flex items-stretch gap-2">
-        <div className="flex-1">
-          {isCreating ? (
-            <Input
-              id="new_entity_name"
-              value={props.form.new_entity_name}
-              placeholder={props.t(
-                "management.manualPositions.shared.newEntityPlaceholder",
-              )}
-              onChange={event => {
-                props.updateField("new_entity_name", event.target.value)
-                props.clearError("new_entity_name" as keyof FormState)
-              }}
-              readOnly={!allowEntityChanges}
-              disabled={!allowEntityChanges}
-            />
-          ) : (
-            <EntitySelector
-              entities={props.entityOptions}
-              selectedEntityIds={
-                props.form.entity_id ? [props.form.entity_id] : []
-              }
-              onSelectionChange={ids => {
-                props.updateField(
-                  "entity_id",
-                  (ids[0] ?? "") as FormState["entity_id"],
-                )
-                props.clearError("entity_id")
-              }}
-              singleSelect
-              disabled={!allowEntityChanges}
-              placeholder={props.t("common.selectOptions")}
-              className="max-w-none"
-            />
-          )}
-        </div>
-        {allowEntityChanges && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={handleToggle}
-            aria-label={buttonLabel}
-            title={buttonLabel}
-            className="h-10 w-10 shrink-0"
-          >
-            {isCreating ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-      </div>
-      {isCreating
-        ? props.errors.new_entity_name && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-              {props.errors.new_entity_name}
-            </p>
+      <EntitySelector
+        entities={props.entityOptions}
+        selectedEntityIds={props.form.entity_id ? [props.form.entity_id] : []}
+        onSelectionChange={ids => {
+          props.updateField(
+            "entity_id",
+            (ids[0] ?? "") as FormState["entity_id"],
           )
-        : props.errors.entity_id && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-              {props.errors.entity_id}
-            </p>
-          )}
+          props.clearError("entity_id")
+        }}
+        singleSelect
+        disabled={!props.canEditEntity}
+        placeholder={props.t("common.selectOptions")}
+        className="max-w-none"
+      />
+      {props.errors.entity_id && (
+        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+          {props.errors.entity_id}
+        </p>
+      )}
     </div>
   )
 }
@@ -1058,7 +981,7 @@ const convertPriceToCurrency = (
   )
 }
 
-const TRACKING_SUPPORTED_CURRENCIES = ["EUR", "USD"] as const
+const TRACKING_SUPPORTED_CURRENCIES = ["HKD", "USD"] as const
 
 const getTrackingCurrencyOptions = (options: string[]) => {
   const normalized = new Set(options.map(value => value.toUpperCase()))
@@ -2780,8 +2703,7 @@ function CryptoAssetSearchField({ formProps }: CryptoAssetSearchFieldProps) {
     const targetCurrency = defaultCurrency.toLowerCase()
     const price =
       assetDetails.price?.[targetCurrency] ??
-      assetDetails.price?.["usd"] ??
-      assetDetails.price?.["eur"]
+      assetDetails.price?.["usd"]
     if (price === undefined || price === null) {
       const keys = Object.keys(assetDetails.price ?? {})
       if (keys.length > 0) {
@@ -6773,8 +6695,7 @@ const manualPositionConfigs: ManualPositionConfigMap = {
         const targetCurrency = (defaultCurrency || "usd").toLowerCase()
         const price =
           assetDetails.price[targetCurrency] ??
-          assetDetails.price["usd"] ??
-          assetDetails.price["eur"]
+          assetDetails.price["usd"]
         if (price != null) {
           unitPrice = price
           marketValue = amount * price

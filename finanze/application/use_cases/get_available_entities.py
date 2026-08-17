@@ -104,6 +104,8 @@ class GetAvailableEntitiesImpl(GetAvailableEntities):
 
         entities = []
         for entity in all_entities:
+            if entity.origin != EntityOrigin.MANUAL:
+                continue
             if entity.type not in self.LISTED_ENTITY_TYPES:
                 continue
             native_entity = native_entities_by_id.get(entity.id)

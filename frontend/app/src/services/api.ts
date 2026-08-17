@@ -127,6 +127,21 @@ export async function getEntities(): Promise<EntitiesResponse> {
   return (await getApiClient()).get("/entities")
 }
 
+export async function createManualEntity(name: string): Promise<void> {
+  await (await getApiClient()).post("/entities", { name })
+}
+
+export async function renameManualEntity(
+  entityId: string,
+  name: string,
+): Promise<void> {
+  await (await getApiClient()).patch(`/entities/${entityId}`, { name })
+}
+
+export async function deleteManualEntity(entityId: string): Promise<void> {
+  await (await getApiClient()).delete(`/entities/${entityId}`)
+}
+
 export async function loginEntity(
   request: LoginRequest,
 ): Promise<LoginResponse> {

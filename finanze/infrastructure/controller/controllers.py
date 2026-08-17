@@ -190,6 +190,11 @@ from infrastructure.controller.routes.instrument_details import instrument_detai
 from infrastructure.controller.routes.instruments import instruments
 from infrastructure.controller.routes.list_real_estate import list_real_estate
 from infrastructure.controller.routes.logout import logout
+from infrastructure.controller.routes.manage_manual_entities import (
+    create_manual_entity,
+    delete_manual_entity,
+    rename_manual_entity,
+)
 from infrastructure.controller.routes.market_forecast_closed_positions import (
     market_forecast_closed_positions,
 )
@@ -228,6 +233,7 @@ async def register_routes(
     register_user_uc: RegisterUser,
     change_user_password_uc: ChangeUserPassword,
     get_available_entities_uc: GetAvailableEntities,
+    manage_manual_entities_uc,
     fetch_financial_data_uc: FetchFinancialData,
     fetch_crypto_data_uc: FetchCryptoData,
     fetch_external_financial_data_uc: FetchExternalFinancialData,
@@ -341,45 +347,17 @@ async def register_routes(
     async def get_available_source_route():
         return await get_available_sources(get_available_entities_uc)
 
-    @app.route("/api/v1/entities/login", methods=["POST"])
-    async def add_entity_login_route():
-        return await add_entity_login(add_entity_credentials_uc)
+    @app.route("/api/v1/entities", methods=["POST"])
+    async def create_manual_entity_route():
+        return await create_manual_entity(manage_manual_entities_uc)
 
-    @app.route("/api/v1/entities/login/cancel", methods=["POST"])
-    async def cancel_entity_login_route():
-        return await cancel_entity_login(cancel_entity_login_uc)
+    @app.route("/api/v1/entities/<entity_id>", methods=["PATCH"])
+    async def rename_manual_entity_route(entity_id: str):
+        return await rename_manual_entity(manage_manual_entities_uc, entity_id)
 
-    @app.route("/api/v1/entities/login", methods=["DELETE"])
-    async def disconnect_entity_route():
-        return await disconnect_entity(disconnect_entity_uc)
-
-    @app.route("/api/v1/entities/external/candidates", methods=["GET"])
-    async def get_external_entity_candidates_route():
-        return await get_available_external_entities(get_available_external_entities_uc)
-
-    @app.route("/api/v1/entities/external", methods=["POST"])
-    async def connect_external_entity_route():
-        return await connect_external_entity(connect_external_entity_uc)
-
-    @app.route("/api/v1/entities/external/complete", methods=["GET"])
-    async def complete_external_entity_connection_route():
-        return await complete_external_entity_connection(
-            complete_external_entity_connection_uc
-        )
-
-    @app.route("/api/v1/entities/external/<external_entity_id>", methods=["DELETE"])
-    async def disconnect_external_entity_route(external_entity_id: str):
-        return await delete_external_entity(
-            delete_external_entity_uc, external_entity_id
-        )
-
-    @app.route("/api/v1/data/fetch/financial", methods=["POST"])
-    async def fetch_financial_data_route():
-        return await fetch_financial_data(fetch_financial_data_uc)
-
-    @app.route("/api/v1/data/fetch/crypto", methods=["POST"])
-    async def fetch_crypto_data_route():
-        return await fetch_crypto_data(fetch_crypto_data_uc)
+    @app.route("/api/v1/entities/<entity_id>", methods=["DELETE"])
+    async def delete_manual_entity_route(entity_id: str):
+        return await delete_manual_entity(manage_manual_entities_uc, entity_id)
 
     @app.route("/api/v1/data/import/sheets", methods=["POST"])
     async def import_sheets_route():
@@ -388,12 +366,6 @@ async def register_routes(
     @app.route("/api/v1/data/import/file", methods=["POST"])
     async def import_file_endpoint():
         return await import_file_route(import_file_uc)
-
-    @app.route("/api/v1/data/fetch/external/<external_entity_id>", methods=["POST"])
-    async def fetch_external_entity_route(external_entity_id: str):
-        return await fetch_external_financial_data(
-            fetch_external_financial_data_uc, external_entity_id
-        )
 
     @app.route("/api/v1/data/export/sheets", methods=["POST"])
     async def export_sheets_route():
@@ -415,16 +387,6 @@ async def register_routes(
     async def transactions_route():
         return await transactions(get_transactions_uc)
 
-    @app.route("/api/v1/market-forecast/pnl", methods=["GET"])
-    async def market_forecast_pnl_route():
-        return await market_forecast_pnl(get_market_forecast_pnl_uc)
-
-    @app.route("/api/v1/market-forecast/closed-positions", methods=["GET"])
-    async def market_forecast_closed_positions_route():
-        return await market_forecast_closed_positions(
-            get_market_forecast_closed_positions_uc
-        )
-
     @app.route("/api/v1/exchange-rates", methods=["GET"])
     async def exchange_rates_route():
         return await exchange_rates(get_exchange_rates_uc)
@@ -433,45 +395,9 @@ async def register_routes(
     async def get_money_events_route():
         return await get_money_events(get_money_events_uc)
 
-    @app.route("/api/v1/crypto-wallet", methods=["POST"])
-    async def connect_crypto_wallet_route():
-        return await connect_crypto_wallet(connect_crypto_wallet_uc)
-
-    @app.route("/api/v1/crypto-wallet", methods=["PUT"])
-    async def update_crypto_wallet_route():
-        return await update_crypto_wallet(update_crypto_wallet_uc)
-
-    @app.route("/api/v1/crypto-wallet/<wallet_connection_id>", methods=["DELETE"])
-    async def delete_crypto_wallet_route(wallet_connection_id: str):
-        return await delete_crypto_wallet(delete_crypto_wallet_uc, wallet_connection_id)
-
-    @app.route("/api/v1/crypto-wallet/derivate", methods=["GET"])
-    async def derive_crypto_addresses_route():
-        return await derive_crypto_addresses(derive_crypto_addresses_uc)
-
-    @app.route("/api/v1/crypto-wallet/addresses", methods=["GET"])
-    async def get_crypto_wallet_addresses_route():
-        return await get_crypto_wallet_addresses(get_crypto_wallet_addresses_uc)
-
     @app.route("/api/v1/commodities", methods=["POST"])
     async def save_commodities_route():
         return await save_commodities(save_commodities_uc)
-
-    @app.route("/api/v1/integrations", methods=["GET"])
-    async def get_external_integrations_route():
-        return await get_external_integrations(get_external_integrations_uc)
-
-    @app.route("/api/v1/integrations/<integration_id>", methods=["POST"])
-    async def connect_external_integration_route(integration_id: str):
-        return await connect_external_integration(
-            connect_external_integrations_uc, integration_id
-        )
-
-    @app.route("/api/v1/integrations/<integration_id>", methods=["DELETE"])
-    async def disconnect_external_integration_route(integration_id: str):
-        return await disconnect_external_integration(
-            disconnect_external_integrations_uc, integration_id
-        )
 
     @app.route("/api/v1/flows/periodic", methods=["POST"])
     async def save_periodic_flow_route():

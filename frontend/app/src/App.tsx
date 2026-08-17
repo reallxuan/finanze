@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import { Layout } from "@/components/layout/Layout"
-import EntityIntegrationsPage from "./pages/EntityIntegrationsPage"
+import ManualEntitiesPage from "./pages/ManualEntitiesPage"
 import DashboardPage from "./pages/DashboardPage"
 import SettingsPage from "./pages/SettingsPage"
 import ExportPage from "./pages/ExportPage"
@@ -12,7 +12,6 @@ import FactoringInvestmentPage from "./pages/FactoringInvestmentPage"
 import RealEstateCFInvestmentPage from "./pages/RealEstateCFInvestmentPage"
 import CryptoInvestmentPage from "./pages/CryptoInvestmentPage"
 import CommoditiesInvestmentPage from "./pages/CommoditiesInvestmentPage"
-import MarketForecastInvestmentPage from "./pages/MarketForecastInvestmentPage"
 import InvestmentsPage from "./pages/InvestmentsPage"
 import BankingPage from "./pages/BankingPage"
 import RealEstatePage from "./pages/RealEstatePage"
@@ -29,9 +28,7 @@ import { FinancialDataProvider } from "./context/FinancialDataContext"
 import { PinnedShortcutsProvider } from "./context/PinnedShortcutsContext"
 import { ReleaseUpdateModal } from "./components/ReleaseUpdateModal"
 import { MobileReleaseUpdateModal } from "./components/MobileReleaseUpdateModal"
-import { GlobalEntityModals } from "./components/GlobalEntityModals"
 import { useReleaseUpdate } from "./hooks/useReleaseUpdate"
-import { EntityWorkflowProvider } from "./context/EntityWorkflowContext"
 import { BackupAlertSync } from "./components/BackupAlertSync"
 import { useState, useEffect, useRef } from "react"
 import { useAutoUpdater } from "./hooks/useAutoUpdater"
@@ -133,8 +130,7 @@ function App() {
   }
 
   return (
-    <EntityWorkflowProvider>
-      <FinancialDataProvider>
+    <FinancialDataProvider>
         <PinnedShortcutsProvider>
           <BackupAlertSync />
           <Layout>
@@ -146,7 +142,7 @@ function App() {
                 path="/real-estate/:id"
                 element={<RealEstateDetailsPage />}
               />
-              <Route path="/entities" element={<EntityIntegrationsPage />} />
+              <Route path="/entities" element={<ManualEntitiesPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/investments" element={<InvestmentsPage />} />
               <Route
@@ -172,10 +168,6 @@ function App() {
               <Route
                 path="/investments/crypto"
                 element={<CryptoInvestmentPage />}
-              />
-              <Route
-                path="/investments/market-forecast"
-                element={<MarketForecastInvestmentPage />}
               />
               <Route
                 path="/investments/commodities"
@@ -265,10 +257,8 @@ function App() {
               )
             })()}
 
-          <GlobalEntityModals />
         </PinnedShortcutsProvider>
       </FinancialDataProvider>
-    </EntityWorkflowProvider>
   )
 }
 

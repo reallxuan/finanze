@@ -22,7 +22,6 @@ import {
 import { PeriodicFlow, PendingFlow } from "@/types"
 import { TransactionsResult } from "@/types/transactions"
 import { useAppContext } from "./AppContext"
-import { useEntityWorkflow } from "./EntityWorkflowContext"
 import { useCloud } from "./CloudContext"
 import { triggerLazyInit } from "@/lib/mobile"
 import { EntityType } from "@/types"
@@ -86,7 +85,6 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
     setOnTrackedUpdateCompleted,
     runTrackedUpdatesIfNeeded,
   } = useAppContext()
-  const { setOnScrapeCompleted, setOnEntityDisconnected } = useEntityWorkflow()
   const { backupMode, isInitialized: cloudInitialized } = useCloud()
   const trackedUpdatesTriggeredRef = useRef(false)
   const [backupSyncSettled, setBackupSyncSettled] = useState(false)
@@ -415,22 +413,6 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
       periodicFlowsLoaded.current = false
     }
   }, [entitiesLoaded, exchangeRatesLoading, exchangeRates, refreshRealEstate])
-
-  // Register the refreshEntity callback with AppContext
-  useEffect(() => {
-    setOnScrapeCompleted(refreshEntity)
-    return () => {
-      setOnScrapeCompleted(null)
-    }
-  }, [refreshEntity, setOnScrapeCompleted])
-
-  // Refresh all financial data when an entity is disconnected
-  useEffect(() => {
-    setOnEntityDisconnected(fetchAllFinancialData)
-    return () => {
-      setOnEntityDisconnected(null)
-    }
-  }, [fetchAllFinancialData, setOnEntityDisconnected])
 
   // Refresh only the affected entities after a tracked quotes/loans update
   useEffect(() => {

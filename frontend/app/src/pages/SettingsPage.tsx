@@ -30,7 +30,6 @@ import { useCloud } from "@/context/CloudContext"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { CloudRole, FFStatus } from "@/types"
 import { AdvancedSettingsForm } from "@/components/ui/AdvancedSettingsForm"
-import { IntegrationsTab } from "@/components/settings/IntegrationsTab"
 import { GeneralTab } from "@/components/settings/GeneralTab"
 import { CloudTab } from "@/components/settings/CloudTab"
 import { isNativeMobile } from "@/lib/platform"
@@ -44,7 +43,7 @@ import { cn } from "@/lib/utils"
 import { useDataDisplayMode } from "@/context/DataDisplayModeContext"
 import { DataDisplayMode } from "@/types"
 
-const APPLICATION_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT"]
+const APPLICATION_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT", "zh-CN"]
 
 export default function SettingsPage() {
   const { t, locale, changeLocale } = useI18n()
@@ -53,7 +52,6 @@ export default function SettingsPage() {
     showToast,
     fetchSettings,
     isLoadingSettings,
-    fetchExternalIntegrations,
     featureFlags,
   } = useAppContext()
   const { role } = useCloud()
@@ -62,7 +60,9 @@ export default function SettingsPage() {
   const { mode: dataDisplayMode, setMode: setDataDisplayMode } =
     useDataDisplayMode()
   const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") || "general",
+    searchParams.get("tab") === "integrations"
+      ? "general"
+      : searchParams.get("tab") || "general",
   )
   const [biometricAvailability, setBiometricAvailability] =
     useState<BiometricAvailability | null>(null)
@@ -88,7 +88,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettings()
-    fetchExternalIntegrations()
   }, [])
 
   const refreshBiometricStatus = useCallback(async () => {
@@ -161,7 +160,7 @@ export default function SettingsPage() {
       >
         <div className="flex justify-center w-full">
           <TabsList
-            className={`grid w-full max-w-[800px] h-auto min-h-[3rem] ${isCloudEnabled ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3"}`}
+          className={`grid w-full max-w-[800px] h-auto min-h-[3rem] ${isCloudEnabled ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-2"}`}
           >
             <TabsTrigger
               value="general"
@@ -203,12 +202,6 @@ export default function SettingsPage() {
               className="text-xs sm:text-sm px-1 sm:px-2 py-2 whitespace-normal text-center leading-tight min-h-[2.5rem] flex items-center justify-center"
             >
               {t.settings.application}
-            </TabsTrigger>
-            <TabsTrigger
-              value="integrations"
-              className="text-xs sm:text-sm px-1 sm:px-2 py-2 whitespace-normal text-center leading-tight min-h-[2.5rem] flex items-center justify-center"
-            >
-              {t.settings.integrations}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -468,9 +461,6 @@ export default function SettingsPage() {
           </TabsContent>
         )}
 
-        <TabsContent value="integrations" className="space-y-4 mt-4">
-          <IntegrationsTab />
-        </TabsContent>
       </Tabs>
     </div>
   )

@@ -105,6 +105,7 @@ from application.use_cases.manual_position_snapshot import ManualPositionSnapsho
 from application.use_cases.manual_historic_common import ManualHistoricWriter
 from application.use_cases.update_periodic_flow import UpdatePeriodicFlowImpl
 from application.use_cases.update_position import UpdatePositionImpl
+from application.use_cases.manage_manual_entities import ManageManualEntitiesImpl
 from application.use_cases.update_real_estate import UpdateRealEstateImpl
 from application.use_cases.update_settings import UpdateSettingsImpl
 from application.use_cases.update_template import UpdateTemplateImpl
@@ -756,6 +757,13 @@ class FinanzeServer:
             snapshot_writer=manual_position_snapshot_writer,
             historic_writer=manual_historic_writer,
         )
+        manage_manual_entities = ManageManualEntitiesImpl(
+            entity_repository,
+            position_repository,
+            transaction_repository,
+            historic_repository,
+            auto_contrib_repository,
+        )
         add_manual_transaction = AddManualTransactionImpl(
             entity_port=entity_repository,
             transaction_port=transaction_repository,
@@ -898,6 +906,7 @@ class FinanzeServer:
             register_user,
             change_user_password,
             get_available_entities,
+            manage_manual_entities,
             fetch_financial_data,
             fetch_crypto_data,
             fetch_external_financial_data,

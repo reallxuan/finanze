@@ -92,6 +92,10 @@ export class HttpApiClient implements ApiClient {
     return this.request("PUT", path, body, options)
   }
 
+  async patch<T>(path: string, body?: any, options?: HelperOptions): Promise<T> {
+    return this.request("PATCH", path, body, options)
+  }
+
   async delete<T>(
     path: string,
     bodyOrOptions?: any,

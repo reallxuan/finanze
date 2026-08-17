@@ -78,13 +78,6 @@ def setup_deferred_routes(router: "Router", deferred: "DeferredComponents") -> N
         ("GET", "/api/v1/events", "get_money_events", "get_money_events", d.get_events),
         (
             "GET",
-            "/api/v1/integrations",
-            "get_external_integrations",
-            "get_external_integrations",
-            d.get_integrations,
-        ),
-        (
-            "GET",
             "/api/v1/flows/periodic",
             "get_periodic_flows",
             "get_periodic_flows",
@@ -229,11 +222,25 @@ def setup_lazy_routes(router: "Router", lazy: "LazyComponents") -> None:
 
     routes += [
         (
-            "GET",
-            "/api/v1/crypto-wallet/derivate",
-            "derive_crypto_addresses",
-            "derive_crypto_addresses",
-            lz.derive_crypto,
+            "POST",
+            "/api/v1/entities",
+            "manage_manual_entities",
+            "create_manual_entity",
+            lz.manual_entities,
+        ),
+        (
+            "PATCH",
+            "/api/v1/entities/<entity_id>",
+            "manage_manual_entities",
+            "rename_manual_entity",
+            lz.manual_entities,
+        ),
+        (
+            "DELETE",
+            "/api/v1/entities/<entity_id>",
+            "manage_manual_entities",
+            "delete_manual_entity",
+            lz.manual_entities,
         ),
         (
             "POST",
@@ -271,46 +278,11 @@ def setup_lazy_routes(router: "Router", lazy: "LazyComponents") -> None:
             lz.update_settings,
         ),
         (
-            "PUT",
-            "/api/v1/crypto-wallet",
-            "update_crypto_wallet",
-            "update_crypto_wallet",
-            lz.up_crypto,
-        ),
-        (
-            "DELETE",
-            "/api/v1/crypto-wallet/<wallet_connection_id>",
-            "delete_crypto_wallet",
-            "delete_crypto_wallet",
-            lz.del_crypto,
-        ),
-        (
-            "GET",
-            "/api/v1/crypto-wallet/addresses",
-            "get_crypto_wallet_addresses",
-            "get_crypto_wallet_addresses",
-            lz.get_wallet_addrs,
-        ),
-        (
             "POST",
             "/api/v1/commodities",
             "save_commodities",
             "save_commodities",
             lz.save_commodities,
-        ),
-        (
-            "POST",
-            "/api/v1/integrations/<integration_id>",
-            "connect_external_integration",
-            "connect_external_integration",
-            lz.conn_integration,
-        ),
-        (
-            "DELETE",
-            "/api/v1/integrations/<integration_id>",
-            "disconnect_external_integration",
-            "disconnect_external_integration",
-            lz.disconn_integration,
         ),
         (
             "POST",
@@ -417,6 +389,13 @@ def setup_lazy_routes(router: "Router", lazy: "LazyComponents") -> None:
             "update_position",
             "update_position",
             lz.up_pos,
+        ),
+        (
+            "POST",
+            "/api/v1/data/manual/positions/update-quotes",
+            "update_tracked_quotes",
+            "update_tracked_quotes",
+            lz.up_tracked,
         ),
         (
             "POST",

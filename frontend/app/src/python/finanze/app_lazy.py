@@ -203,6 +203,8 @@ class LazyComponents:
         from application.use_cases.forecast import ForecastImpl
         from application.use_cases.update_contributions import UpdateContributionsImpl
         from application.use_cases.update_position import UpdatePositionImpl
+        from application.use_cases.update_tracked_quotes import UpdateTrackedQuotesImpl
+        from application.use_cases.manage_manual_entities import ManageManualEntitiesImpl
         from application.use_cases.manual_position_snapshot import (
             ManualPositionSnapshotWriter,
         )
@@ -550,6 +552,24 @@ class LazyComponents:
             d.virtual_repo,
             manual_position_snapshot_writer,
             manual_historic_writer,
+        )
+        self.up_tracked = UpdateTrackedQuotesImpl(
+            d.position_repo,
+            d.manual_repo,
+            d.inst_provider,
+            d.ex_client,
+            d.ex_storage,
+            d.virtual_repo,
+            manual_position_snapshot_writer,
+            d.tracked_updates_repo,
+            d.tx_handler,
+        )
+        self.manual_entities = ManageManualEntitiesImpl(
+            d.entity_repo,
+            d.position_repo,
+            d.tx_repo,
+            historic_repo,
+            d.auto_repo,
         )
         self.settle_pending = SettlePendingFlowImpl(
             d.pending_repo,

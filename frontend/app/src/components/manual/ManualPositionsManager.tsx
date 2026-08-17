@@ -40,27 +40,6 @@ const MANUAL_POSITION_ASSETS = Object.keys(
   manualPositionConfigs,
 ) as ManualPositionAsset[]
 
-const createEmptyFeatureRecord = (): Record<Feature, string> => ({
-  POSITION: "",
-  AUTO_CONTRIBUTIONS: "",
-  TRANSACTIONS: "",
-  HISTORIC: "",
-})
-
-const createPlaceholderEntity = (
-  id: string,
-  name: string,
-  type: EntityType = EntityType.FINANCIAL_INSTITUTION,
-): Entity => ({
-  id,
-  name,
-  type,
-  origin: EntityOrigin.MANUAL,
-  natural_id: id,
-  features: ["POSITION"],
-  last_fetch: createEmptyFeatureRecord(),
-  virtual_features: createEmptyFeatureRecord(),
-})
 import { generateLocalId } from "@/utils/manualData"
 import {
   Card,
@@ -191,25 +170,6 @@ export function ManualPositionsManager({
   const fundDrafts = useManualDrafts<FundDetail>("funds")
   const cardDrafts = useManualDrafts<CardDetail>("bankCards")
   const assetRegistryDrafts = useManualDrafts<any>(asset)
-  const allManualDraftCollections = MANUAL_POSITION_ASSETS.map(assetKey =>
-    useManualDrafts<any>(assetKey),
-  )
-  const manualDraftEntitySignature = serialize(
-    allManualDraftCollections.map(drafts =>
-      drafts
-        .filter(draft => {
-          if (typeof draft.entityId !== "string") {
-            return false
-          }
-          if (draft.isNewEntity) return true
-          return draft.entityId.startsWith("new-")
-        })
-        .map(draft => ({
-          entityId: draft.entityId,
-          name: (draft.newEntityName ?? draft.entityName ?? "").trim(),
-        })),
-    ),
-  )
   const deletedFundPortfolioOriginalIds =
     useManualDeletedOriginalIds("fundPortfolios")
   const deletedFundPortfolioIdSet = useMemo(
@@ -271,48 +231,12 @@ export function ManualPositionsManager({
   }, [asset])
 
   const manualEntities = useMemo(() => {
-    const baseEntities = (entities ?? []).filter(entity =>
-      allowedEntityTypes.has(entity.type),
+    const baseEntities = (entities ?? []).filter(
+      entity =>
+        entity.origin === EntityOrigin.MANUAL && allowedEntityTypes.has(entity.type),
     )
-    const existingIds = new Set(baseEntities.map(entity => entity.id))
-    const result: Entity[] = [...baseEntities]
-
-    allManualDraftCollections.forEach(drafts => {
-      drafts.forEach(draft => {
-        const entityId = draft.entityId
-        if (typeof entityId !== "string") {
-          return
-        }
-
-        const isPlaceholder =
-          Boolean(draft.isNewEntity) || entityId.startsWith("new-")
-        if (!isPlaceholder || existingIds.has(entityId)) {
-          return
-        }
-
-        const placeholderName = (
-          draft.newEntityName ??
-          draft.entityName ??
-          ""
-        ).trim()
-        if (!placeholderName) {
-          return
-        }
-
-        existingIds.add(entityId)
-        const resolvedType =
-          (draft as any)._entity_type ?? EntityType.FINANCIAL_INSTITUTION
-        if (!allowedEntityTypes.has(resolvedType)) {
-          return
-        }
-        result.push(
-          createPlaceholderEntity(entityId, placeholderName, resolvedType),
-        )
-      })
-    })
-
-    return result
-  }, [entities, manualDraftEntitySignature, allowedEntityTypes])
+    return baseEntities
+  }, [entities, allowedEntityTypes])
 
   const linkedAccountOptions = useCallback(
     (entityId?: string | null) => {
@@ -492,8 +416,10 @@ export function ManualPositionsManager({
       })
     }
     const sorted = Array.from(currencies).sort()
-    if (!supportedCurrencySet) return sorted
-    return sorted.filter(code => supportedCurrencySet.has(code.toUpperCase()))
+    if (!supportedCurrencySet) return sorted.filter(code => code !== "EUR")
+    return sorted.filter(
+      code => code !== "EUR" && supportedCurrencySet.has(code.toUpperCase()),
+    )
   }, [exchangeRates, defaultCurrency, supportedCurrencySet])
 
   const initialDrafts = useMemo(
@@ -726,7 +652,7 @@ export function ManualPositionsManager({
           baseForm.new_entity_name = ""
         }
         if (manualEntities.length === 0) {
-          baseForm.entity_mode = "new"
+          baseForm.entity_mode = "select"
           baseForm.entity_id = ""
         }
         setFormState(baseForm)
@@ -824,7 +750,7 @@ export function ManualPositionsManager({
 
     const errors: ManualFormErrors<any> = validation ? { ...validation } : {}
 
-    const entityMode = formState.entity_mode === "new" ? "new" : "select"
+    const entityMode = "select"
     let resolvedEntity: Entity | undefined
     let newEntityName: string | null = null
     let isSelectingPlaceholder = false
@@ -924,7 +850,7 @@ export function ManualPositionsManager({
       }
     }
 
-    const isNewEntity = entityMode === "new" || isSelectingPlaceholder
+    const isNewEntity = isSelectingPlaceholder
     if (isNewEntity && (!newEntityName || newEntityName.trim() === "")) {
       setFormErrors({
         new_entity_name: translate(

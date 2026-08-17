@@ -13,7 +13,7 @@ export default defineConfig(({ command, mode }) => {
   const isMobileDev = mode === "mobile" || process.env.MOBILE_DEV === "1"
   const isMobileBuild = process.env.MOBILE_BUILD === "1"
   const isMobile = isMobileDev || isMobileBuild
-  const includeConnections = process.env.INCLUDE_CONNECTIONS !== "0"
+  const includeConnections = process.env.INCLUDE_CONNECTIONS === "1"
   if (!isMobile) {
     rmSync("dist-electron", { recursive: true, force: true })
   }

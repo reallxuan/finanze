@@ -110,6 +110,9 @@ class DeferredComponents:
         from infrastructure.repository.position.manual_position_data_repository import (
             ManualPositionDataSQLRepository,
         )
+        from infrastructure.repository.tracked_updates.tracked_updates_repository import (
+            TrackedUpdatesRepository,
+        )
         from infrastructure.repository.real_estate.real_estate_repository import (
             RealEstateRepository,
         )
@@ -225,6 +228,7 @@ class DeferredComponents:
 
         self.position_repo = PositionRepository(client=db_client)
         self.manual_repo = ManualPositionDataSQLRepository(client=db_client)
+        self.tracked_updates_repo = TrackedUpdatesRepository(client=db_client)
         self.auto_repo = AutoContributionsRepository(client=db_client)
         self.tx_repo = TransactionRepository(client=db_client)
         self.entity_repo = EntityRepository(client=db_client)

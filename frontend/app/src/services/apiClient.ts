@@ -17,6 +17,8 @@ export interface ApiClient {
 
   put<T>(path: string, body?: any, options?: HelperOptions): Promise<T>
 
+  patch<T>(path: string, body?: any, options?: HelperOptions): Promise<T>
+
   delete<T>(path: string, options?: HelperOptions): Promise<T>
   delete<T>(path: string, body?: any, options?: HelperOptions): Promise<T>
 

@@ -14,25 +14,19 @@ import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginHandle;
 
-import me.finanze.plugins.ApkUpdaterPlugin;
 import me.finanze.plugins.BackupProcessorPlugin;
 import me.finanze.plugins.FileTransferPlugin;
 import me.finanze.plugins.ImageProcessorPlugin;
 import me.finanze.plugins.NativeCookiesPlugin;
-import me.finanze.plugins.LoginWebViewPlugin;
-import me.finanze.plugins.TlsHttpPlugin;
 
 public class MainActivity extends BridgeActivity implements ModifiedMainActivityForSocialLoginPlugin {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(ApkUpdaterPlugin.class);
         registerPlugin(BackupProcessorPlugin.class);
         registerPlugin(FileTransferPlugin.class);
         registerPlugin(ImageProcessorPlugin.class);
         registerPlugin(NativeCookiesPlugin.class);
-        registerPlugin(LoginWebViewPlugin.class);
-        registerPlugin(TlsHttpPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
     }
