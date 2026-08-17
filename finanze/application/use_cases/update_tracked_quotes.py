@@ -44,7 +44,7 @@ from domain.virtual_data import VirtualDataSource
 _TRACKABLE_PRODUCTS = (ProductType.STOCK_ETF, ProductType.FUND)
 
 _THROTTLE_KEY = "TRACKED_QUOTES"
-_THROTTLE_INTERVAL = timedelta(hours=8)
+_THROTTLE_INTERVAL = timedelta(minutes=2)
 
 
 class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
@@ -86,7 +86,12 @@ class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
                     last_executed,
                     _THROTTLE_INTERVAL,
                 )
-                return UpdateTrackedResult(had_tracked=False, throttled=True)
+                return UpdateTrackedResult(
+                    had_tracked=False,
+                    throttled=True,
+                    updated_at=last_executed,
+                    next_allowed_at=last_executed + _THROTTLE_INTERVAL,
+                )
             await self._throttle_port.update_last_executed(_THROTTLE_KEY, now)
 
             trackable_entries = await self._manual_position_data_port.get_trackable()
@@ -107,7 +112,11 @@ class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
             )
 
             if not grouped and not crypto_position_ids and not has_commodities:
-                return UpdateTrackedResult(had_tracked=False)
+                return UpdateTrackedResult(
+                    had_tracked=False,
+                    updated_at=now,
+                    next_allowed_at=now + _THROTTLE_INTERVAL,
+                )
 
             fund_entries = sum(
                 1 for mpd in trackable_entries if mpd.product_type == ProductType.FUND
@@ -199,7 +208,10 @@ class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
             )
 
             return UpdateTrackedResult(
-                had_tracked=True, changed_entities=list(changed_entities)
+                had_tracked=True,
+                changed_entities=list(changed_entities),
+                updated_at=now,
+                next_allowed_at=now + _THROTTLE_INTERVAL,
             )
 
     async def _get_manual_crypto_position_ids(self) -> set[UUID]:
@@ -275,7 +287,7 @@ class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
         symbol = COMMODITY_SYMBOLS.get(commodity.type)
         if symbol is None:
             return None
-        currency = commodity.currency or "EUR"
+        currency = commodity.currency or "HKD"
         currency_rates = rates.get(currency)
         if not currency_rates:
             return None

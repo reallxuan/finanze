@@ -32,6 +32,10 @@ import { useI18n } from "@/i18n"
 import { useAuth } from "@/context/AuthContext"
 import { WeightUnit } from "@/types/position"
 import {
+  DEFAULT_MAIN_CURRENCY,
+  normalizeMainCurrency,
+} from "@/constants/currencies"
+import {
   getFeatureFlags,
   subscribeFeatureFlags,
 } from "@/context/featureFlagsStore"
@@ -110,6 +114,10 @@ interface AppContextType {
     callback: ((entityIds: string[]) => Promise<void>) | null,
   ) => void
   runTrackedUpdatesIfNeeded: () => Promise<void>
+  refreshTrackedQuotes: () => Promise<import("@/types").UpdateTrackedResult>
+  quoteRefreshStatus: "idle" | "refreshing" | "success" | "throttled" | "error"
+  lastQuoteUpdatedAt: string | null
+  quoteRefreshError: string | null
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -122,7 +130,7 @@ const defaultSettings: AppSettings = {
     sheets: {},
   },
   general: {
-    defaultCurrency: "EUR",
+    defaultCurrency: DEFAULT_MAIN_CURRENCY,
     defaultCommodityWeightUnit: WeightUnit.GRAM,
   },
   assets: {
@@ -188,6 +196,9 @@ const mergeSettingsWithDefaults = (
     general: {
       ...defaultSettings.general,
       ...(incoming?.general ?? {}),
+      defaultCurrency: normalizeMainCurrency(
+        incoming?.general?.defaultCurrency,
+      ),
     },
     export: defaultSettings.export
       ? {
@@ -242,6 +253,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isExporting: false,
     lastExportTime: null,
   })
+  const [quoteRefreshStatus, setQuoteRefreshStatus] = useState<
+    "idle" | "refreshing" | "success" | "throttled" | "error"
+  >("idle")
+  const [lastQuoteUpdatedAt, setLastQuoteUpdatedAt] = useState<string | null>(null)
+  const [quoteRefreshError, setQuoteRefreshError] = useState<string | null>(null)
 
   const { t } = useI18n()
   const { isAuthenticated } = useAuth()
@@ -259,7 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const LAST_UPDATE_QUOTES_KEY = "lastUpdateQuotesTime"
   const LAST_UPDATE_LOANS_KEY = "lastUpdateLoansTime"
-  const QUOTES_UPDATE_INTERVAL_MS = 8 * 60 * 60 * 1000
+  const QUOTES_UPDATE_INTERVAL_MS = 2 * 60 * 1000
   const LOANS_UPDATE_INTERVAL_MS = 18 * 60 * 60 * 1000
   const EXCHANGE_RATES_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
@@ -527,15 +543,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lastCallTime === null ||
       now - lastCallTime >= QUOTES_UPDATE_INTERVAL_MS
     ) {
+      setQuoteRefreshStatus("refreshing")
+      setQuoteRefreshError(null)
       try {
         await fetchExchangeRatesSilently()
         const result = await updateQuotesManualPositions()
+        setQuoteRefreshStatus(result?.throttled ? "throttled" : "success")
+        if (result?.updatedAt) setLastQuoteUpdatedAt(result.updatedAt)
         localStorage.setItem(LAST_UPDATE_QUOTES_KEY, now.toString())
         if (result?.changed) {
           await onTrackedUpdateCompletedRef.current?.(result.changedEntities)
         }
       } catch (error) {
         console.error("Error updating manual positions quotes:", error)
+        setQuoteRefreshStatus("error")
+        setQuoteRefreshError("Quote refresh failed")
       }
     }
   }, [
@@ -568,9 +590,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const runTrackedUpdatesIfNeeded = useCallback(async () => {
     await waitForLazyInit()
-    updateQuotesIfNeeded()
-    updateLoansIfNeeded()
+    await Promise.all([updateQuotesIfNeeded(), updateLoansIfNeeded()])
   }, [updateQuotesIfNeeded, updateLoansIfNeeded])
+
+  const refreshTrackedQuotes = useCallback(async () => {
+    await waitForLazyInit()
+    setQuoteRefreshStatus("refreshing")
+    setQuoteRefreshError(null)
+    try {
+      await fetchExchangeRates()
+      const result = await updateQuotesManualPositions()
+      setQuoteRefreshStatus(result?.throttled ? "throttled" : "success")
+      if (result?.updatedAt) setLastQuoteUpdatedAt(result.updatedAt)
+      if (result?.changed) {
+        await onTrackedUpdateCompletedRef.current?.(result.changedEntities)
+      }
+      return result
+    } catch (error) {
+      setQuoteRefreshStatus("error")
+      setQuoteRefreshError("Quote refresh failed")
+      throw error
+    }
+  }, [fetchExchangeRates])
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && isAuthenticated) {
+        void runTrackedUpdatesIfNeeded()
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => document.removeEventListener("visibilitychange", handleVisibility)
+  }, [isAuthenticated, runTrackedUpdatesIfNeeded])
 
   useEffect(() => {
     if (isAuthenticated && !initialFetchDone.current) {
@@ -621,6 +672,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         fetchExternalIntegrations,
         setOnTrackedUpdateCompleted,
         runTrackedUpdatesIfNeeded,
+        refreshTrackedQuotes,
+        quoteRefreshStatus,
+        lastQuoteUpdatedAt,
+        quoteRefreshError,
       }}
     >
       {children}

@@ -33,7 +33,7 @@ const EXCLUDED_FILES = ["server.py", "logs.py", "args.py", "__main__.py"]
 const EXCLUDED_EXTENSIONS = [".pyc", ".pyo", ".pyd"]
 const CACHE_DIRS = ["__pycache__", ".pytest_cache", ".git", ".ruff_cache"]
 
-const INCLUDE_CONNECTIONS = process.env.INCLUDE_CONNECTIONS !== "0"
+const INCLUDE_CONNECTIONS = process.env.INCLUDE_CONNECTIONS === "1"
 
 const CONNECTION_EXCLUDED_PATTERNS = [
   "infrastructure/client/entity/crypto/",
@@ -283,6 +283,7 @@ const BACKGROUND_PATTERNS = [
   "finanze/application/use_cases/update_tracked_loans.py",
   "finanze/application/use_cases/get_networth_timeline.py",
   "finanze/application/use_cases/manual_position_snapshot.py",
+  "finanze/application/use_cases/position_snapshot_ids.py",
   "finanze/infrastructure/repository/db/",
   "finanze/infrastructure/repository/position/",
   "finanze/infrastructure/repository/virtual/",

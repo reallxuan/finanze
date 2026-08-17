@@ -45,6 +45,7 @@ import {
   HandCoins,
   PiggyBank,
   TrendingUpDown,
+  RefreshCw,
   ListCollapse,
 } from "lucide-react"
 import {
@@ -66,7 +67,6 @@ import {
   getUnlinkedLoansOutstanding,
   getRealEstateOwnedEquityTotal,
 } from "@/utils/financialDataUtils"
-import { EntityRefreshDropdown } from "@/components/EntityRefreshDropdown"
 
 export default function DashboardPage() {
   const { t, locale } = useI18n()
@@ -82,7 +82,35 @@ export default function DashboardPage() {
     fetchCachedTransactions,
     invalidateTransactionsCache,
   } = useFinancialData()
-  const { settings, exchangeRates, refreshExchangeRates } = useAppContext()
+  const {
+    settings,
+    exchangeRates,
+    refreshExchangeRates,
+    refreshTrackedQuotes,
+    showToast,
+  } = useAppContext()
+  const [isRefreshingQuotes, setIsRefreshingQuotes] = useState(false)
+
+  const refreshQuotes = async () => {
+    setIsRefreshingQuotes(true)
+    try {
+      const result = await refreshTrackedQuotes()
+      await refreshFinancialData()
+      showToast(
+        result?.throttled
+          ? "Quote refresh is throttled for 2 minutes"
+          : "Quotes refreshed",
+        result?.throttled ? "info" : "success",
+      )
+    } catch {
+      showToast(
+        "Quote refresh failed; keeping the last successful prices.",
+        "error",
+      )
+    } finally {
+      setIsRefreshingQuotes(false)
+    }
+  }
 
   const skipAnimations = useSkipMountAnimation(!isInitialLoading)
 
@@ -1549,6 +1577,15 @@ export default function DashboardPage() {
               {t.common.dashboard}
             </h1>
             <div className="flex items-center gap-2 justify-end flex-nowrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void refreshQuotes()}
+                disabled={isRefreshingQuotes}
+                        title="Refresh quotes"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshingQuotes ? "animate-spin" : ""}`} />
+              </Button>
               {/* Forecast active indicator / trigger */}
               <Popover open={forecastOpen} onOpenChange={setForecastOpen}>
                 <PopoverTrigger asChild>
@@ -1755,7 +1792,6 @@ export default function DashboardPage() {
                   </div>
                 </PopoverContent>
               </Popover>
-              {__CONNECTIONS__ && <EntityRefreshDropdown />}
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { useAppContext } from "@/context/AppContext"
 import { useFinancialData } from "@/context/FinancialDataContext"
 import { useNavigate } from "react-router-dom"
 import { Card } from "@/components/ui/Card"
+import { Button } from "@/components/ui/Button"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { getIconForProductType } from "@/utils/dashboardUtils"
 import { ProductType } from "@/types/position"
@@ -11,12 +12,34 @@ import { EntityStatus, EntityType } from "@/types"
 import { PinAssetButton } from "@/components/ui/PinAssetButton"
 import { usePinnedShortcuts } from "@/context/PinnedShortcutsContext"
 import { getEntitiesWithProductType } from "@/utils/financialDataUtils"
+import { RefreshCw } from "lucide-react"
 
 export default function InvestmentsPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
-  const { isLoading, positionsData, realEstateList } = useFinancialData()
-  const { entities } = useAppContext()
+  const { isLoading, positionsData, realEstateList, refreshData } = useFinancialData()
+  const { entities, refreshTrackedQuotes, showToast } = useAppContext()
+  const [isRefreshingQuotes, setIsRefreshingQuotes] = React.useState(false)
+  const refreshQuotes = async () => {
+    setIsRefreshingQuotes(true)
+    try {
+      const result = await refreshTrackedQuotes()
+      await refreshData()
+      showToast(
+        result?.throttled
+          ? "Quote refresh is throttled for 2 minutes"
+          : "Quotes refreshed",
+        result?.throttled ? "info" : "success",
+      )
+    } catch {
+      showToast(
+        "Quote refresh failed; keeping the last successful prices.",
+        "error",
+      )
+    } finally {
+      setIsRefreshingQuotes(false)
+    }
+  }
   const { isPinned } = usePinnedShortcuts()
   const hasConnectedMarketForecastPlatform = entities.some(
     entity =>
@@ -166,9 +189,20 @@ export default function InvestmentsPage() {
   return (
     <div className="space-y-6 select-none">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">
-          {t.common.myAssets || t.common.investments}
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold">
+            {t.common.myAssets || t.common.investments}
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refreshQuotes()}
+            disabled={isRefreshingQuotes}
+            title="Refresh quotes"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshingQuotes ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

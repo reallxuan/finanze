@@ -72,6 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(isUnlocked ? (statusUser ?? null) : null)
     setLastLoggedUser(last_logged || null)
     setPendingRegister(pending ?? false)
+
+    // The native app can restore an unlocked session without going through
+    // login(). Reconnect the quote worker for that path as well; otherwise a
+    // manual quote refresh immediately after app restart fails because the
+    // worker has no database connection.
+    if (isUnlocked && statusUser?.username) {
+      await connectBackgroundWorker(statusUser.username)
+    }
   }
 
   useEffect(() => {

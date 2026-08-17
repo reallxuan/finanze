@@ -1,4 +1,5 @@
 from dataclasses import field
+from datetime import datetime
 from uuid import UUID
 
 from pydantic.dataclasses import dataclass
@@ -9,6 +10,8 @@ class UpdateTrackedResult:
     had_tracked: bool
     changed_entities: list[UUID] = field(default_factory=list)
     throttled: bool = False
+    updated_at: datetime | None = None
+    next_allowed_at: datetime | None = None
 
     @property
     def changed(self) -> bool:

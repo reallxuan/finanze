@@ -138,17 +138,59 @@ function reverseMapQuoteType(
   }
 }
 
+function isLikelyTicker(query: string): boolean {
+  return /^[A-Za-z0-9.^=-]{1,20}$/.test(query.trim())
+}
+
 async function lookup(query: string, instrumentType: string): Promise<string> {
   try {
-    const searchResult = await yfSearch(query, 15)
+    const normalizedQuery = query.trim().toUpperCase()
+    let searchResult: { quotes: any[] } = { quotes: [] }
+    try {
+      searchResult = await yfSearch(query, 15)
+    } catch (error) {
+      appConsole.warn(
+        "[YahooFinanceBridge] search endpoint failed, trying exact ticker fallback",
+        error,
+      )
+    }
     const targetQuoteType = mapQuoteType(instrumentType)
+    const quotes = searchResult.quotes ?? []
 
-    const filtered = (searchResult.quotes ?? []).filter((q: any) => {
+    const filtered = quotes.filter((q: any) => {
       if (!q.symbol) return false
       if (!targetQuoteType) return true
       if (targetQuoteType === "MUTUALFUND") return true
       return q.quoteType === targetQuoteType
     })
+
+    // Yahoo classifies some exact ticker matches differently from the type
+    // selected in the form (for example, VOO is an ETF while the stock form
+    // starts with STOCK selected). Keep an exact ticker match so the user can
+    // select it and let the instrument details response correct the type.
+    const exactMatch = quotes.find(
+      (q: any) => String(q.symbol ?? "").toUpperCase() === normalizedQuery,
+    )
+    if (
+      exactMatch?.symbol &&
+      !filtered.some(
+        (q: any) =>
+          String(q.symbol ?? "").toUpperCase() === normalizedQuery,
+      )
+    ) {
+      filtered.unshift(exactMatch)
+    }
+
+    // If Yahoo's search endpoint omits a valid exact ticker, still return a
+    // candidate. The follow-up details lookup can resolve its name, type and
+    // price from the ticker itself.
+    if (filtered.length === 0 && isLikelyTicker(query)) {
+      filtered.push({
+        symbol: normalizedQuery,
+        longname: normalizedQuery,
+        quoteType: targetQuoteType,
+      })
+    }
 
     const results = filtered.map((q: any) => ({
       symbol: String(q.symbol),

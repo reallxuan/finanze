@@ -76,14 +76,15 @@ export function waitForLazyInit(): Promise<void> {
   )
 }
 
-export function connectBackgroundWorker(username: string): void {
-  if (!__MOBILE__) return
-  if (!isNativeMobile()) return
+export function connectBackgroundWorker(username: string): Promise<void> {
+  if (!__MOBILE__) return Promise.resolve()
+  if (!isNativeMobile()) return Promise.resolve()
 
-  // Fire-and-forget: must not block backend or frontend.
-  import("@/lib/pyodide/init").then(({ connectBackgroundWorker }) => {
-    connectBackgroundWorker(username).catch(() => undefined)
-  })
+  // Return the connection promise so session restoration can wait until the
+  // worker is attached before the first quote refresh is allowed to run.
+  return import("@/lib/pyodide/init")
+    .then(({ connectBackgroundWorker }) => connectBackgroundWorker(username))
+    .catch(() => undefined)
 }
 
 export async function disconnectBackgroundWorker(): Promise<void> {
