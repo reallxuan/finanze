@@ -8,17 +8,53 @@ import {
 import enTranslations from "./locales/en.json"
 import esTranslationsRaw from "./locales/es.json"
 import itTranslationsRaw from "./locales/it.json"
+import zhTranslationsRaw from "./locales/zh.json"
 
-export type Locale = "en-US" | "es-ES" | "it-IT"
+export type Locale = "en-US" | "es-ES" | "it-IT" | "zh-CN"
 export type Translations = typeof enTranslations
+
+const mergeTranslations = (base: unknown, override: unknown): unknown => {
+  if (
+    base &&
+    override &&
+    typeof base === "object" &&
+    typeof override === "object" &&
+    !Array.isArray(base) &&
+    !Array.isArray(override)
+  ) {
+    const baseRecord = base as Record<string, unknown>
+    const overrideRecord = override as Record<string, unknown>
+    const keys = new Set([
+      ...Object.keys(baseRecord),
+      ...Object.keys(overrideRecord),
+    ])
+    return Object.fromEntries(
+      Array.from(keys).map(key => [
+        key,
+        mergeTranslations(baseRecord[key], overrideRecord[key]),
+      ]),
+    )
+  }
+  return override === undefined ? base : override
+}
 
 const translations: Record<Locale, Translations> = {
   "en-US": enTranslations,
-  "es-ES": esTranslationsRaw as unknown as Translations,
-  "it-IT": itTranslationsRaw as unknown as Translations,
+  "es-ES": mergeTranslations(
+    enTranslations,
+    esTranslationsRaw,
+  ) as Translations,
+  "it-IT": mergeTranslations(
+    enTranslations,
+    itTranslationsRaw,
+  ) as Translations,
+  "zh-CN": mergeTranslations(
+    enTranslations,
+    zhTranslationsRaw,
+  ) as Translations,
 }
 
-const VALID_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT"]
+const VALID_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT", "zh-CN"]
 
 interface I18nContextType {
   locale: Locale

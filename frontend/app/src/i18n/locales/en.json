@@ -644,7 +644,8 @@
     "applicationLanguageOptions": {
       "en-US": "English",
       "es-ES": "Spanish",
-      "it-IT": "Italian"
+      "it-IT": "Italian",
+      "zh-CN": "Chinese"
     },
     "defaultCurrency": "Main Currency",
     "defaultCommodityWeightUnit": "Default commodity weight unit",
@@ -1569,6 +1570,37 @@
         "deleteSuccess": "Template deleted."
       }
     }
+  },
+  "manualEntities": {
+    "title": "Institutions",
+    "description": "Group your manual positions without logging in or connecting to third-party services.",
+    "quoteStatus": "Quote status",
+    "refreshing": "Refreshing",
+    "refreshFailed": "Refresh failed; keeping the last successful prices",
+    "coolingDown": "Cooling down",
+    "ready": "Ready",
+    "lastSuccessfulUpdate": "Last successful update",
+    "refreshQuotes": "Refresh quotes",
+    "refreshThrottled": "Quote refresh is throttled for 2 minutes",
+    "refreshed": "Quotes refreshed",
+    "refreshError": "Quote refresh failed; keeping the last successful prices.",
+    "addTitle": "Add institution",
+    "placeholder": "e.g. BOCHK, HSBC, ZA Bank",
+    "create": "Create",
+    "position": "position",
+    "positions": "positions",
+    "rename": "Rename",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "deleteConfirm": "Delete this empty institution?",
+    "created": "Institution created",
+    "renamed": "Institution renamed",
+    "deleted": "Institution deleted",
+    "nameExists": "An institution with this name already exists.",
+    "notEmpty": "This institution still has positions, transactions, or history. Clear the related data first.",
+    "operationFailed": "Operation failed. Please try again.",
+    "empty": "No institutions yet. Create one before adding funds, VOO, or other manual positions."
   },
   "transactions": {
     "title": "Transactions",

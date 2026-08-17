@@ -324,7 +324,10 @@ const extractTemplateId = (value: any): string | null => {
 export default function ExportPage() {
   const { t, locale } = useI18n()
   const defaultNumberFormat = useMemo(
-    () => (locale === "en-US" ? NumberFormat.ENGLISH : NumberFormat.EUROPEAN),
+    () =>
+      locale === "en-US" || locale === "zh-CN"
+        ? NumberFormat.ENGLISH
+        : NumberFormat.EUROPEAN,
     [locale],
   )
   const navigate = useNavigate()

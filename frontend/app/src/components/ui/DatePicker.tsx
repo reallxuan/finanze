@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 import { format, parse } from "date-fns"
-import { enUS, es, it } from "date-fns/locale"
+import { enUS, es, it, zhCN } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { Button } from "./Button"
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover"
@@ -29,6 +29,7 @@ const localeMap = {
   "en-US": enUS,
   "es-ES": es,
   "it-IT": it,
+  "zh-CN": zhCN,
 }
 
 function DatePicker({
