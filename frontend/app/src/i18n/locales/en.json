@@ -1761,6 +1761,9 @@
     "deletePortfolioError": "Unable to delete MPF portfolio",
     "create": {
       "title": "New MPF portfolio",
+      "confirmSunLifeMessage": "Fund data is currently only available for Sun Life MPF schemes. Other trustees' fund prices aren't supported yet. Continue creating a Sun Life MPF portfolio?",
+      "confirmSunLifeYes": "Yes, continue",
+      "confirmSunLifeNo": "No, exit",
       "entityLabel": "Institution",
       "entityRequired": "Please select an institution",
       "nameLabel": "Name",

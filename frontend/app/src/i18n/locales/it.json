@@ -1724,6 +1724,9 @@
     "deletePortfolioError": "Impossibile eliminare il portafoglio MPF",
     "create": {
       "title": "Nuovo portafoglio MPF",
+      "confirmSunLifeMessage": "I dati sui fondi sono attualmente disponibili solo per gli schemi MPF Sun Life. I prezzi dei fondi di altri fiduciari non sono ancora supportati. Continuare a creare un portafoglio MPF Sun Life?",
+      "confirmSunLifeYes": "Sì, continua",
+      "confirmSunLifeNo": "No, esci",
       "entityLabel": "Istituto",
       "entityRequired": "Seleziona un istituto",
       "nameLabel": "Nome",

@@ -1728,6 +1728,9 @@
     "deletePortfolioError": "No se pudo eliminar la cartera MPF",
     "create": {
       "title": "Nueva cartera MPF",
+      "confirmSunLifeMessage": "Los datos de fondos solo están disponibles actualmente para planes MPF de Sun Life. Los precios de fondos de otras entidades fiduciarias aún no son compatibles. ¿Continuar creando una cartera MPF de Sun Life?",
+      "confirmSunLifeYes": "Sí, continuar",
+      "confirmSunLifeNo": "No, salir",
       "entityLabel": "Entidad",
       "entityRequired": "Selecciona una entidad",
       "nameLabel": "Nombre",
