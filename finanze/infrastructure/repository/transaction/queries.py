@@ -21,8 +21,8 @@ class TransactionQueries(str, Enum):
         INSERT INTO account_transactions (id, ref, name, amount, currency, type, date,
                                           entity_id, is_real, source, created_at,
                                           fees, retentions, interest_rate, avg_balance, net_amount,
-                                          entity_account_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                          entity_account_id, category, account_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     INVESTMENT_SELECT_BASE = """
@@ -161,7 +161,9 @@ class TransactionQueries(str, Enum):
                    iban,
                    portfolio_name,
                    product_subtype,
-                   entity_account_id
+                   entity_account_id,
+                   NULL AS category,
+                   NULL AS account_name
             FROM investment_transactions
             UNION ALL
             SELECT id,
@@ -192,7 +194,9 @@ class TransactionQueries(str, Enum):
                    NULL      AS iban,
                    NULL      AS portfolio_name,
                    NULL      AS product_subtype,
-                   entity_account_id
+                   entity_account_id,
+                   category,
+                   account_name
             FROM account_transactions
         ) tx
             JOIN entities e ON tx.entity_id = e.id
@@ -238,3 +242,26 @@ class TransactionQueries(str, Enum):
     DELETE_ACCOUNT_BY_ENTITY_ACCOUNT = (
         "DELETE FROM account_transactions WHERE entity_account_id = ?"
     )
+
+    ACCOUNT_LEDGER_BY_ENTITY_AND_NAME = """
+        SELECT at.*,
+               e.id         AS entity_id,
+               e.name       AS entity_name,
+               e.natural_id AS entity_natural_id,
+               e.type       AS entity_type,
+               e.origin     AS entity_origin,
+               e.icon_url   AS icon_url
+        FROM account_transactions at
+            JOIN entities e ON at.entity_id = e.id
+        WHERE at.entity_id = ? AND at.account_name = ? AND at.source = 'MANUAL'
+        ORDER BY at.date ASC, at.created_at ASC
+    """
+
+    SPENDING_SUMMARY_ACCOUNT_ROWS = """
+        SELECT at.type, at.category, at.amount, at.currency,
+               strftime('%Y-%m', at.date) AS month
+        FROM account_transactions at
+            LEFT JOIN entity_accounts ea ON at.entity_account_id = ea.id
+        WHERE (at.entity_account_id IS NULL OR ea.deleted_at IS NULL)
+          AND at.type IN ('EXPENSE', 'INCOME')
+    """

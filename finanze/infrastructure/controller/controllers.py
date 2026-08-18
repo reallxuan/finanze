@@ -62,7 +62,17 @@ from domain.use_cases.get_market_forecast_closed_positions import (
 from domain.use_cases.get_market_forecast_pnl import GetMarketForecastPnl
 from domain.use_cases.get_periodic_flows import GetPeriodicFlows
 from domain.use_cases.get_position import GetPosition
+from domain.use_cases.get_account_ledger import GetAccountLedger
+from domain.use_cases.get_mpf_fund_quotes import GetMpfFundQuotes
+from domain.use_cases.create_mpf_portfolio import CreateMpfPortfolio
+from domain.use_cases.update_mpf_portfolio import UpdateMpfPortfolio
+from domain.use_cases.delete_mpf_portfolio import DeleteMpfPortfolio
+from domain.use_cases.get_mpf_portfolios import GetMpfPortfolios
+from domain.use_cases.record_mpf_contribution import RecordMpfContribution
+from domain.use_cases.delete_mpf_contribution import DeleteMpfContribution
+from domain.use_cases.get_mpf_contributions import GetMpfContributions
 from domain.use_cases.get_settings import GetSettings
+from domain.use_cases.get_spending_summary import GetSpendingSummary
 from domain.use_cases.get_status import GetStatus
 from domain.use_cases.get_template_fields import GetTemplateFields
 from domain.use_cases.get_templates import GetTemplates
@@ -208,7 +218,29 @@ from infrastructure.controller.routes.save_pending_flow import save_pending_flow
 from infrastructure.controller.routes.update_pending_flow import update_pending_flow
 from infrastructure.controller.routes.delete_pending_flow import delete_pending_flow
 from infrastructure.controller.routes.settle_pending_flow import settle_pending_flow
+from infrastructure.controller.routes.get_account_ledger import get_account_ledger
+from infrastructure.controller.routes.get_mpf_fund_quotes import get_mpf_fund_quotes
+from infrastructure.controller.routes.get_mpf_portfolios import get_mpf_portfolios
+from infrastructure.controller.routes.create_mpf_portfolio import (
+    create_mpf_portfolio,
+)
+from infrastructure.controller.routes.update_mpf_portfolio import (
+    update_mpf_portfolio,
+)
+from infrastructure.controller.routes.delete_mpf_portfolio import (
+    delete_mpf_portfolio,
+)
+from infrastructure.controller.routes.get_mpf_contributions import (
+    get_mpf_contributions,
+)
+from infrastructure.controller.routes.record_mpf_contribution import (
+    record_mpf_contribution,
+)
+from infrastructure.controller.routes.delete_mpf_contribution import (
+    delete_mpf_contribution,
+)
 from infrastructure.controller.routes.save_periodic_flow import save_periodic_flow
+from infrastructure.controller.routes.spending_summary import spending_summary
 from infrastructure.controller.routes.transactions import transactions
 from infrastructure.controller.routes.update_contributions import update_contributions
 from infrastructure.controller.routes.update_crypto_wallet import update_crypto_wallet
@@ -253,6 +285,16 @@ async def register_routes(
     get_historic_uc: GetHistoric,
     get_networth_timeline_uc: GetNetworthTimeline,
     get_transactions_uc: GetTransactions,
+    get_spending_summary_uc: GetSpendingSummary,
+    get_account_ledger_uc: GetAccountLedger,
+    get_mpf_fund_quotes_uc: GetMpfFundQuotes,
+    get_mpf_portfolios_uc: GetMpfPortfolios,
+    create_mpf_portfolio_uc: CreateMpfPortfolio,
+    update_mpf_portfolio_uc: UpdateMpfPortfolio,
+    delete_mpf_portfolio_uc: DeleteMpfPortfolio,
+    get_mpf_contributions_uc: GetMpfContributions,
+    record_mpf_contribution_uc: RecordMpfContribution,
+    delete_mpf_contribution_uc: DeleteMpfContribution,
     get_exchange_rates_uc: GetExchangeRates,
     get_money_events_uc: GetMoneyEvents,
     connect_external_entity_uc: ConnectExternalEntity,
@@ -386,6 +428,54 @@ async def register_routes(
     @app.route("/api/v1/transactions", methods=["GET"])
     async def transactions_route():
         return await transactions(get_transactions_uc)
+
+    @app.route("/api/v1/transactions/spending-summary", methods=["GET"])
+    async def spending_summary_route():
+        return await spending_summary(get_spending_summary_uc)
+
+    @app.route("/api/v1/accounts/ledger", methods=["GET"])
+    async def get_account_ledger_route():
+        return await get_account_ledger(get_account_ledger_uc)
+
+    @app.route("/api/v1/mpf/fund-quotes", methods=["GET"])
+    async def get_mpf_fund_quotes_route():
+        return await get_mpf_fund_quotes(get_mpf_fund_quotes_uc)
+
+    @app.route("/api/v1/mpf/portfolios", methods=["GET"])
+    async def get_mpf_portfolios_route():
+        return await get_mpf_portfolios(get_mpf_portfolios_uc)
+
+    @app.route("/api/v1/mpf/portfolios", methods=["POST"])
+    async def create_mpf_portfolio_route():
+        return await create_mpf_portfolio(create_mpf_portfolio_uc)
+
+    @app.route("/api/v1/mpf/portfolios/<portfolio_id>", methods=["PUT"])
+    async def update_mpf_portfolio_route(portfolio_id: str):
+        return await update_mpf_portfolio(update_mpf_portfolio_uc, portfolio_id)
+
+    @app.route("/api/v1/mpf/portfolios/<portfolio_id>", methods=["DELETE"])
+    async def delete_mpf_portfolio_route(portfolio_id: str):
+        return await delete_mpf_portfolio(delete_mpf_portfolio_uc, portfolio_id)
+
+    @app.route(
+        "/api/v1/mpf/portfolios/<portfolio_id>/contributions", methods=["GET"]
+    )
+    async def get_mpf_contributions_route(portfolio_id: str):
+        return await get_mpf_contributions(get_mpf_contributions_uc, portfolio_id)
+
+    @app.route(
+        "/api/v1/mpf/portfolios/<portfolio_id>/contributions", methods=["POST"]
+    )
+    async def record_mpf_contribution_route(portfolio_id: str):
+        return await record_mpf_contribution(
+            record_mpf_contribution_uc, portfolio_id
+        )
+
+    @app.route("/api/v1/mpf/contributions/<contribution_id>", methods=["DELETE"])
+    async def delete_mpf_contribution_route(contribution_id: str):
+        return await delete_mpf_contribution(
+            delete_mpf_contribution_uc, contribution_id
+        )
 
     @app.route("/api/v1/exchange-rates", methods=["GET"])
     async def exchange_rates_route():

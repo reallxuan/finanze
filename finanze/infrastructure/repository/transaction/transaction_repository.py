@@ -62,6 +62,12 @@ def _map_account_row(row) -> AccountTx:
         interest_rate=Dezimal(row["interest_rate"]) if row["interest_rate"] else None,
         avg_balance=Dezimal(row["avg_balance"]) if row["avg_balance"] else None,
         net_amount=Dezimal(row["net_amount"]) if row["net_amount"] else None,
+        category=row["category"]
+        if "category" in row.keys() and row["category"]
+        else None,
+        account_name=row["account_name"]
+        if "account_name" in row.keys() and row["account_name"]
+        else None,
     )
 
 
@@ -360,6 +366,8 @@ class TransactionSQLRepository(TransactionPort):
                         str(tx.avg_balance) if tx.avg_balance else None,
                         str(tx.net_amount) if tx.net_amount else None,
                         str(tx.entity_account_id) if tx.entity_account_id else None,
+                        tx.category,
+                        tx.account_name,
                     ),
                 )
 
@@ -584,6 +592,55 @@ class TransactionSQLRepository(TransactionPort):
                 TransactionQueries.DELETE_BY_ID_ACCOUNT,
                 (str(tx_id),),
             )
+
+    async def get_account_ledger(
+        self, entity_id: UUID, account_name: str
+    ) -> List[AccountTx]:
+        async with self._db_client.read() as cursor:
+            await cursor.execute(
+                TransactionQueries.ACCOUNT_LEDGER_BY_ENTITY_AND_NAME,
+                (str(entity_id), account_name),
+            )
+            return [_map_account_row(row) for row in await cursor.fetchall()]
+
+    async def get_account_tx_summary_rows(
+        self,
+        from_date: Optional[datetime] = None,
+        to_date: Optional[datetime] = None,
+        excluded_entities: Optional[list[UUID]] = None,
+    ) -> List[dict]:
+        params: list = []
+        query = TransactionQueries.SPENDING_SUMMARY_ACCOUNT_ROWS.value
+
+        conditions: list[str] = []
+        if from_date:
+            conditions.append("at.date >= ?")
+            params.append(from_date.isoformat())
+        if to_date:
+            conditions.append("at.date <= ?")
+            params.append(to_date.isoformat())
+        if excluded_entities:
+            placeholders = ", ".join("?" for _ in excluded_entities)
+            conditions.append(f"at.entity_id NOT IN ({placeholders})")
+            params.extend([str(e) for e in excluded_entities])
+
+        if conditions:
+            query += " AND " + " AND ".join(conditions)
+
+        async with self._db_client.read() as cursor:
+            await cursor.execute(query, tuple(params))
+            rows = await cursor.fetchall()
+
+        return [
+            {
+                "type": row["type"],
+                "category": row["category"] if row["category"] else None,
+                "amount": Dezimal(row["amount"]),
+                "currency": row["currency"],
+                "month": row["month"],
+            }
+            for row in rows
+        ]
 
     async def delete_by_entity_account_id(self, entity_account_id: UUID):
         async with self._db_client.tx() as cursor:

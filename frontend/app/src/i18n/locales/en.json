@@ -1112,6 +1112,8 @@
     "welcome": "Welcome to Finanze",
     "summary": "Financial Summary",
     "recentTransactions": "Recent Transactions",
+    "dailyTransactions": "Daily",
+    "investmentTransactions": "Investing",
     "maturity": "Maturity",
     "assetDistribution": "Distribution",
     "assetDistributionByType": "Product",
@@ -1637,6 +1639,9 @@
     "avgBalance": "Avg Balance",
     "interestRate": "Interest Rate",
     "grossAmount": "Gross Amount",
+    "account": "Account",
+    "category": "Category",
+    "balanceAfter": "Balance after",
     "portfolioName": "Portfolio Name",
     "iban": "IBAN",
     "currency": "Currency",
@@ -1686,6 +1691,22 @@
         "positive": "Enter a positive number",
         "nonNegative": "Enter zero or a positive number",
         "invalidNumber": "Enter a valid number"
+      },
+      "quickAdd": {
+        "title": "Quick add",
+        "amountLabel": "Amount",
+        "institutionLabel": "Institution",
+        "accountLabel": "Account",
+        "noAccountsError": "This institution has no accounts yet — add one in Banking first",
+        "dateLabel": "Date",
+        "noteLabel": "Note",
+        "notePlaceholder": "Optional note",
+        "categoryLabel": "Category",
+        "categoryRequired": "Please select a category",
+        "typeExpense": "Expense",
+        "typeIncome": "Income",
+        "typeTransfer": "Transfer",
+        "submit": "Save"
       }
     },
     "deleteManualTransactionTitle": "Delete manual transaction",
@@ -1702,6 +1723,85 @@
       "more": "more",
       "listView": "List",
       "calendarView": "Calendar"
+    }
+  },
+  "spendingAnalysis": {
+    "title": "Spending Analysis",
+    "subtitle": "Track where your money goes",
+    "periodLabel": "Period",
+    "period": {
+      "1m": "1M",
+      "3m": "3M",
+      "6m": "6M",
+      "1y": "1Y",
+      "all": "All"
+    },
+    "summary": {
+      "income": "Income",
+      "expense": "Expense",
+      "net": "Net"
+    },
+    "categoryChart": {
+      "title": "Spending by category",
+      "empty": "No categorized expenses in this period"
+    },
+    "trendChart": {
+      "title": "Monthly trend",
+      "empty": "No data in this period"
+    }
+  },
+  "mpf": {
+    "title": "MPF",
+    "subtitle": "Track your Mandatory Provident Fund contributions and holdings",
+    "newPortfolio": "New MPF portfolio",
+    "empty": "No MPF portfolios yet. Add one to start tracking contributions.",
+    "deletePortfolioConfirm": "Delete this MPF portfolio? This also deletes its contribution history.",
+    "deletePortfolioSuccess": "MPF portfolio deleted",
+    "deletePortfolioError": "Unable to delete MPF portfolio",
+    "create": {
+      "title": "New MPF portfolio",
+      "entityLabel": "Institution",
+      "entityRequired": "Please select an institution",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Sun Life Rainbow MPF Scheme",
+      "nameRequired": "Please enter a name",
+      "submit": "Create",
+      "success": "MPF portfolio created",
+      "error": "Unable to create MPF portfolio"
+    },
+    "allocation": {
+      "title": "Target allocation",
+      "addFund": "Add fund",
+      "total": "Total",
+      "mustSumTo100": "Percentages must add up to 100%",
+      "noFundsAvailable": "Unable to fetch the current fund list. Try again later.",
+      "futureOnlyNote": "Changing this only affects contributions recorded from now on — units already purchased keep the allocation that was active when they were bought.",
+      "updateSuccess": "Target allocation updated",
+      "updateError": "Unable to update target allocation"
+    },
+    "detail": {
+      "totalContributed": "Total contributed",
+      "marketValue": "Market value",
+      "gainLoss": "Gain / loss",
+      "holdingsTitle": "Holdings",
+      "noHoldings": "No holdings yet — record a contribution to get started.",
+      "units": "units",
+      "nav": "NAV"
+    },
+    "contribution": {
+      "title": "Record contribution",
+      "recordButton": "Record contribution",
+      "history": "Contribution history",
+      "noHistory": "No contributions recorded yet.",
+      "amountLabel": "Amount",
+      "dateLabel": "Date",
+      "allocationPreviewLabel": "Will be split using the current target allocation",
+      "submit": "Record",
+      "success": "Contribution recorded",
+      "error": "Unable to record contribution",
+      "deleteConfirm": "Delete this contribution? This cannot be undone.",
+      "deleteSuccess": "Contribution deleted",
+      "deleteError": "Unable to delete contribution"
     }
   },
   "time": {
@@ -1754,7 +1854,21 @@
       "SWITCH_FROM": "F. Switch From",
       "SWITCH_TO": "F. Switch To",
       "INVESTMENT": "Investment",
-      "FEE": "Fee"
+      "FEE": "Fee",
+      "EXPENSE": "Expense",
+      "INCOME": "Income"
+    },
+    "category": {
+      "FOOD": "Food",
+      "TRANSPORT": "Transport",
+      "SHOPPING": "Shopping",
+      "HOUSING": "Housing",
+      "ENTERTAINMENT": "Entertainment",
+      "HEALTH": "Health",
+      "EDUCATION": "Education",
+      "UTILITIES": "Utilities",
+      "TRAVEL": "Travel",
+      "OTHER": "Other"
     },
     "productType": {
       "ACCOUNT": "Account",

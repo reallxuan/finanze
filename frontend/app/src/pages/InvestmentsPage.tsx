@@ -12,7 +12,7 @@ import { EntityStatus, EntityType } from "@/types"
 import { PinAssetButton } from "@/components/ui/PinAssetButton"
 import { usePinnedShortcuts } from "@/context/PinnedShortcutsContext"
 import { getEntitiesWithProductType } from "@/utils/financialDataUtils"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw, Landmark } from "lucide-react"
 
 export default function InvestmentsPage() {
   const { t } = useI18n()
@@ -206,6 +206,19 @@ export default function InvestmentsPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <Card
+          className="transition-all cursor-pointer relative group overflow-hidden hover:shadow-lg"
+          onClick={() => navigate("/mpf")}
+        >
+          <div className="flex items-center justify-center px-4 py-6 bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-200">
+            <Landmark className="h-8 w-8" />
+          </div>
+          <div className="flex items-center justify-center px-1 py-2.5 bg-card text-card-foreground">
+            <h3 className="text-base font-semibold text-center">
+              {t.mpf.title}
+            </h3>
+          </div>
+        </Card>
         {sortedRoutes.map(route => (
           <Card
             key={route.path}

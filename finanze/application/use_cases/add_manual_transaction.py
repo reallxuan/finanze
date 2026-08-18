@@ -10,8 +10,16 @@ from application.use_cases.manual_transaction_common import (
     ManualTransactionVirtualImportHelper,
 )
 from domain.exception.exceptions import EntityNotFound
-from domain.transactions import AccountTx, BaseInvestmentTx, BaseTx, Transactions
+from domain.fetch_record import DataSource
+from domain.transactions import (
+    AccountTx,
+    BaseInvestmentTx,
+    BaseTx,
+    Transactions,
+    account_tx_signed_amount,
+)
 from domain.use_cases.add_manual_transaction import AddManualTransaction
+from domain.use_cases.adjust_account_balance import AdjustAccountBalance
 
 from typing import Optional
 
@@ -24,11 +32,13 @@ class AddManualTransactionImpl(AddManualTransaction, AtomicUCMixin):
         virtual_import_registry: VirtualImportRegistry,
         transaction_handler_port: TransactionHandlerPort,
         historic_port: HistoricPort,
+        adjust_account_balance: AdjustAccountBalance,
     ):
         AtomicUCMixin.__init__(self, transaction_handler_port)
         self._entity_port = entity_port
         self._transaction_port = transaction_port
         self._historic_port = historic_port
+        self._adjust_account_balance = adjust_account_balance
         self._helper = ManualTransactionVirtualImportHelper(virtual_import_registry)
 
     async def execute(
@@ -49,6 +59,12 @@ class AddManualTransactionImpl(AddManualTransaction, AtomicUCMixin):
                     "ACCOUNT product_type requires AccountTx data structure"
                 )
             await self._transaction_port.save(Transactions(account=[tx]))
+            if tx.source == DataSource.MANUAL and tx.account_name:
+                await self._adjust_account_balance.execute(
+                    tx.entity.id,
+                    tx.account_name,
+                    account_tx_signed_amount(tx.type, tx.amount),
+                )
         else:
             if not isinstance(tx, BaseInvestmentTx):
                 raise ValueError(
