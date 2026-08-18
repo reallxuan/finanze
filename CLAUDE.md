@@ -10,6 +10,23 @@ This repo is a personal fork of [finanze/finanze](https://github.com/finanze/fin
 - All feature/fix work happens on a `feat/xxx` branch, branched **from `main`** (not from `develop`).
 - Every merge into `develop` or `main` — no exceptions — must be a **non-fast-forward merge** (`git merge --no-ff`, or the "Create a merge commit" option on GitHub, not "Squash and merge" or "Rebase and merge"). This keeps each feature's history as a distinguishable merge bubble instead of flattening everything into a linear log.
 
+## Do not do interactive browser/UI testing
+
+**Never drive the app yourself through a browser or emulator to verify a fix** (clicking through forms, taking screenshots to "confirm" behavior, etc.). The user does this testing themselves. When a fix needs live verification: start the relevant dev server(s) (see below) and hand the user the URL — don't click through the UI first "just to check." Static verification (typecheck, lint, reading the code path, matching an existing proven pattern elsewhere in the codebase) is fine and expected; driving the UI is not.
+
+To start a browser-testable (non-Electron) web frontend against a local backend:
+
+```bash
+# from repo root, with a venv that has requirements.txt installed
+./venv/bin/python ./finanze --port <port> --data-dir .storage --log-dir .storage/logs --log-level DEBUG --third-party-log-level DEBUG
+
+# from frontend/app, in a separate terminal — --mode mobile skips the Electron plugin
+# so `pnpm dev`/`vite --host` doesn't try to launch a desktop Electron window
+VITE_BASE_URL=http://localhost:<port> pnpm exec vite --host --port <other-port> --mode mobile
+```
+
+Check `lsof -i :<port>` first — other sessions/worktrees may already have a backend running on the default 7592; use a different port rather than fighting over one, and don't kill a process you didn't start without checking whose it is first.
+
 ## Building an Android debug APK
 
 From `frontend/app`, in order:
