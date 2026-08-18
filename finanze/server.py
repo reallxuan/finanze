@@ -10,6 +10,7 @@ import domain.native_entities
 from application.use_cases.add_entity_credentials import AddEntityCredentialsImpl
 from application.use_cases.cancel_entity_login import CancelEntityLoginImpl
 from application.use_cases.add_manual_transaction import AddManualTransactionImpl
+from application.use_cases.adjust_account_balance import AdjustAccountBalanceImpl
 from application.use_cases.calculate_loan import CalculateLoanImpl
 from application.use_cases.calculate_savings import CalculateSavingsImpl
 from application.use_cases.change_user_password import ChangeUserPasswordImpl
@@ -82,6 +83,18 @@ from application.use_cases.get_settings import GetSettingsImpl
 from application.use_cases.get_status import GetStatusImpl
 from application.use_cases.get_template_fields import GetTemplateFieldsImpl
 from application.use_cases.get_templates import GetTemplatesImpl
+from application.use_cases.get_account_ledger import GetAccountLedgerImpl
+from application.use_cases.get_mpf_fund_quotes import GetMpfFundQuotesImpl
+from application.use_cases.create_mpf_portfolio import CreateMpfPortfolioImpl
+from application.use_cases.update_mpf_portfolio import UpdateMpfPortfolioImpl
+from application.use_cases.delete_mpf_portfolio import DeleteMpfPortfolioImpl
+from application.use_cases.get_mpf_portfolios import GetMpfPortfoliosImpl
+from application.use_cases.record_mpf_contribution import RecordMpfContributionImpl
+from application.use_cases.delete_mpf_contribution import DeleteMpfContributionImpl
+from application.use_cases.get_mpf_contributions import GetMpfContributionsImpl
+from infrastructure.repository.mpf.mpf_repository import MpfSQLRepository
+from infrastructure.client.mpf.sun_life_mpf_client import SunLifeMpfClient
+from application.use_cases.get_spending_summary import GetSpendingSummaryImpl
 from application.use_cases.get_transactions import GetTransactionsImpl
 from application.use_cases.handle_cloud_auth import HandleCloudAuthImpl
 from application.use_cases.import_backup import ImportBackupImpl
@@ -594,6 +607,31 @@ class FinanzeServer:
         get_transactions = GetTransactionsImpl(
             transaction_repository, entity_repository
         )
+        get_spending_summary = GetSpendingSummaryImpl(
+            transaction_repository, entity_repository
+        )
+        get_account_ledger = GetAccountLedgerImpl(
+            entity_port=entity_repository,
+            position_port=position_repository,
+            transaction_port=transaction_repository,
+            virtual_import_registry=virtual_import_registry,
+        )
+        mpf_repository = MpfSQLRepository(client=db_client)
+        sun_life_mpf_client = SunLifeMpfClient()
+        get_mpf_fund_quotes = GetMpfFundQuotesImpl(sun_life_mpf_client)
+        create_mpf_portfolio = CreateMpfPortfolioImpl(
+            entity_port=entity_repository, mpf_port=mpf_repository
+        )
+        update_mpf_portfolio = UpdateMpfPortfolioImpl(mpf_port=mpf_repository)
+        delete_mpf_portfolio = DeleteMpfPortfolioImpl(mpf_port=mpf_repository)
+        get_mpf_portfolios = GetMpfPortfoliosImpl(
+            mpf_port=mpf_repository, sun_life_mpf_client=sun_life_mpf_client
+        )
+        get_mpf_contributions = GetMpfContributionsImpl(mpf_port=mpf_repository)
+        record_mpf_contribution = RecordMpfContributionImpl(
+            mpf_port=mpf_repository, sun_life_mpf_client=sun_life_mpf_client
+        )
+        delete_mpf_contribution = DeleteMpfContributionImpl(mpf_port=mpf_repository)
         market_forecast_provider = polymarket_fetcher
         get_market_forecast_pnl = GetMarketForecastPnlImpl(
             entity_account_repository,
@@ -747,6 +785,12 @@ class FinanzeServer:
             transaction_port=transaction_repository,
             virtual_import_registry=virtual_import_registry,
         )
+        adjust_account_balance = AdjustAccountBalanceImpl(
+            entity_port=entity_repository,
+            position_port=position_repository,
+            virtual_import_registry=virtual_import_registry,
+            snapshot_writer=manual_position_snapshot_writer,
+        )
         update_position = UpdatePositionImpl(
             entity_port=entity_repository,
             position_port=position_repository,
@@ -770,17 +814,20 @@ class FinanzeServer:
             virtual_import_registry=virtual_import_registry,
             transaction_handler_port=transaction_handler,
             historic_port=historic_repository,
+            adjust_account_balance=adjust_account_balance,
         )
         update_manual_transaction = UpdateManualTransactionImpl(
             entity_port=entity_repository,
             transaction_port=transaction_repository,
             virtual_import_registry=virtual_import_registry,
             transaction_handler_port=transaction_handler,
+            adjust_account_balance=adjust_account_balance,
         )
         delete_manual_transaction = DeleteManualTransactionImpl(
             transaction_port=transaction_repository,
             virtual_import_registry=virtual_import_registry,
             transaction_handler_port=transaction_handler,
+            adjust_account_balance=adjust_account_balance,
         )
         settle_manual_investment = SettleManualInvestmentImpl(
             entity_port=entity_repository,
@@ -926,6 +973,16 @@ class FinanzeServer:
             get_historic,
             get_networth_timeline,
             get_transactions,
+            get_spending_summary,
+            get_account_ledger,
+            get_mpf_fund_quotes,
+            get_mpf_portfolios,
+            create_mpf_portfolio,
+            update_mpf_portfolio,
+            delete_mpf_portfolio,
+            get_mpf_contributions,
+            record_mpf_contribution,
+            delete_mpf_contribution,
             get_exchange_rates,
             get_money_events,
             connect_external_entity,

@@ -28,6 +28,9 @@ import {
   Settings,
   LucideIcon,
   Calculator,
+  Plus,
+  PieChart,
+  MoreHorizontal,
 } from "lucide-react"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/Button"
@@ -45,6 +48,7 @@ import {
 } from "@/context/PinnedShortcutsContext"
 import { BackupStatusPopover } from "@/components/layout/BackupStatusPopover"
 import { getPlatformType, isNativeMobile } from "@/lib/platform"
+import { useQuickAdd } from "@/context/QuickAddContext"
 
 export function Sidebar() {
   const { t } = useI18n()
@@ -53,6 +57,7 @@ export function Sidebar() {
   const { positionsData, realEstateList } = useFinancialData()
   const { pinnedShortcuts } = usePinnedShortcuts()
   const { role, permissions } = useCloud()
+  const { openQuickAdd } = useQuickAdd()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -260,14 +265,9 @@ export function Sidebar() {
       icon: <ArrowLeftRight size={20} />,
     },
     {
-      path: "/calculations",
-      label: t.calculations.title,
-      icon: <Calculator size={20} />,
-    },
-    {
-      path: "/entities",
-      label: t.common.entities,
-      icon: <Blocks size={20} />,
+      path: "/spending-analysis",
+      label: t.spendingAnalysis.title,
+      icon: <PieChart size={20} />,
     },
     { path: "/export", label: t.export.title, icon: <FileUp size={20} /> },
   ]
@@ -352,6 +352,20 @@ export function Sidebar() {
             className={collapsed ? "mx-auto" : "ml-auto"}
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </Button>
+        </div>
+
+        <div className="px-3 pt-3">
+          <Button
+            variant="default"
+            className={cn("w-full", collapsed ? "justify-center px-0" : "justify-start")}
+            onClick={openQuickAdd}
+            aria-label={t.transactions.form.quickAdd.title}
+          >
+            <Plus size={18} />
+            {!collapsed && (
+              <span className="ml-2">{t.transactions.form.quickAdd.title}</span>
+            )}
           </Button>
         </div>
 
@@ -715,6 +729,40 @@ export function Sidebar() {
                     </div>
                   </PopoverContent>
                 </Popover>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex-1"
+                      size="sm"
+                      aria-label={t.common.more}
+                    >
+                      <MoreHorizontal size={18} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="top" className="p-1 w-auto">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start"
+                        onClick={() => navigate("/calculations")}
+                      >
+                        <Calculator size={16} className="mr-2" />
+                        {t.calculations.title}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start"
+                        onClick={() => navigate("/entities")}
+                      >
+                        <Blocks size={16} className="mr-2" />
+                        {t.common.entities}
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           ) : (
@@ -805,6 +853,40 @@ export function Sidebar() {
                     >
                       <LogOut size={18} className="mr-2" />
                       {t.common.logout}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-full"
+                    aria-label={t.common.more}
+                  >
+                    <MoreHorizontal size={18} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="right" className="p-1 w-auto">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => navigate("/calculations")}
+                    >
+                      <Calculator size={18} className="mr-2" />
+                      {t.calculations.title}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => navigate("/entities")}
+                    >
+                      <Blocks size={18} className="mr-2" />
+                      {t.common.entities}
                     </Button>
                   </div>
                 </PopoverContent>

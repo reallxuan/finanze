@@ -2,7 +2,9 @@ import type React from "react"
 import { useRef, useState, useEffect } from "react"
 import { Sidebar } from "./Sidebar"
 import { FloatingBottomNav } from "./FloatingBottomNav"
+import { FloatingActionButton } from "./FloatingActionButton"
 import { Toast } from "@/components/ui/Toast"
+import { QuickAddProvider } from "@/context/QuickAddContext"
 import { useAppContext } from "@/context/AppContext"
 import { motion, AnimatePresence } from "framer-motion"
 import { PlatformType } from "@/types"
@@ -145,6 +147,7 @@ function LayoutContent({ children }: LayoutProps) {
           </SwipeBackGesture>
         </main>
         {isNarrowView && <FloatingBottomNav />}
+        {isNarrowView && <FloatingActionButton />}
         {isNarrowView && <StatusBarBlur />}
       </div>
 
@@ -188,7 +191,9 @@ function LayoutContent({ children }: LayoutProps) {
 export function Layout({ children }: LayoutProps) {
   return (
     <LayoutScrollProvider>
-      <LayoutContent>{children}</LayoutContent>
+      <QuickAddProvider>
+        <LayoutContent>{children}</LayoutContent>
+      </QuickAddProvider>
     </LayoutScrollProvider>
   )
 }

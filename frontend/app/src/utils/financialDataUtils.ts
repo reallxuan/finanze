@@ -520,6 +520,7 @@ export const getTransactionDisplayType = (txType: TxType): "in" | "out" => {
       TxType.SWITCH_TO,
       TxType.TRANSFER_IN,
       TxType.FEE,
+      TxType.EXPENSE,
     ].includes(txType)
   ) {
     return "out"

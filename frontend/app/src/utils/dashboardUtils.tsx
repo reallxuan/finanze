@@ -26,9 +26,21 @@ import {
   FlaskConical,
   ChartCandlestick,
   TrendingUpDown,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Utensils,
+  Car,
+  ShoppingBag,
+  Film,
+  HeartPulse,
+  GraduationCap,
+  Zap,
+  Plane,
+  Package,
 } from "lucide-react"
 import { TxType } from "@/types/transactions"
 import { AccountType, ProductType } from "@/types/position"
+import { SpendCategory } from "@/constants/categories"
 import { JSX } from "react"
 
 export const ASSET_TYPE_TO_COLOR_MAP: Record<string, string> = {
@@ -236,6 +248,10 @@ export const getIconForTxType = (txType: TxType, size: string = "h-4 w-4") => {
       return <Undo className={iconClass} />
     case TxType.FEE:
       return <FileMinus className={iconClass} />
+    case TxType.EXPENSE:
+      return <ArrowUpCircle className={iconClass} />
+    case TxType.INCOME:
+      return <ArrowDownCircle className={iconClass} />
     default:
       return <DollarSign className={iconClass} />
   }
@@ -307,5 +323,59 @@ export const getAccountTypeColor = (type: AccountType) => {
       return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
     default:
       return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+  }
+}
+
+export const getCategoryIcon = (
+  category: SpendCategory | string,
+  size: string = "h-4 w-4",
+) => {
+  const iconClass = size
+  switch (category) {
+    case SpendCategory.FOOD:
+      return <Utensils className={iconClass} />
+    case SpendCategory.TRANSPORT:
+      return <Car className={iconClass} />
+    case SpendCategory.SHOPPING:
+      return <ShoppingBag className={iconClass} />
+    case SpendCategory.HOUSING:
+      return <Home className={iconClass} />
+    case SpendCategory.ENTERTAINMENT:
+      return <Film className={iconClass} />
+    case SpendCategory.HEALTH:
+      return <HeartPulse className={iconClass} />
+    case SpendCategory.EDUCATION:
+      return <GraduationCap className={iconClass} />
+    case SpendCategory.UTILITIES:
+      return <Zap className={iconClass} />
+    case SpendCategory.TRAVEL:
+      return <Plane className={iconClass} />
+    default:
+      return <Package className={iconClass} />
+  }
+}
+
+export const getCategoryColor = (category: SpendCategory | string): string => {
+  switch (category) {
+    case SpendCategory.FOOD:
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
+    case SpendCategory.TRANSPORT:
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+    case SpendCategory.SHOPPING:
+      return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100"
+    case SpendCategory.HOUSING:
+      return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+    case SpendCategory.ENTERTAINMENT:
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100"
+    case SpendCategory.HEALTH:
+      return "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-100"
+    case SpendCategory.EDUCATION:
+      return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100"
+    case SpendCategory.UTILITIES:
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+    case SpendCategory.TRAVEL:
+      return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100"
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
   }
 }

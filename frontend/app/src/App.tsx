@@ -13,6 +13,7 @@ import RealEstateCFInvestmentPage from "./pages/RealEstateCFInvestmentPage"
 import CryptoInvestmentPage from "./pages/CryptoInvestmentPage"
 import CommoditiesInvestmentPage from "./pages/CommoditiesInvestmentPage"
 import InvestmentsPage from "./pages/InvestmentsPage"
+import MpfPage from "./pages/MpfPage"
 import BankingPage from "./pages/BankingPage"
 import RealEstatePage from "./pages/RealEstatePage"
 import RealEstateDetailsPage from "./pages/RealEstateDetailsPage"
@@ -22,6 +23,7 @@ import PendingMoneyPage from "./pages/PendingMoneyPage"
 import AutoContributionsPage from "./pages/AutoContributionsPage"
 import ManagementPage from "./pages/ManagementPage"
 import CalculationsPage from "./pages/CalculationsPage"
+import SpendingAnalysisPage from "./pages/SpendingAnalysisPage"
 import { useAuth } from "./context/AuthContext"
 import SplashScreen from "./components/SplashScreen"
 import { FinancialDataProvider } from "./context/FinancialDataContext"
@@ -145,6 +147,7 @@ function App() {
               <Route path="/entities" element={<ManualEntitiesPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/investments" element={<InvestmentsPage />} />
+              <Route path="/mpf" element={<MpfPage />} />
               <Route
                 path="/investments/stocks-etfs"
                 element={<StocksInvestmentPage />}
@@ -187,6 +190,10 @@ function App() {
                 element={<AutoContributionsPage />}
               />
               <Route path="/calculations" element={<CalculationsPage />} />
+              <Route
+                path="/spending-analysis"
+                element={<SpendingAnalysisPage />}
+              />
               <Route path="/export" element={<ExportPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
