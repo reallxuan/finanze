@@ -4,6 +4,12 @@
 
 This repo is a personal fork of [finanze/finanze](https://github.com/finanze/finanze) that has diverged significantly from upstream — see the notice at the top of [README.md](README.md). Key differences: all automated bank/broker/crypto-exchange login and scraping was removed in favor of manual-entities-only (commit `c0e2108`), default currency is HKD, and Chinese localization was added. Don't assume upstream docs, issues, or entity-integration behavior still apply here.
 
+## Git workflow
+
+- `main` is the stable/release branch. `develop` is the integration branch and **may be force-pushed** — it's expected to be unstable, don't treat its history as durable.
+- All feature/fix work happens on a `feat/xxx` branch, branched **from `main`** (not from `develop`).
+- Every merge into `develop` or `main` — no exceptions — must be a **non-fast-forward merge** (`git merge --no-ff`, or the "Create a merge commit" option on GitHub, not "Squash and merge" or "Rebase and merge"). This keeps each feature's history as a distinguishable merge bubble instead of flattening everything into a linear log.
+
 ## Building an Android debug APK
 
 From `frontend/app`, in order:
