@@ -7,8 +7,13 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+const REPO_ROOT = spawnSync("git", ["rev-parse", "--show-toplevel"], {
+  cwd: __dirname,
+  encoding: "utf-8",
+}).stdout.trim()
+
 // Configuration
-const SOURCE_ROOT = path.resolve(__dirname, "../../../../finanze/finanze")
+const SOURCE_ROOT = path.resolve(REPO_ROOT, "finanze")
 const CUSTOM_PYTHON_ROOT = path.resolve(__dirname, "../src/python")
 const DIST_PYODIDE_ROOT = path.resolve(__dirname, "../dist-pyodide")
 const WHEELS_ROOT = path.resolve(DIST_PYODIDE_ROOT, "wheels")
