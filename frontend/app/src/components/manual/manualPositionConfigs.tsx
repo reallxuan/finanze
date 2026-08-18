@@ -3089,6 +3089,7 @@ const manualPositionConfigs: ManualPositionConfigMap = {
     },
     validateForm: (form, { t }) => {
       const errors: ManualFormErrors<typeof form> = {}
+      if (!form.name.trim()) errors.name = requiredField(t)
       if (!form.type) errors.type = requiredField(t)
       if (!form.currency) errors.currency = requiredField(t)
       const total = parseNumberInput(form.total)

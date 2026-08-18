@@ -1698,6 +1698,7 @@
         "institutionLabel": "Institution",
         "accountLabel": "Account",
         "noAccountsError": "This institution has no accounts yet — add one in Banking first",
+        "noNamedAccountsError": "This institution's account(s) don't have a name yet — set one for the account in Banking first",
         "dateLabel": "Date",
         "noteLabel": "Note",
         "notePlaceholder": "Optional note",

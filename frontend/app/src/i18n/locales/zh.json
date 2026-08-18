@@ -677,6 +677,7 @@
         "institutionLabel": "机构",
         "accountLabel": "账户",
         "noAccountsError": "该机构还没有账户，请先在“机构”页面添加一个账户",
+        "noNamedAccountsError": "该机构下的账户还没有设置名称，请先在“机构”页面为账户设置一个名称",
         "dateLabel": "日期",
         "noteLabel": "备注",
         "notePlaceholder": "选填备注",
@@ -2111,7 +2112,7 @@
   "cardTypes": { "CREDIT": "信用卡", "DEBIT": "借记卡" },
   "loanTypes": { "MORTGAGE": "按揭贷款", "STANDARD": "个人贷款" },
   "accountTypes": {
-    "CHECKING": "支票账户",
+    "CHECKING": "活期账户",
     "SAVINGS": "储蓄账户",
     "BROKERAGE": "证券账户",
     "VIRTUAL_WALLET": "钱包",
