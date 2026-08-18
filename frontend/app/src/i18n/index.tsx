@@ -6,11 +6,9 @@ import {
   useState,
 } from "react"
 import enTranslations from "./locales/en.json"
-import esTranslationsRaw from "./locales/es.json"
-import itTranslationsRaw from "./locales/it.json"
 import zhTranslationsRaw from "./locales/zh.json"
 
-export type Locale = "en-US" | "es-ES" | "it-IT" | "zh-CN"
+export type Locale = "en-US" | "zh-CN"
 export type Translations = typeof enTranslations
 
 const mergeTranslations = (base: unknown, override: unknown): unknown => {
@@ -40,21 +38,13 @@ const mergeTranslations = (base: unknown, override: unknown): unknown => {
 
 const translations: Record<Locale, Translations> = {
   "en-US": enTranslations,
-  "es-ES": mergeTranslations(
-    enTranslations,
-    esTranslationsRaw,
-  ) as Translations,
-  "it-IT": mergeTranslations(
-    enTranslations,
-    itTranslationsRaw,
-  ) as Translations,
   "zh-CN": mergeTranslations(
     enTranslations,
     zhTranslationsRaw,
   ) as Translations,
 }
 
-const VALID_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT", "zh-CN"]
+const VALID_LOCALES: Locale[] = ["en-US", "zh-CN"]
 
 interface I18nContextType {
   locale: Locale
