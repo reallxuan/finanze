@@ -1661,6 +1661,7 @@
         "institutionLabel": "Istituto",
         "accountLabel": "Conto",
         "noAccountsError": "Questo istituto non ha ancora conti: aggiungine uno in Banking",
+        "noNamedAccountsError": "I conti di questo istituto non hanno ancora un nome: impostane uno per il conto in Banking",
         "dateLabel": "Data",
         "noteLabel": "Nota",
         "notePlaceholder": "Nota facoltativa",
