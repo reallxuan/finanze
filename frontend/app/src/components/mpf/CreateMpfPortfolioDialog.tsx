@@ -43,6 +43,7 @@ export function CreateMpfPortfolioDialog({
   const [loadingFunds, setLoadingFunds] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmedSunLife, setConfirmedSunLife] = useState(false)
 
   const institutionEntities = useMemo(
     () =>
@@ -67,10 +68,16 @@ export function CreateMpfPortfolioDialog({
     setCurrency("HKD")
     setAllocation([])
     setError(null)
+    setConfirmedSunLife(false)
   }
 
   const handleClose = () => {
     if (isSubmitting) return
+    resetForm()
+    onClose()
+  }
+
+  const handleDeclineSunLife = () => {
     resetForm()
     onClose()
   }
@@ -143,6 +150,30 @@ export function CreateMpfPortfolioDialog({
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
+              {!confirmedSunLife ? (
+                <>
+                  <CardContent className="space-y-4 flex-1 overflow-y-auto">
+                    <p className="text-sm text-muted-foreground">
+                      {t.mpf.create.confirmSunLifeMessage}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleDeclineSunLife}
+                    >
+                      {t.mpf.create.confirmSunLifeNo}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setConfirmedSunLife(true)}
+                    >
+                      {t.mpf.create.confirmSunLifeYes}
+                    </Button>
+                  </CardFooter>
+                </>
+              ) : (
               <form
                 onSubmit={handleSubmit}
                 className="flex flex-1 flex-col overflow-hidden"
@@ -209,6 +240,7 @@ export function CreateMpfPortfolioDialog({
                   </Button>
                 </CardFooter>
               </form>
+              )}
             </Card>
           </motion.div>
         </motion.div>

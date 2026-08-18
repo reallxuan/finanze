@@ -740,6 +740,9 @@
     "deletePortfolioError": "无法删除强积金账户",
     "create": {
       "title": "新建强积金账户",
+      "confirmSunLifeMessage": "目前只支持永明（Sun Life）强积金计划的基金数据，其他受托人的基金净值暂不支持。是否继续创建永明强积金账户？",
+      "confirmSunLifeYes": "是，继续",
+      "confirmSunLifeNo": "否，退出",
       "entityLabel": "受托人机构",
       "entityRequired": "请选择一个机构",
       "nameLabel": "名称",
