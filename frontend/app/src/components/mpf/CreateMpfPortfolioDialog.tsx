@@ -13,10 +13,14 @@ import {
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
-import { EntitySelector } from "@/components/EntitySelector"
 import { MpfAllocationEditor } from "@/components/mpf/MpfAllocationEditor"
 import { EntityType } from "@/types"
-import { getMpfFundQuotes, createMpfPortfolio } from "@/services/api"
+import {
+  getMpfFundQuotes,
+  createMpfPortfolio,
+  createManualEntity,
+  getEntities,
+} from "@/services/api"
 import type { MpfAllocationTarget, MpfFundQuote } from "@/types/mpf"
 
 interface CreateMpfPortfolioDialogProps {
@@ -26,6 +30,7 @@ interface CreateMpfPortfolioDialogProps {
 }
 
 const DEFAULT_SCHEME = "MPF"
+const SUN_LIFE_ENTITY_NAME = "Sun Life"
 
 export function CreateMpfPortfolioDialog({
   isOpen,
@@ -33,7 +38,7 @@ export function CreateMpfPortfolioDialog({
   onCreated,
 }: CreateMpfPortfolioDialogProps) {
   const { t, locale } = useI18n()
-  const { entities, showToast } = useAppContext()
+  const { entities, showToast, fetchEntities } = useAppContext()
 
   const [name, setName] = useState("")
   const [entityId, setEntityId] = useState("")
@@ -42,6 +47,7 @@ export function CreateMpfPortfolioDialog({
   const [funds, setFunds] = useState<MpfFundQuote[]>([])
   const [loadingFunds, setLoadingFunds] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResolvingEntity, setIsResolvingEntity] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [confirmedSunLife, setConfirmedSunLife] = useState(false)
 
@@ -80,6 +86,43 @@ export function CreateMpfPortfolioDialog({
   const handleDeclineSunLife = () => {
     resetForm()
     onClose()
+  }
+
+  const handleConfirmSunLife = async () => {
+    setIsResolvingEntity(true)
+    setError(null)
+    try {
+      const matches = (candidate: { name: string; type: EntityType }) =>
+        candidate.type === EntityType.FINANCIAL_INSTITUTION &&
+        candidate.name.trim().toLowerCase() ===
+          SUN_LIFE_ENTITY_NAME.toLowerCase()
+
+      let sunLifeEntity = institutionEntities.find(matches)
+
+      if (!sunLifeEntity) {
+        try {
+          await createManualEntity(SUN_LIFE_ENTITY_NAME)
+        } catch (err) {
+          const code = (err as { data?: { code?: string } })?.data?.code
+          if (code !== "ENTITY_NAME_EXISTS") throw err
+        }
+        const refreshed = await getEntities()
+        sunLifeEntity = refreshed.entities.find(matches)
+        await fetchEntities()
+      }
+
+      if (!sunLifeEntity) {
+        throw new Error("Could not resolve Sun Life institution")
+      }
+
+      setEntityId(sunLifeEntity.id)
+      setConfirmedSunLife(true)
+    } catch (err) {
+      console.error("Error resolving Sun Life institution:", err)
+      showToast(t.mpf.create.error, "error")
+    } finally {
+      setIsResolvingEntity(false)
+    }
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -162,12 +205,14 @@ export function CreateMpfPortfolioDialog({
                       type="button"
                       variant="ghost"
                       onClick={handleDeclineSunLife}
+                      disabled={isResolvingEntity}
                     >
                       {t.mpf.create.confirmSunLifeNo}
                     </Button>
                     <Button
                       type="button"
-                      onClick={() => setConfirmedSunLife(true)}
+                      onClick={handleConfirmSunLife}
+                      disabled={isResolvingEntity}
                     >
                       {t.mpf.create.confirmSunLifeYes}
                     </Button>
@@ -181,14 +226,7 @@ export function CreateMpfPortfolioDialog({
                 <CardContent className="space-y-4 flex-1 overflow-y-auto">
                   <div className="space-y-1.5">
                     <Label>{t.mpf.create.entityLabel}</Label>
-                    <EntitySelector
-                      entities={institutionEntities}
-                      selectedEntityIds={entityId ? [entityId] : []}
-                      onSelectionChange={ids => setEntityId(ids[0] ?? "")}
-                      singleSelect
-                      placeholder={t.common.selectOptions}
-                      className="max-w-none"
-                    />
+                    <p className="text-sm">{SUN_LIFE_ENTITY_NAME}</p>
                   </div>
 
                   <div className="space-y-1.5">
