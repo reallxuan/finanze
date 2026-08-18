@@ -643,8 +643,6 @@
     "biometricCredentialsClearError": "Failed to disable biometric login",
     "applicationLanguageOptions": {
       "en-US": "English",
-      "es-ES": "Spanish",
-      "it-IT": "Italian",
       "zh-CN": "Chinese"
     },
     "defaultCurrency": "Main Currency",
