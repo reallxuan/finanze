@@ -1665,6 +1665,7 @@
         "institutionLabel": "Entidad",
         "accountLabel": "Cuenta",
         "noAccountsError": "Esta entidad aún no tiene cuentas; añade una primero en Banca",
+        "noNamedAccountsError": "La(s) cuenta(s) de esta entidad aún no tienen nombre; ponle uno a la cuenta en Banca primero",
         "dateLabel": "Fecha",
         "noteLabel": "Nota",
         "notePlaceholder": "Nota opcional",

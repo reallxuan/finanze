@@ -78,17 +78,28 @@ export function QuickAddTransactionDialog({
       .sort((a, b) => a.name.localeCompare(b.name, locale, { sensitivity: "base" }))
   }, [entities, locale])
 
-  const entityAccounts = useMemo<Account[]>(() => {
+  const rawEntityAccounts = useMemo<Account[]>(() => {
     if (!entityId || !positionsData?.positions) return []
     const globalPositions = positionsData.positions[entityId] ?? []
-    const accounts = globalPositions.flatMap(gp => {
+    return globalPositions.flatMap(gp => {
       const container = gp.products?.[ProductType.ACCOUNT] as
         | { entries?: Account[] }
         | undefined
       return container?.entries ?? []
     })
-    return accounts.filter(account => Boolean(account.name))
   }, [entityId, positionsData])
+
+  const entityAccounts = useMemo<Account[]>(
+    () => rawEntityAccounts.filter(account => Boolean(account.name)),
+    [rawEntityAccounts],
+  )
+
+  // Quick Add identifies accounts by name (the backend matches manual
+  // transactions to an account by exact name), so accounts without a name
+  // can't be targeted here even though they exist — distinguish that case
+  // from "no accounts at all" so the message tells the user what to do.
+  const hasUnnamedAccounts =
+    rawEntityAccounts.length > 0 && entityAccounts.length === 0
 
   const handleEntityChange = (nextEntityId: string) => {
     setEntityId(nextEntityId)
@@ -152,7 +163,9 @@ export function QuickAddTransactionDialog({
     if (entityId && !accountName) {
       next.accountName = entityAccounts.length
         ? t.transactions.form.errors.required
-        : t.transactions.form.quickAdd.noAccountsError
+        : hasUnnamedAccounts
+          ? t.transactions.form.quickAdd.noNamedAccountsError
+          : t.transactions.form.quickAdd.noAccountsError
     }
     if (amount == null || amount <= 0) {
       next.amount = t.transactions.form.errors.positive
@@ -316,7 +329,9 @@ export function QuickAddTransactionDialog({
                       <Label>{t.transactions.form.quickAdd.accountLabel}</Label>
                       {entityAccounts.length === 0 ? (
                         <p className="text-xs text-amber-600 dark:text-amber-400">
-                          {t.transactions.form.quickAdd.noAccountsError}
+                          {hasUnnamedAccounts
+                            ? t.transactions.form.quickAdd.noNamedAccountsError
+                            : t.transactions.form.quickAdd.noAccountsError}
                         </p>
                       ) : (
                         <select
