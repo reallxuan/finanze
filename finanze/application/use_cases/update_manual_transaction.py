@@ -8,7 +8,14 @@ from application.use_cases.manual_transaction_common import (
 )
 from domain.exception.exceptions import EntityNotFound, TransactionNotFound
 from domain.fetch_record import DataSource
-from domain.transactions import AccountTx, BaseInvestmentTx, BaseTx, Transactions
+from domain.transactions import (
+    AccountTx,
+    BaseInvestmentTx,
+    BaseTx,
+    Transactions,
+    account_tx_signed_amount,
+)
+from domain.use_cases.adjust_account_balance import AdjustAccountBalance
 from domain.use_cases.update_manual_transaction import UpdateManualTransaction
 
 
@@ -19,10 +26,12 @@ class UpdateManualTransactionImpl(UpdateManualTransaction, AtomicUCMixin):
         transaction_port: TransactionPort,
         virtual_import_registry: VirtualImportRegistry,
         transaction_handler_port: TransactionHandlerPort,
+        adjust_account_balance: AdjustAccountBalance,
     ):
         AtomicUCMixin.__init__(self, transaction_handler_port)
         self._entity_port = entity_port
         self._transaction_port = transaction_port
+        self._adjust_account_balance = adjust_account_balance
         self._helper = ManualTransactionVirtualImportHelper(virtual_import_registry)
 
     async def execute(self, tx: BaseTx):
@@ -46,6 +55,17 @@ class UpdateManualTransactionImpl(UpdateManualTransaction, AtomicUCMixin):
 
         tx = self._helper.update_derived_fields(tx)
 
+        if (
+            isinstance(existing, AccountTx)
+            and existing.account_name
+            and existing.source == DataSource.MANUAL
+        ):
+            await self._adjust_account_balance.execute(
+                existing.entity.id,
+                existing.account_name,
+                -account_tx_signed_amount(existing.type, existing.amount),
+            )
+
         await self._transaction_port.delete_by_id(tx.id)
 
         if tx.product_type == tx.product_type.ACCOUNT:
@@ -54,6 +74,12 @@ class UpdateManualTransactionImpl(UpdateManualTransaction, AtomicUCMixin):
                     "ACCOUNT product_type requires AccountTx data structure"
                 )
             await self._transaction_port.save(Transactions(account=[tx]))
+            if tx.source == DataSource.MANUAL and tx.account_name:
+                await self._adjust_account_balance.execute(
+                    tx.entity.id,
+                    tx.account_name,
+                    account_tx_signed_amount(tx.type, tx.amount),
+                )
         else:
             if not isinstance(tx, BaseInvestmentTx):
                 raise ValueError(

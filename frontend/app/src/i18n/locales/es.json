@@ -1109,6 +1109,8 @@
     "welcome": "Bienvenido a Finanze",
     "summary": "Resumen Financiero",
     "recentTransactions": "Transacciones Recientes",
+    "dailyTransactions": "Diario",
+    "investmentTransactions": "Inversión",
     "maturity": "Vencimiento",
     "assetDistribution": "Distribución",
     "assetDistributionByType": "Por producto",
@@ -1604,6 +1606,9 @@
     "avgBalance": "Saldo Promedio",
     "interestRate": "Tasa de Interés",
     "grossAmount": "Importe Bruto",
+    "account": "Cuenta",
+    "category": "Categoría",
+    "balanceAfter": "Saldo tras la operación",
     "portfolioName": "Nombre de Cartera",
     "iban": "IBAN",
     "currency": "Moneda",
@@ -1653,6 +1658,22 @@
         "positive": "Introduce un número positivo",
         "nonNegative": "Introduce un número mayor o igual que cero",
         "invalidNumber": "Introduce un número válido"
+      },
+      "quickAdd": {
+        "title": "Registro rápido",
+        "amountLabel": "Importe",
+        "institutionLabel": "Entidad",
+        "accountLabel": "Cuenta",
+        "noAccountsError": "Esta entidad aún no tiene cuentas; añade una primero en Banca",
+        "dateLabel": "Fecha",
+        "noteLabel": "Nota",
+        "notePlaceholder": "Nota opcional",
+        "categoryLabel": "Categoría",
+        "categoryRequired": "Selecciona una categoría",
+        "typeExpense": "Gasto",
+        "typeIncome": "Ingreso",
+        "typeTransfer": "Traspaso",
+        "submit": "Guardar"
       }
     },
     "deleteManualTransactionTitle": "Eliminar transacción manual",
@@ -1669,6 +1690,85 @@
       "more": "más",
       "listView": "Lista",
       "calendarView": "Calendario"
+    }
+  },
+  "spendingAnalysis": {
+    "title": "Análisis de gastos",
+    "subtitle": "Controla en qué gastas tu dinero",
+    "periodLabel": "Periodo",
+    "period": {
+      "1m": "1M",
+      "3m": "3M",
+      "6m": "6M",
+      "1y": "1A",
+      "all": "Todo"
+    },
+    "summary": {
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "net": "Neto"
+    },
+    "categoryChart": {
+      "title": "Gastos por categoría",
+      "empty": "Sin gastos categorizados en este periodo"
+    },
+    "trendChart": {
+      "title": "Tendencia mensual",
+      "empty": "Sin datos en este periodo"
+    }
+  },
+  "mpf": {
+    "title": "MPF",
+    "subtitle": "Controla tus aportaciones y saldos del Fondo de Previsión Obligatorio (MPF)",
+    "newPortfolio": "Nueva cartera MPF",
+    "empty": "Aún no tienes carteras MPF. Añade una para empezar a registrar aportaciones.",
+    "deletePortfolioConfirm": "¿Eliminar esta cartera MPF? También se eliminará su historial de aportaciones.",
+    "deletePortfolioSuccess": "Cartera MPF eliminada",
+    "deletePortfolioError": "No se pudo eliminar la cartera MPF",
+    "create": {
+      "title": "Nueva cartera MPF",
+      "entityLabel": "Entidad",
+      "entityRequired": "Selecciona una entidad",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "p. ej. Sun Life Rainbow MPF Scheme",
+      "nameRequired": "Introduce un nombre",
+      "submit": "Crear",
+      "success": "Cartera MPF creada",
+      "error": "No se pudo crear la cartera MPF"
+    },
+    "allocation": {
+      "title": "Distribución objetivo",
+      "addFund": "Añadir fondo",
+      "total": "Total",
+      "mustSumTo100": "Los porcentajes deben sumar 100%",
+      "noFundsAvailable": "No se pudo obtener la lista de fondos actual. Inténtalo más tarde.",
+      "futureOnlyNote": "Este cambio solo afecta a las aportaciones registradas a partir de ahora — las unidades ya compradas mantienen la distribución vigente en el momento de la compra.",
+      "updateSuccess": "Distribución objetivo actualizada",
+      "updateError": "No se pudo actualizar la distribución objetivo"
+    },
+    "detail": {
+      "totalContributed": "Total aportado",
+      "marketValue": "Valor de mercado",
+      "gainLoss": "Ganancia / pérdida",
+      "holdingsTitle": "Posiciones",
+      "noHoldings": "Aún no hay posiciones — registra una aportación para empezar.",
+      "units": "unidades",
+      "nav": "VL"
+    },
+    "contribution": {
+      "title": "Registrar aportación",
+      "recordButton": "Registrar aportación",
+      "history": "Historial de aportaciones",
+      "noHistory": "Aún no se han registrado aportaciones.",
+      "amountLabel": "Importe",
+      "dateLabel": "Fecha",
+      "allocationPreviewLabel": "Se repartirá según la distribución objetivo actual",
+      "submit": "Registrar",
+      "success": "Aportación registrada",
+      "error": "No se pudo registrar la aportación",
+      "deleteConfirm": "¿Eliminar esta aportación? Esta acción no se puede deshacer.",
+      "deleteSuccess": "Aportación eliminada",
+      "deleteError": "No se pudo eliminar la aportación"
     }
   },
   "time": {
@@ -1721,7 +1821,21 @@
       "SWITCH_FROM": "Switch F. Orig.",
       "SWITCH_TO": "Switch F. Dest.",
       "INVESTMENT": "Inversión",
-      "FEE": "Comisión"
+      "FEE": "Comisión",
+      "EXPENSE": "Gasto",
+      "INCOME": "Ingreso"
+    },
+    "category": {
+      "FOOD": "Alimentación",
+      "TRANSPORT": "Transporte",
+      "SHOPPING": "Compras",
+      "HOUSING": "Vivienda",
+      "ENTERTAINMENT": "Ocio",
+      "HEALTH": "Salud",
+      "EDUCATION": "Educación",
+      "UTILITIES": "Servicios",
+      "TRAVEL": "Viajes",
+      "OTHER": "Otros"
     },
     "productType": {
       "ACCOUNT": "Cuenta",

@@ -7,6 +7,7 @@ import {
   createManualTransaction,
   updateManualTransaction,
   deleteManualTransaction,
+  getAccountLedger,
 } from "@/services/api"
 import {
   TransactionsResult,
@@ -114,6 +115,9 @@ export default function TransactionsPage() {
 
   const [transactions, setTransactions] = useState<TransactionsResult | null>(
     null,
+  )
+  const [ledgerBalances, setLedgerBalances] = useState<Record<string, number>>(
+    {},
   )
   const [loadingTxs, setLoadingTxs] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -304,6 +308,48 @@ export default function TransactionsPage() {
       }
     }
   }
+
+  useEffect(() => {
+    const accountTxs = (transactions?.transactions ?? []).filter(
+      tx =>
+        tx.product_type === ProductType.ACCOUNT &&
+        (tx as unknown as AccountTx).account_name,
+    ) as unknown as AccountTx[]
+
+    const uniquePairs = new Map<string, { entityId: string; accountName: string }>()
+    accountTxs.forEach(tx => {
+      const key = `${tx.entity.id}::${tx.account_name}`
+      if (!uniquePairs.has(key)) {
+        uniquePairs.set(key, {
+          entityId: tx.entity.id,
+          accountName: tx.account_name as string,
+        })
+      }
+    })
+
+    if (uniquePairs.size === 0) return
+
+    let cancelled = false
+    Promise.all(
+      Array.from(uniquePairs.values()).map(({ entityId, accountName }) =>
+        getAccountLedger(entityId, accountName).catch(() => null),
+      ),
+    ).then(results => {
+      if (cancelled) return
+      const next: Record<string, number> = {}
+      results.forEach(result => {
+        if (!result) return
+        result.entries.forEach(entry => {
+          next[entry.transaction.id] = entry.balance_after
+        })
+      })
+      setLedgerBalances(prev => ({ ...prev, ...next }))
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [transactions])
 
   useEffect(() => {
     if (initialFetchTriggeredRef.current) {
@@ -953,6 +999,39 @@ export default function TransactionsPage() {
         return (
           <>
             {commonFields}
+            {accountTx.account_name && (
+              <div className={detailRowClass}>
+                <span className={detailLabelClass}>
+                  {t.transactions.account}:
+                </span>{" "}
+                {accountTx.account_name}
+              </div>
+            )}
+            {accountTx.category && (
+              <div className={detailRowClass}>
+                <span className={detailLabelClass}>
+                  {t.transactions.category}:
+                </span>{" "}
+                {(t.enums.category as Record<string, string>)[
+                  accountTx.category
+                ] || accountTx.category}
+              </div>
+            )}
+            {ledgerBalances[accountTx.id] !== undefined && (
+              <div className={detailRowClass}>
+                <span className={detailLabelClass}>
+                  {t.transactions.balanceAfter}:
+                </span>{" "}
+                <Sensitive>
+                  {formatCurrency(
+                    ledgerBalances[accountTx.id],
+                    locale,
+                    settings.general.defaultCurrency,
+                    tx.currency,
+                  )}
+                </Sensitive>
+              </div>
+            )}
             {tx.type === TxType.INTEREST && tx.amount !== undefined && (
               <div className={detailRowClass}>
                 <span className={detailLabelClass}>
@@ -1182,7 +1261,9 @@ export default function TransactionsPage() {
           accountTx.fees > 0 ||
           accountTx.retentions > 0 ||
           (accountTx.interest_rate && accountTx.interest_rate > 0) ||
-          (accountTx.avg_balance && accountTx.avg_balance > 0)
+          (accountTx.avg_balance && accountTx.avg_balance > 0) ||
+          accountTx.account_name ||
+          accountTx.category
         )
       }
       case ProductType.FACTORING: {

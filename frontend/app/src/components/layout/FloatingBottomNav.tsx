@@ -19,6 +19,7 @@ import {
   Settings,
   FileUp,
   MoreVertical,
+  PieChart,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useI18n } from "@/i18n"
@@ -203,10 +204,10 @@ export function FloatingBottomNav() {
       },
       {
         kind: "route",
-        key: "calculations",
-        path: "/calculations",
-        label: t.calculations.title,
-        icon: <Calculator size={22} />,
+        key: "spending-analysis",
+        path: "/spending-analysis",
+        label: t.spendingAnalysis.title,
+        icon: <PieChart size={22} />,
       },
       {
         kind: "route",
@@ -214,13 +215,6 @@ export function FloatingBottomNav() {
         path: "/management",
         label: t.management.title,
         icon: <CalendarCog size={22} />,
-      },
-      {
-        kind: "route",
-        key: "integrations",
-        path: "/entities",
-        label: t.entities.title,
-        icon: <Blocks size={22} />,
       },
       {
         kind: "more",
@@ -260,7 +254,9 @@ export function FloatingBottomNav() {
     if (moreIndex !== -1) {
       if (
         location.pathname.startsWith("/settings") ||
-        location.pathname.startsWith("/export")
+        location.pathname.startsWith("/export") ||
+        location.pathname.startsWith("/calculations") ||
+        location.pathname.startsWith("/entities")
       ) {
         return moreIndex
       }
@@ -526,6 +522,34 @@ export function FloatingBottomNav() {
                           >
                             <FileUp size={16} className="mr-2" />
                             {t.export.title}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start select-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
+                            tabIndex={-1}
+                            onMouseDown={event => event.preventDefault()}
+                            onClick={() => {
+                              setMoreOpen(false)
+                              navigate("/calculations")
+                            }}
+                          >
+                            <Calculator size={16} className="mr-2" />
+                            {t.calculations.title}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="justify-start select-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
+                            tabIndex={-1}
+                            onMouseDown={event => event.preventDefault()}
+                            onClick={() => {
+                              setMoreOpen(false)
+                              navigate("/entities")
+                            }}
+                          >
+                            <Blocks size={16} className="mr-2" />
+                            {t.entities.title}
                           </Button>
                         </div>
                       </PopoverContent>
