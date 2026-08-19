@@ -52,6 +52,20 @@ Also requires `frontend/app/android/local.properties` with `sdk.dir=<path to And
 
 When bumping the version, update in lockstep: `frontend/app/package.json`, `pyproject.toml`, `finanze/version.py`, `frontend/app/android/app/build.gradle` (`versionCode` + `versionName`), `frontend/app/ios/App/App.xcodeproj/project.pbxproj` (`MARKETING_VERSION = {version}00;`), and `.bumpversion.toml`.
 
+## Mobile DI wiring drifts from `server.py` — check it after any use case constructor change
+
+`frontend/app/src/python/finanze/{app_core,app_lazy,app_deferred,app_background}.py` hand-maintain a **separate, duplicated copy** of `finanze/server.py`'s dependency wiring for the Pyodide/mobile runtime. Desktop and mobile are two independent DI graphs for the same use cases — updating one does not update the other, and nothing enforces they stay in sync.
+
+This bit us for real: the accounting refactor added a new required `adjust_account_balance` argument to `AddManualTransactionImpl`, `UpdateManualTransactionImpl`, and `DeleteManualTransactionImpl`, updated `server.py` to match, but never touched `app_lazy.py`. The blast radius was much bigger than those three features: each tier's use cases (core/lazy/deferred/background) are all constructed together in one function (e.g. `LazyComponents.__init__`), so the first missing-argument `TypeError` aborted construction of the *entire tier* — breaking every feature backed by any lazy-tier use case, not just the three that changed. Symptom on device: app opens fine, but literally every action that touches the database fails (looked indistinguishable from "the database is corrupted" until the actual traceback was captured — `AddManualTransactionImpl.__init__() missing 1 required positional argument: 'adjust_account_balance'` — via `adb logcat` while reproducing on an emulator).
+
+**After changing any use case's `__init__` signature, run:**
+
+```bash
+python3 scripts/check_mobile_di_wiring.py
+```
+
+It statically compares every `SomeNameImpl(...)` call in the four mobile wiring files against that class's actual `__init__` signature and flags any call site with too few arguments. It's best-effort (can't see `**kwargs`-unpacked or dynamically constructed calls), but a clean run is a strong signal; a flagged mismatch is a real bug. This won't catch everything a full mobile boot-and-click test would, but it catches exactly this class of bug in seconds instead of requiring a build + install + emulator repro.
+
 ## Worktree gotcha in `scripts/bundle-python.js`
 
 `SOURCE_ROOT` resolves via `git rev-parse --show-toplevel` (not a hardcoded `../../../../finanze/finanze` relative path) specifically because that fixed-depth path only worked for the plain checkout at `/Users/zepher/xuan/finanze`. Under a git worktree (`.claude/worktrees/<name>/frontend/app/...`), the extra nesting broke it — it silently resolved to a nonexistent sibling path, so the copy silently no-opped for the main `finanze/` package (only the small `src/python/` mobile overlay got bundled). Symptom: the built app installs and the Pyodide runtime loads, but Python raises `ModuleNotFoundError: No module named 'application'` (or `'domain'`) and the app never gets past its loading state. If this regresses, verify `dist/python/finanze/application` exists and is non-trivial after building.
