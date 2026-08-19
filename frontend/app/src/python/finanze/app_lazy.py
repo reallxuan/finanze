@@ -249,6 +249,30 @@ class LazyComponents:
         from application.use_cases.delete_template import DeleteTemplateImpl
         from application.use_cases.get_template_fields import GetTemplateFieldsImpl
         from application.use_cases.save_backup_settings import SaveBackupSettingsImpl
+        from application.use_cases.get_spending_summary import GetSpendingSummaryImpl
+        from application.use_cases.get_account_ledger import GetAccountLedgerImpl
+        from application.use_cases.get_mpf_fund_quotes import GetMpfFundQuotesImpl
+        from application.use_cases.create_mpf_portfolio import (
+            CreateMpfPortfolioImpl,
+        )
+        from application.use_cases.update_mpf_portfolio import (
+            UpdateMpfPortfolioImpl,
+        )
+        from application.use_cases.delete_mpf_portfolio import (
+            DeleteMpfPortfolioImpl,
+        )
+        from application.use_cases.get_mpf_portfolios import GetMpfPortfoliosImpl
+        from application.use_cases.get_mpf_contributions import (
+            GetMpfContributionsImpl,
+        )
+        from application.use_cases.record_mpf_contribution import (
+            RecordMpfContributionImpl,
+        )
+        from application.use_cases.delete_mpf_contribution import (
+            DeleteMpfContributionImpl,
+        )
+        from infrastructure.repository.mpf.mpf_repository import MpfSQLRepository
+        from infrastructure.client.mpf.sun_life_mpf_client import SunLifeMpfClient
 
         d = self._deferred
         core = self._core
@@ -638,6 +662,29 @@ class LazyComponents:
         )
 
         self.get_historic = GetHistoricImpl(historic_repo, d.entity_repo)
+        self.get_spending_summary = GetSpendingSummaryImpl(d.tx_repo, d.entity_repo)
+        self.get_account_ledger = GetAccountLedgerImpl(
+            entity_port=d.entity_repo,
+            position_port=d.position_repo,
+            transaction_port=d.tx_repo,
+            virtual_import_registry=d.virtual_repo,
+        )
+        mpf_repo = MpfSQLRepository(client=db_client)
+        sun_life_client = SunLifeMpfClient()
+        self.get_mpf_fund_quotes = GetMpfFundQuotesImpl(sun_life_client)
+        self.create_mpf_portfolio = CreateMpfPortfolioImpl(
+            entity_port=d.entity_repo, mpf_port=mpf_repo
+        )
+        self.update_mpf_portfolio = UpdateMpfPortfolioImpl(mpf_port=mpf_repo)
+        self.delete_mpf_portfolio = DeleteMpfPortfolioImpl(mpf_port=mpf_repo)
+        self.get_mpf_portfolios = GetMpfPortfoliosImpl(
+            mpf_port=mpf_repo, sun_life_mpf_client=sun_life_client
+        )
+        self.get_mpf_contributions = GetMpfContributionsImpl(mpf_port=mpf_repo)
+        self.record_mpf_contribution = RecordMpfContributionImpl(
+            mpf_port=mpf_repo, sun_life_mpf_client=sun_life_client
+        )
+        self.delete_mpf_contribution = DeleteMpfContributionImpl(mpf_port=mpf_repo)
         self.get_instruments = GetInstrumentsImpl(d.inst_provider)
         self.get_inst_info = GetInstrumentInfoImpl(d.inst_provider)
         self.get_inst_history = GetInstrumentHistoryImpl(d.inst_provider)
