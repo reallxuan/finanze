@@ -126,7 +126,11 @@ class TradeRepublicClient:
             "x-tr-device-info": self._build_device_info_header(),
         }
 
-    @cached(ttl=86400, noself=True)
+    @cached(
+        ttl=86400,
+        noself=True,
+        skip_cache_func=lambda r: r == TradeRepublicClient._DEFAULT_APP_VERSION,
+    )
     async def _fetch_app_version(self) -> str:
         try:
             session = get_http_session()

@@ -182,6 +182,7 @@ class CryptoAssetInfoClient(CryptoAssetInfoProvider):
         ttl=86400,
         key_builder=lambda f, self, symbol: f"crypto_by_symbol:{symbol.upper()}",
         serializer=PickleSerializer(),
+        skip_cache_func=lambda r: not r,
     )
     async def get_by_symbol(self, symbol: str) -> list[CryptoAsset]:
         try:

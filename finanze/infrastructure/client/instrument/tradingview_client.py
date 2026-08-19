@@ -71,7 +71,7 @@ class TradingViewClient:
             type=InstrumentType.STOCK,
         )
 
-    @cached(cache=Cache.MEMORY, ttl=86400)
+    @cached(cache=Cache.MEMORY, ttl=86400, skip_cache_func=lambda r: not r)
     async def _search_raw(self, query: str) -> list[dict]:
         if not query:
             return []

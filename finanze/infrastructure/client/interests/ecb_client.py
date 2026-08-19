@@ -25,6 +25,7 @@ class ECBClient(EuriborProvider):
         ttl=CACHE_TTL,
         key_builder=lambda f, self: "ecb_euribor_1y",
         serializer=PickleSerializer(),
+        skip_cache_func=lambda r: not r.rates,
     )
     async def get_yearly_euribor_rates(self) -> EuriborHistory:
         url = f"{ECB_BASE_URL}/{EURIBOR_1Y_SERIES}"

@@ -22,7 +22,7 @@ class PublicKeychainClient(PublicKeychainFetcherPort):
             self._session = get_http_session()
         return self._session
 
-    @cached(cache=Cache.MEMORY, ttl=CACHE_TTL)
+    @cached(cache=Cache.MEMORY, ttl=CACHE_TTL, skip_cache_func=lambda r: not r)
     async def fetch(self) -> list[PublicKeyEntry]:
         try:
             response = await self._get_session().get(KEYCHAIN_URL, timeout=2)

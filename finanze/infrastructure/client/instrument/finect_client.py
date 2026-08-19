@@ -111,7 +111,7 @@ class FinectClient:
         response.raise_for_status()
         return []
 
-    @cached(cache=Cache.MEMORY, ttl=43200)
+    @cached(cache=Cache.MEMORY, ttl=43200, skip_cache_func=lambda r: r is None)
     async def get_instrument_info(
         self, query: str, instrument_type: InstrumentType
     ) -> Optional[InstrumentInfo]:

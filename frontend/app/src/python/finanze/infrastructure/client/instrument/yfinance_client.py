@@ -52,7 +52,7 @@ class YFinanceClient:
 
         return results
 
-    @cached(ttl=60)
+    @cached(ttl=60, skip_cache_func=lambda r: r is None)
     async def get_instrument_info(
         self, query: str, instrument_type: InstrumentType
     ) -> Optional[InstrumentInfo]:
@@ -81,7 +81,7 @@ class YFinanceClient:
             symbol=data.get("symbol"),
         )
 
-    @cached(ttl=300)
+    @cached(ttl=300, skip_cache_func=lambda r: r is None)
     async def get_history(
         self, request: InstrumentDataRequest, range_: str, interval: str
     ) -> Optional[InstrumentHistory]:
