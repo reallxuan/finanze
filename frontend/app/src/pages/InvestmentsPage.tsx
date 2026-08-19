@@ -2,6 +2,7 @@ import React from "react"
 import { useI18n } from "@/i18n"
 import { useAppContext } from "@/context/AppContext"
 import { useFinancialData } from "@/context/FinancialDataContext"
+import { useQuoteRefresh } from "@/hooks/useQuoteRefresh"
 import { useNavigate } from "react-router-dom"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -18,28 +19,9 @@ export default function InvestmentsPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const { isLoading, positionsData, realEstateList, refreshData } = useFinancialData()
-  const { entities, refreshTrackedQuotes, showToast } = useAppContext()
-  const [isRefreshingQuotes, setIsRefreshingQuotes] = React.useState(false)
-  const refreshQuotes = async () => {
-    setIsRefreshingQuotes(true)
-    try {
-      const result = await refreshTrackedQuotes()
-      await refreshData()
-      showToast(
-        result?.throttled
-          ? "Quote refresh is throttled for 2 minutes"
-          : "Quotes refreshed",
-        result?.throttled ? "info" : "success",
-      )
-    } catch {
-      showToast(
-        "Quote refresh failed; keeping the last successful prices.",
-        "error",
-      )
-    } finally {
-      setIsRefreshingQuotes(false)
-    }
-  }
+  const { entities } = useAppContext()
+  const { refreshQuotes, isRefreshing: isRefreshingQuotes } =
+    useQuoteRefresh(refreshData)
   const { isPinned } = usePinnedShortcuts()
   const hasConnectedMarketForecastPlatform = entities.some(
     entity =>
@@ -198,7 +180,7 @@ export default function InvestmentsPage() {
             size="sm"
             onClick={() => void refreshQuotes()}
             disabled={isRefreshingQuotes}
-            title="Refresh quotes"
+            title={t.manualEntities.refreshQuotes}
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshingQuotes ? "animate-spin" : ""}`} />
           </Button>

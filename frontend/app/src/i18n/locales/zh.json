@@ -822,6 +822,7 @@
     "pending": "待处理",
     "gross": "总额",
     "openInfoSheet": "查看基金资料",
+    "viewChart": "查看走势",
     "issuer": "发行方",
     "symbol": "代码",
     "shares": "份额",
@@ -1693,6 +1694,19 @@
       "EVERY_FOUR_MONTHS": "每四个月",
       "SEMIANNUAL": "每半年",
       "YEARLY": "每年"
+    }
+  },
+  "instrumentPriceChart": {
+    "collapse": "收起",
+    "noData": "该品种暂无走势数据",
+    "loadError": "走势数据加载失败",
+    "ranges": {
+      "1m": "1月",
+      "3m": "3月",
+      "6m": "6月",
+      "1y": "1年",
+      "5y": "5年",
+      "max": "全部"
     }
   },
   "netWorthTimeline": {

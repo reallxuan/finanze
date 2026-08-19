@@ -12,6 +12,7 @@ import { useAppContext } from "@/context/AppContext"
 import { TxType } from "@/types/transactions"
 import { formatCurrency, formatPercentage, formatDate } from "@/lib/formatters"
 import { useSkipMountAnimation } from "@/lib/animations"
+import { useQuoteRefresh } from "@/hooks/useQuoteRefresh"
 import { isNativeMobile } from "@/lib/platform"
 import { AnimatedContainer } from "@/components/ui/AnimatedContainer"
 import { Sensitive } from "@/components/ui/Sensitive"
@@ -82,35 +83,9 @@ export default function DashboardPage() {
     fetchCachedTransactions,
     invalidateTransactionsCache,
   } = useFinancialData()
-  const {
-    settings,
-    exchangeRates,
-    refreshExchangeRates,
-    refreshTrackedQuotes,
-    showToast,
-  } = useAppContext()
-  const [isRefreshingQuotes, setIsRefreshingQuotes] = useState(false)
-
-  const refreshQuotes = async () => {
-    setIsRefreshingQuotes(true)
-    try {
-      const result = await refreshTrackedQuotes()
-      await refreshFinancialData()
-      showToast(
-        result?.throttled
-          ? "Quote refresh is throttled for 2 minutes"
-          : "Quotes refreshed",
-        result?.throttled ? "info" : "success",
-      )
-    } catch {
-      showToast(
-        "Quote refresh failed; keeping the last successful prices.",
-        "error",
-      )
-    } finally {
-      setIsRefreshingQuotes(false)
-    }
-  }
+  const { settings, exchangeRates, refreshExchangeRates } = useAppContext()
+  const { refreshQuotes, isRefreshing: isRefreshingQuotes } =
+    useQuoteRefresh(refreshFinancialData)
 
   const skipAnimations = useSkipMountAnimation(!isInitialLoading)
 
@@ -1582,7 +1557,7 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={() => void refreshQuotes()}
                 disabled={isRefreshingQuotes}
-                        title="Refresh quotes"
+                title={t.manualEntities.refreshQuotes}
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshingQuotes ? "animate-spin" : ""}`} />
               </Button>

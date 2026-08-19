@@ -8,7 +8,9 @@ from domain.dezimal import Dezimal
 from domain.exchange_rate import ExchangeRates
 from infrastructure.client.http.http_session import get_http_session
 
-AVAILABLE_CURRENCIES = ["USD", "HKD"]
+# EUR is no longer offered as a selectable default currency, but stays here so
+# rates keep being fetched for records persisted before the HKD/USD switch.
+AVAILABLE_CURRENCIES = ["USD", "HKD", "EUR"]
 
 
 def _parse_rates(rates: dict) -> dict:

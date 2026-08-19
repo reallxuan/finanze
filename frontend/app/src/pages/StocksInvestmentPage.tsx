@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { DataSource, type ExchangeRates } from "@/types"
+import { DataSource, InstrumentType, type ExchangeRates } from "@/types"
+import InstrumentPriceChartCard from "@/components/instrument/InstrumentPriceChartCard"
 import { useI18n, type Locale, type Translations } from "@/i18n"
 import { useFinancialData } from "@/context/FinancialDataContext"
 import { useAppContext } from "@/context/AppContext"
@@ -346,6 +347,9 @@ function StocksViewContent({
   const [equityTypeFilter, setEquityTypeFilter] = useState<
     "all" | "STOCK" | "ETF"
   >("all")
+  const [chartPosition, setChartPosition] = useState<StockFundPosition | null>(
+    null,
+  )
 
   const handleEquityTypeToggle = useCallback((type: "STOCK" | "ETF") => {
     setEquityTypeFilter(prev => (prev === type ? "all" : type))
@@ -619,658 +623,698 @@ function StocksViewContent({
   }, [])
 
   return (
-    <motion.div
-      variants={fadeListContainer}
-      initial="hidden"
-      animate="show"
-      className="space-y-6"
-    >
-      <motion.div variants={fadeListItem} className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-8 w-8"
-              onClick={navigateBack}
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{t.common.stocksEtfs}</h1>
-              <PinAssetButton
-                assetId="stocks-etfs"
-                className="hidden md:inline-flex"
-              />
-            </div>
-          </div>
-          <ManualPositionsControls className="justify-center sm:justify-end" />
-        </div>
-        <ManualPositionsEditBanner />
-      </motion.div>
-
-      <motion.div variants={fadeListItem}>
-        <InvestmentFilters
-          filteredEntities={filteredEntities}
-          selectedEntities={selectedEntities}
-          onEntitiesChange={setSelectedEntities}
-          extraFilters={
-            <>
-              {(
-                [
-                  { value: "STOCK" as const, label: t.enums.equityType.STOCK },
-                  { value: "ETF" as const, label: t.enums.equityType.ETF },
-                ] as const
-              ).map(option => {
-                const isActive = equityTypeFilter === option.value
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => handleEquityTypeToggle(option.value)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-full border transition-all",
-                      isActive
-                        ? "bg-foreground text-background border-foreground"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground",
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                )
-              })}
-            </>
-          }
-        />
-      </motion.div>
-
-      <motion.div variants={fadeListItem}>
-        {sortedDisplayItems.length === 0 ? (
-          <Card className="p-14 text-center flex flex-col items-center gap-4">
-            {getIconForAssetType(
-              ProductType.STOCK_ETF,
-              "h-16 w-16",
-              "text-gray-400 dark:text-gray-600",
-            )}
-            <div className="text-gray-500 dark:text-gray-400 text-sm max-w-md">
-              {selectedEntities.length > 0
-                ? t.investments.noPositionsFound.replace(
-                    "{type}",
-                    t.common.stocksEtfs.toLowerCase(),
-                  )
-                : t.investments.noPositionsAvailable.replace(
-                    "{type}",
-                    t.common.stocksEtfs.toLowerCase(),
-                  )}
-            </div>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            <Card className="-mx-6 rounded-none border-x-0">
-              <CardContent className="pt-6">
-                <InvestmentDistributionChart
-                  data={chartData}
-                  title={t.common.distribution}
-                  locale={locale}
-                  currency={defaultCurrency}
-                  hideLegend
-                  containerClassName="overflow-visible w-full"
-                  variant="bare"
-                  onSliceClick={handleSliceClick}
-                  toggleConfig={{
-                    activeView: "asset",
-                    onViewChange: () => {},
-                    options: [{ value: "asset", label: t.investments.byAsset }],
-                  }}
-                  badges={[
-                    {
-                      icon: <Layers className="h-3 w-3" />,
-                      value: `${sortedDisplayItems.length} ${sortedDisplayItems.length === 1 ? t.investments.asset : t.investments.assets}`,
-                    },
-                  ]}
-                  centerContent={{
-                    rawValue: totalValue,
-                    gainPercentage:
-                      totalInitialInvestment > 0
-                        ? ((totalValue - totalInitialInvestment) /
-                            totalInitialInvestment) *
-                          100
-                        : undefined,
-                    infoRows: [
-                      {
-                        label: t.dashboard.totalValue,
-                        value: formatCurrency(
-                          totalValue,
-                          locale,
-                          defaultCurrency,
-                        ),
-                      },
-                      ...(totalInitialInvestment > 0
-                        ? [
-                            {
-                              label: t.dashboard.investedAmount,
-                              value: formatCurrency(
-                                totalInitialInvestment,
-                                locale,
-                                defaultCurrency,
-                              ),
-                            },
-                            {
-                              label: t.investments.sortAbsoluteGain,
-                              value: `${totalValue - totalInitialInvestment >= 0 ? "+" : ""}${formatCurrency(
-                                totalValue - totalInitialInvestment,
-                                locale,
-                                defaultCurrency,
-                              )}`,
-                              valueClassName:
-                                totalValue - totalInitialInvestment >= 0
-                                  ? "text-green-500"
-                                  : "text-red-500",
-                            },
-                          ]
-                        : []),
-                    ],
-                  }}
-                  orbitBubbles={orbitBubbleData}
+    <>
+      <motion.div
+        variants={fadeListContainer}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
+        <motion.div variants={fadeListItem} className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-8 w-8"
+                onClick={navigateBack}
+              >
+                <ArrowLeft size={20} />
+              </Button>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{t.common.stocksEtfs}</h1>
+                <PinAssetButton
+                  assetId="stocks-etfs"
+                  className="hidden md:inline-flex"
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            <ManualPositionsControls className="justify-center sm:justify-end" />
+          </div>
+          <ManualPositionsEditBanner />
+        </motion.div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                <ArrowUpDown size={14} />
-                <span className="hidden min-[400px]:inline">
-                  {t.investments.sortBy}
-                </span>
-              </span>
-              <div className="flex items-center bg-muted rounded-lg p-1">
+        <motion.div variants={fadeListItem}>
+          <InvestmentFilters
+            filteredEntities={filteredEntities}
+            selectedEntities={selectedEntities}
+            onEntitiesChange={setSelectedEntities}
+            extraFilters={
+              <>
                 {(
                   [
-                    { value: "amount", label: t.investments.sortAmount },
                     {
-                      value: "relativeGain",
-                      label: t.investments.sortRelativeGain,
+                      value: "STOCK" as const,
+                      label: t.enums.equityType.STOCK,
                     },
-                    {
-                      value: "absoluteGain",
-                      label: t.investments.sortAbsoluteGain,
-                    },
+                    { value: "ETF" as const, label: t.enums.equityType.ETF },
                   ] as const
-                ).map(option => (
-                  <button
-                    key={option.value}
-                    onClick={() => setSortBy(option.value)}
-                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${
-                      sortBy === option.value
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                ).map(option => {
+                  const isActive = equityTypeFilter === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => handleEquityTypeToggle(option.value)}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-semibold rounded-full border transition-all",
+                        isActive
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-transparent text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground",
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </>
+            }
+          />
+        </motion.div>
+
+        <motion.div variants={fadeListItem}>
+          {sortedDisplayItems.length === 0 ? (
+            <Card className="p-14 text-center flex flex-col items-center gap-4">
+              {getIconForAssetType(
+                ProductType.STOCK_ETF,
+                "h-16 w-16",
+                "text-gray-400 dark:text-gray-600",
+              )}
+              <div className="text-gray-500 dark:text-gray-400 text-sm max-w-md">
+                {selectedEntities.length > 0
+                  ? t.investments.noPositionsFound.replace(
+                      "{type}",
+                      t.common.stocksEtfs.toLowerCase(),
+                    )
+                  : t.investments.noPositionsAvailable.replace(
+                      "{type}",
+                      t.common.stocksEtfs.toLowerCase(),
+                    )}
               </div>
-              <button
-                onClick={() =>
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
-                className="p-1 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                aria-label={
-                  sortOrder === "asc" ? "Sort descending" : "Sort ascending"
-                }
-              >
-                {sortOrder === "asc" ? (
-                  <ArrowRight size={16} className="rotate-[-90deg]" />
-                ) : (
-                  <ArrowRight size={16} className="rotate-90" />
-                )}
-              </button>
-            </div>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              <Card className="-mx-6 rounded-none border-x-0">
+                <CardContent className="pt-6">
+                  <InvestmentDistributionChart
+                    data={chartData}
+                    title={t.common.distribution}
+                    locale={locale}
+                    currency={defaultCurrency}
+                    hideLegend
+                    containerClassName="overflow-visible w-full"
+                    variant="bare"
+                    onSliceClick={handleSliceClick}
+                    toggleConfig={{
+                      activeView: "asset",
+                      onViewChange: () => {},
+                      options: [
+                        { value: "asset", label: t.investments.byAsset },
+                      ],
+                    }}
+                    badges={[
+                      {
+                        icon: <Layers className="h-3 w-3" />,
+                        value: `${sortedDisplayItems.length} ${sortedDisplayItems.length === 1 ? t.investments.asset : t.investments.assets}`,
+                      },
+                    ]}
+                    centerContent={{
+                      rawValue: totalValue,
+                      gainPercentage:
+                        totalInitialInvestment > 0
+                          ? ((totalValue - totalInitialInvestment) /
+                              totalInitialInvestment) *
+                            100
+                          : undefined,
+                      infoRows: [
+                        {
+                          label: t.dashboard.totalValue,
+                          value: formatCurrency(
+                            totalValue,
+                            locale,
+                            defaultCurrency,
+                          ),
+                        },
+                        ...(totalInitialInvestment > 0
+                          ? [
+                              {
+                                label: t.dashboard.investedAmount,
+                                value: formatCurrency(
+                                  totalInitialInvestment,
+                                  locale,
+                                  defaultCurrency,
+                                ),
+                              },
+                              {
+                                label: t.investments.sortAbsoluteGain,
+                                value: `${totalValue - totalInitialInvestment >= 0 ? "+" : ""}${formatCurrency(
+                                  totalValue - totalInitialInvestment,
+                                  locale,
+                                  defaultCurrency,
+                                )}`,
+                                valueClassName:
+                                  totalValue - totalInitialInvestment >= 0
+                                    ? "text-green-500"
+                                    : "text-red-500",
+                              },
+                            ]
+                          : []),
+                      ],
+                    }}
+                    orbitBubbles={orbitBubbleData}
+                  />
+                </CardContent>
+              </Card>
 
-            <div className="space-y-4">
-              {sortedDisplayItems.map(item => {
-                const { position, manualDraft, isManual, isDirty } = item
-                if (item.originalId && isEntryDeleted(item.originalId)) {
-                  return null
-                }
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                  <ArrowUpDown size={14} />
+                  <span className="hidden min-[400px]:inline">
+                    {t.investments.sortBy}
+                  </span>
+                </span>
+                <div className="flex items-center bg-muted rounded-lg p-1">
+                  {(
+                    [
+                      { value: "amount", label: t.investments.sortAmount },
+                      {
+                        value: "relativeGain",
+                        label: t.investments.sortRelativeGain,
+                      },
+                      {
+                        value: "absoluteGain",
+                        label: t.investments.sortAbsoluteGain,
+                      },
+                    ] as const
+                  ).map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSortBy(option.value)}
+                      className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${
+                        sortBy === option.value
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                  }
+                  className="p-1 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                  aria-label={
+                    sortOrder === "asc" ? "Sort descending" : "Sort ascending"
+                  }
+                >
+                  {sortOrder === "asc" ? (
+                    <ArrowRight size={16} className="rotate-[-90deg]" />
+                  ) : (
+                    <ArrowRight size={16} className="rotate-90" />
+                  )}
+                </button>
+              </div>
 
-                const identifier = position.name || position.symbol || item.key
+              <div className="space-y-4">
+                {sortedDisplayItems.map(item => {
+                  const { position, manualDraft, isManual, isDirty } = item
+                  if (item.originalId && isEntryDeleted(item.originalId)) {
+                    return null
+                  }
 
-                const percentageOfStocks =
-                  totalValue > 0
-                    ? ((position.value || 0) / totalValue) * 100
-                    : 0
+                  const identifier =
+                    position.name || position.symbol || item.key
 
-                const distributionEntry = chartData.find(
-                  entry => entry.name === (position.name || position.symbol),
-                )
-                const borderColor = distributionEntry?.color || "transparent"
-                const isCardHighlighted = highlighted === identifier
+                  const percentageOfStocks =
+                    totalValue > 0
+                      ? ((position.value || 0) / totalValue) * 100
+                      : 0
 
-                const highlightClass = isDirty
-                  ? "ring-2 ring-offset-0 ring-blue-400/60 dark:ring-blue-500/40"
-                  : isCardHighlighted
-                    ? "ring-2 ring-offset-0 ring-primary"
+                  const distributionEntry = chartData.find(
+                    entry => entry.name === (position.name || position.symbol),
+                  )
+                  const borderColor = distributionEntry?.color || "transparent"
+                  const isCardHighlighted = highlighted === identifier
+
+                  const highlightClass = isDirty
+                    ? "ring-2 ring-offset-0 ring-blue-400/60 dark:ring-blue-500/40"
+                    : isCardHighlighted
+                      ? "ring-2 ring-offset-0 ring-primary"
+                      : ""
+
+                  const showActions = isEditMode && isManual
+
+                  const isExpanded = expandedCards[item.key] ?? false
+
+                  const rawShares = position.shares
+                  const numericShares =
+                    rawShares !== undefined && rawShares !== null
+                      ? Number(rawShares)
+                      : null
+                  const formattedShares =
+                    numericShares !== null && !Number.isNaN(numericShares)
+                      ? numericShares.toLocaleString(locale)
+                      : null
+                  const sharesLabelSource = t.investments.shares || ""
+                  const sharesLabel = sharesLabelSource
+                    ? sharesLabelSource.toLocaleLowerCase(locale)
                     : ""
 
-                const showActions = isEditMode && isManual
-
-                const isExpanded = expandedCards[item.key] ?? false
-
-                const rawShares = position.shares
-                const numericShares =
-                  rawShares !== undefined && rawShares !== null
-                    ? Number(rawShares)
-                    : null
-                const formattedShares =
-                  numericShares !== null && !Number.isNaN(numericShares)
-                    ? numericShares.toLocaleString(locale)
-                    : null
-                const sharesLabelSource = t.investments.shares || ""
-                const sharesLabel = sharesLabelSource
-                  ? sharesLabelSource.toLocaleLowerCase(locale)
-                  : ""
-
-                const rawPrice = position.price
-                const formattedAvgBuyPrice =
-                  rawPrice !== undefined && rawPrice !== null
-                    ? formatCurrency(
-                        rawPrice,
-                        locale,
-                        position.currency,
-                        undefined,
-                        { narrowSymbol: true },
-                      )
-                    : null
-
-                const marketPricePerShare =
-                  numericShares != null &&
-                  numericShares > 0 &&
-                  position.originalValue
-                    ? Math.round(
-                        (position.originalValue / numericShares) * 10000,
-                      ) / 10000
-                    : null
-                const formattedMarketPrice =
-                  marketPricePerShare != null
-                    ? formatCurrency(
-                        marketPricePerShare,
-                        locale,
-                        position.currency,
-                        undefined,
-                        { narrowSymbol: true },
-                      )
-                    : null
-
-                const eachLabelSource = t.common.each || ""
-                const eachLabel = eachLabelSource
-                  ? eachLabelSource.toLocaleLowerCase(locale)
-                  : ""
-
-                const infoSheetUrl =
-                  position.equityType === EquityType.ETF
-                    ? position.infoSheetUrl?.trim() || null
-                    : null
-
-                return (
-                  <Card
-                    key={item.key}
-                    ref={el => {
-                      if (identifier) {
-                        itemRefs.current[identifier] = el
-                      }
-                    }}
-                    className={cn(
-                      "border-l-4 transition-all overflow-hidden",
-                      highlightClass,
-                    )}
-                    style={{ borderLeftColor: borderColor }}
-                  >
-                    <div
-                      className="relative flex items-start justify-between gap-3 p-4 cursor-pointer transition-colors hover:bg-accent/40"
-                      onClick={e => {
-                        if (
-                          (e.target as HTMLElement).closest("[data-no-expand]")
+                  const rawPrice = position.price
+                  const formattedAvgBuyPrice =
+                    rawPrice !== undefined && rawPrice !== null
+                      ? formatCurrency(
+                          rawPrice,
+                          locale,
+                          position.currency,
+                          undefined,
+                          { narrowSymbol: true },
                         )
-                          return
-                        toggleCardExpanded(item.key)
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault()
-                          toggleCardExpanded(item.key)
+                      : null
+
+                  const marketPricePerShare =
+                    numericShares != null &&
+                    numericShares > 0 &&
+                    position.originalValue
+                      ? Math.round(
+                          (position.originalValue / numericShares) * 10000,
+                        ) / 10000
+                      : null
+                  const formattedMarketPrice =
+                    marketPricePerShare != null
+                      ? formatCurrency(
+                          marketPricePerShare,
+                          locale,
+                          position.currency,
+                          undefined,
+                          { narrowSymbol: true },
+                        )
+                      : null
+
+                  const eachLabelSource = t.common.each || ""
+                  const eachLabel = eachLabelSource
+                    ? eachLabelSource.toLocaleLowerCase(locale)
+                    : ""
+
+                  const infoSheetUrl =
+                    position.equityType === EquityType.ETF
+                      ? position.infoSheetUrl?.trim() || null
+                      : null
+
+                  return (
+                    <Card
+                      key={item.key}
+                      ref={el => {
+                        if (identifier) {
+                          itemRefs.current[identifier] = el
                         }
                       }}
-                      role="button"
-                      tabIndex={0}
-                      aria-expanded={isExpanded}
+                      className={cn(
+                        "border-l-4 transition-all overflow-hidden",
+                        highlightClass,
+                      )}
+                      style={{ borderLeftColor: borderColor }}
                     >
-                      <StockPositionLogo
-                        position={position}
-                        className="hidden sm:flex"
-                      />
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <h3 className="flex items-center gap-1.5 text-base sm:text-lg font-semibold leading-tight">
-                          <StockPositionLogo
-                            position={position}
-                            size="sm"
-                            className="sm:hidden"
-                          />
-                          <span>{position.name}</span>
-                        </h3>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {position.equityType && (
-                            <span
-                              className={cn(
-                                "text-[0.7rem] inline-flex items-center rounded-full px-2 py-0.5 font-medium",
-                                position.equityType === EquityType.STOCK
-                                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
-                                  : "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300",
-                              )}
-                            >
-                              {
-                                t.enums.equityType[
-                                  position.equityType as keyof typeof t.enums.equityType
-                                ]
-                              }
-                            </span>
-                          )}
-                          {position.entity && (
-                            <button
-                              type="button"
-                              data-no-expand
-                              onClick={() => {
-                                const entityObj = entities.find(
-                                  entity => entity.name === position.entity,
-                                )
-                                const id = entityObj?.id || position.entity
-                                if (!id) return
-                                setSelectedEntities(prev =>
-                                  prev.includes(id) ? prev : [...prev, id],
-                                )
-                              }}
-                              className={cn(
-                                "px-2 py-0.5 rounded-full text-xs font-semibold transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary",
-                                getColorForName(position.entity),
-                              )}
-                            >
-                              {position.entity}
-                            </button>
-                          )}
-                          {position.portfolioName && (
-                            <Badge variant="secondary" className="text-xs">
-                              {position.portfolioName}
-                            </Badge>
-                          )}
-                          {position.source &&
-                            position.source !== DataSource.REAL && (
-                              <SourceBadge
-                                source={position.source}
-                                title={t.management?.source}
-                                className="text-[0.65rem]"
-                                onClick={
-                                  position.source === DataSource.MANUAL
-                                    ? () => enterEditMode()
-                                    : undefined
+                      <div
+                        className="relative flex items-start justify-between gap-3 p-4 cursor-pointer transition-colors hover:bg-accent/40"
+                        onClick={e => {
+                          if (
+                            (e.target as HTMLElement).closest(
+                              "[data-no-expand]",
+                            )
+                          )
+                            return
+                          toggleCardExpanded(item.key)
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            toggleCardExpanded(item.key)
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                      >
+                        <StockPositionLogo
+                          position={position}
+                          className="hidden sm:flex"
+                        />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <h3 className="flex items-center gap-1.5 text-base sm:text-lg font-semibold leading-tight">
+                            <StockPositionLogo
+                              position={position}
+                              size="sm"
+                              className="sm:hidden"
+                            />
+                            <span>{position.name}</span>
+                          </h3>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {position.equityType && (
+                              <span
+                                className={cn(
+                                  "text-[0.7rem] inline-flex items-center rounded-full px-2 py-0.5 font-medium",
+                                  position.equityType === EquityType.STOCK
+                                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                                    : "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300",
+                                )}
+                              >
+                                {
+                                  t.enums.equityType[
+                                    position.equityType as keyof typeof t.enums.equityType
+                                  ]
                                 }
-                              />
-                            )}
-                          {isDirty && (
-                            <span className="text-[0.65rem] font-semibold text-blue-600 dark:text-blue-400">
-                              {manualTranslate("management.unsavedChanges")}
-                            </span>
-                          )}
-                        </div>
-                        {(formattedShares || formattedMarketPrice) && (
-                          <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            {formattedShares && (
-                              <span>
-                                <Sensitive>{formattedShares}</Sensitive>
                               </span>
                             )}
-                            {formattedShares && formattedMarketPrice && (
-                              <span>×</span>
+                            {position.entity && (
+                              <button
+                                type="button"
+                                data-no-expand
+                                onClick={() => {
+                                  const entityObj = entities.find(
+                                    entity => entity.name === position.entity,
+                                  )
+                                  const id = entityObj?.id || position.entity
+                                  if (!id) return
+                                  setSelectedEntities(prev =>
+                                    prev.includes(id) ? prev : [...prev, id],
+                                  )
+                                }}
+                                className={cn(
+                                  "px-2 py-0.5 rounded-full text-xs font-semibold transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary",
+                                  getColorForName(position.entity),
+                                )}
+                              >
+                                {position.entity}
+                              </button>
                             )}
-                            {formattedMarketPrice && (
-                              <span>{formattedMarketPrice}</span>
+                            {position.portfolioName && (
+                              <Badge variant="secondary" className="text-xs">
+                                {position.portfolioName}
+                              </Badge>
+                            )}
+                            {position.source &&
+                              position.source !== DataSource.REAL && (
+                                <SourceBadge
+                                  source={position.source}
+                                  title={t.management?.source}
+                                  className="text-[0.65rem]"
+                                  onClick={
+                                    position.source === DataSource.MANUAL
+                                      ? () => enterEditMode()
+                                      : undefined
+                                  }
+                                />
+                              )}
+                            {isDirty && (
+                              <span className="text-[0.65rem] font-semibold text-blue-600 dark:text-blue-400">
+                                {manualTranslate("management.unsavedChanges")}
+                              </span>
                             )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-right space-y-0.5">
-                          <div className="text-base sm:text-lg font-semibold leading-tight">
-                            <Sensitive>
-                              {position.formattedOriginalValue ||
-                                position.formattedValue}
-                            </Sensitive>
-                          </div>
-                          {position.currency !== defaultCurrency && (
-                            <div className="text-xs text-muted-foreground">
-                              <Sensitive>{position.formattedValue}</Sensitive>
+                          {(formattedShares || formattedMarketPrice) && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                              {formattedShares && (
+                                <span>
+                                  <Sensitive>{formattedShares}</Sensitive>
+                                </span>
+                              )}
+                              {formattedShares && formattedMarketPrice && (
+                                <span>×</span>
+                              )}
+                              {formattedMarketPrice && (
+                                <span>{formattedMarketPrice}</span>
+                              )}
                             </div>
                           )}
-                          <div
-                            className={cn(
-                              "flex items-center gap-1 text-sm justify-end mt-1",
-                              position.change >= 0
-                                ? "text-green-500"
-                                : "text-red-500",
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-right space-y-0.5">
+                            <div className="text-base sm:text-lg font-semibold leading-tight">
+                              <Sensitive>
+                                {position.formattedOriginalValue ||
+                                  position.formattedValue}
+                              </Sensitive>
+                            </div>
+                            {position.currency !== defaultCurrency && (
+                              <div className="text-xs text-muted-foreground">
+                                <Sensitive>{position.formattedValue}</Sensitive>
+                              </div>
                             )}
-                          >
-                            <Sensitive>
-                              {position.change >= 0 ? (
-                                <TrendingUp size={14} />
-                              ) : (
-                                <TrendingDown size={14} />
+                            <div
+                              className={cn(
+                                "flex items-center gap-1 text-sm justify-end mt-1",
+                                position.change >= 0
+                                  ? "text-green-500"
+                                  : "text-red-500",
                               )}
-                              <span>{position.change.toFixed(2)}%</span>
-                            </Sensitive>
+                            >
+                              <Sensitive>
+                                {position.change >= 0 ? (
+                                  <TrendingUp size={14} />
+                                ) : (
+                                  <TrendingDown size={14} />
+                                )}
+                                <span>{position.change.toFixed(2)}%</span>
+                              </Sensitive>
+                            </div>
                           </div>
+                          <ChevronDown
+                            className={cn(
+                              "hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200",
+                              isExpanded && "rotate-180",
+                            )}
+                          />
                         </div>
                         <ChevronDown
                           className={cn(
-                            "hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200",
+                            "sm:hidden absolute bottom-3 right-3 h-4 w-4 text-muted-foreground transition-transform duration-200",
                             isExpanded && "rotate-180",
                           )}
                         />
                       </div>
-                      <ChevronDown
-                        className={cn(
-                          "sm:hidden absolute bottom-3 right-3 h-4 w-4 text-muted-foreground transition-transform duration-200",
-                          isExpanded && "rotate-180",
-                        )}
-                      />
-                    </div>
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          key="expanded"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2, ease: "easeInOut" }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-4 pb-4">
-                            <div className="border-t border-border/50 pt-3 space-y-3">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
-                                {(formattedShares || formattedMarketPrice) && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      {t.investments.shares}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-foreground">
-                                      {formattedShares && (
-                                        <>
-                                          <span>
-                                            <Sensitive>
-                                              {formattedShares}
-                                            </Sensitive>
-                                          </span>
-                                          {sharesLabel && (
-                                            <span className="text-muted-foreground">
-                                              {sharesLabel}
-                                            </span>
-                                          )}
-                                        </>
-                                      )}
-                                      {formattedShares &&
-                                        formattedMarketPrice && (
-                                          <span className="text-muted-foreground">
-                                            ×
-                                          </span>
-                                        )}
-                                      {formattedMarketPrice && (
-                                        <>
-                                          <span>{formattedMarketPrice}</span>
-                                          {formattedShares && eachLabel && (
-                                            <span className="text-muted-foreground">
-                                              {eachLabel}
-                                            </span>
-                                          )}
-                                        </>
-                                      )}
-                                    </div>
-                                    {formattedAvgBuyPrice && (
-                                      <div className="text-xs text-muted-foreground mt-0.5">
-                                        {t.investments.averageBuyPrice}:{" "}
-                                        <Sensitive>
-                                          {formattedAvgBuyPrice}
-                                        </Sensitive>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                {position.symbol?.trim() && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      Ticker
-                                    </div>
-                                    <div className="text-foreground font-mono text-xs">
-                                      {position.symbol}
-                                    </div>
-                                  </div>
-                                )}
-                                {position.isin && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      ISIN
-                                    </div>
-                                    <div className="text-foreground font-mono text-xs">
-                                      {position.isin}
-                                    </div>
-                                  </div>
-                                )}
-                                {position.equityType === EquityType.ETF &&
-                                  position.issuer && (
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            key="expanded"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-4 pb-4">
+                              <div className="border-t border-border/50 pt-3 space-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+                                  {(formattedShares ||
+                                    formattedMarketPrice) && (
                                     <div>
                                       <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                        {t.investments.issuer}
+                                        {t.investments.shares}
                                       </div>
-                                      <div className="text-foreground text-sm">
-                                        {position.issuer}
+                                      <div className="flex items-center gap-1 text-foreground">
+                                        {formattedShares && (
+                                          <>
+                                            <span>
+                                              <Sensitive>
+                                                {formattedShares}
+                                              </Sensitive>
+                                            </span>
+                                            {sharesLabel && (
+                                              <span className="text-muted-foreground">
+                                                {sharesLabel}
+                                              </span>
+                                            )}
+                                          </>
+                                        )}
+                                        {formattedShares &&
+                                          formattedMarketPrice && (
+                                            <span className="text-muted-foreground">
+                                              ×
+                                            </span>
+                                          )}
+                                        {formattedMarketPrice && (
+                                          <>
+                                            <span>{formattedMarketPrice}</span>
+                                            {formattedShares && eachLabel && (
+                                              <span className="text-muted-foreground">
+                                                {eachLabel}
+                                              </span>
+                                            )}
+                                          </>
+                                        )}
+                                      </div>
+                                      {formattedAvgBuyPrice && (
+                                        <div className="text-xs text-muted-foreground mt-0.5">
+                                          {t.investments.averageBuyPrice}:{" "}
+                                          <Sensitive>
+                                            {formattedAvgBuyPrice}
+                                          </Sensitive>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  {position.symbol?.trim() && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        Ticker
+                                      </div>
+                                      <div className="text-foreground font-mono text-xs">
+                                        {position.symbol}
                                       </div>
                                     </div>
                                   )}
-                                {position.formattedGainLossAmount && (
+                                  {position.isin && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        ISIN
+                                      </div>
+                                      <div className="text-foreground font-mono text-xs">
+                                        {position.isin}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {position.equityType === EquityType.ETF &&
+                                    position.issuer && (
+                                      <div>
+                                        <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                          {t.investments.issuer}
+                                        </div>
+                                        <div className="text-foreground text-sm">
+                                          {position.issuer}
+                                        </div>
+                                      </div>
+                                    )}
+                                  {position.formattedGainLossAmount && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        {t.investments.sortAbsoluteGain}
+                                      </div>
+                                      <div
+                                        className={cn(
+                                          "font-medium",
+                                          position.change >= 0
+                                            ? "text-green-500"
+                                            : "text-red-500",
+                                        )}
+                                      >
+                                        <Sensitive>
+                                          {position.formattedGainLossAmount}
+                                        </Sensitive>
+                                      </div>
+                                    </div>
+                                  )}
                                   <div>
                                     <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      {t.investments.sortAbsoluteGain}
-                                    </div>
-                                    <div
-                                      className={cn(
-                                        "font-medium",
-                                        position.change >= 0
-                                          ? "text-green-500"
-                                          : "text-red-500",
+                                      {t.investments.ofInvestmentType.replace(
+                                        "{type}",
+                                        t.common.stocks.toLowerCase(),
                                       )}
-                                    >
+                                    </div>
+                                    <div className="font-medium text-blue-600 dark:text-blue-400">
                                       <Sensitive>
-                                        {position.formattedGainLossAmount}
+                                        {percentageOfStocks.toFixed(1)}%
                                       </Sensitive>
                                     </div>
                                   </div>
+                                </div>
+                                {infoSheetUrl && (
+                                  <a
+                                    href={infoSheetUrl}
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    data-no-expand
+                                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    {t.investments.openInfoSheet}
+                                  </a>
                                 )}
-                                <div>
-                                  <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                    {t.investments.ofInvestmentType.replace(
-                                      "{type}",
-                                      t.common.stocks.toLowerCase(),
-                                    )}
+                                {(position.symbol?.trim() || position.isin) && (
+                                  <button
+                                    type="button"
+                                    data-no-expand
+                                    onClick={() => setChartPosition(position)}
+                                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
+                                  >
+                                    <ChartCandlestick className="h-3.5 w-3.5" />
+                                    {t.investments.viewChart}
+                                  </button>
+                                )}
+                                {showActions && (
+                                  <div
+                                    className="flex items-center gap-2 pt-2 border-t border-border/30"
+                                    data-no-expand
+                                  >
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex items-center gap-2"
+                                      onClick={() => {
+                                        if (manualDraft?.originalId) {
+                                          editByOriginalId(
+                                            manualDraft.originalId,
+                                          )
+                                        } else if (manualDraft) {
+                                          editByLocalId(manualDraft.localId)
+                                        } else if (item.originalId) {
+                                          editByOriginalId(item.originalId)
+                                        }
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                      {t.common.edit}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-red-500 hover:text-red-600"
+                                      onClick={() => {
+                                        if (manualDraft?.originalId) {
+                                          deleteByOriginalId(
+                                            manualDraft.originalId,
+                                          )
+                                        } else if (manualDraft) {
+                                          deleteByLocalId(manualDraft.localId)
+                                        } else if (item.originalId) {
+                                          deleteByOriginalId(item.originalId)
+                                        }
+                                      }}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
                                   </div>
-                                  <div className="font-medium text-blue-600 dark:text-blue-400">
-                                    <Sensitive>
-                                      {percentageOfStocks.toFixed(1)}%
-                                    </Sensitive>
-                                  </div>
-                                </div>
+                                )}
                               </div>
-                              {infoSheetUrl && (
-                                <a
-                                  href={infoSheetUrl}
-                                  target="_blank"
-                                  rel="noreferrer noopener"
-                                  data-no-expand
-                                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
-                                >
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  {t.investments.openInfoSheet}
-                                </a>
-                              )}
-                              {showActions && (
-                                <div
-                                  className="flex items-center gap-2 pt-2 border-t border-border/30"
-                                  data-no-expand
-                                >
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center gap-2"
-                                    onClick={() => {
-                                      if (manualDraft?.originalId) {
-                                        editByOriginalId(manualDraft.originalId)
-                                      } else if (manualDraft) {
-                                        editByLocalId(manualDraft.localId)
-                                      } else if (item.originalId) {
-                                        editByOriginalId(item.originalId)
-                                      }
-                                    }}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    {t.common.edit}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-red-500 hover:text-red-600"
-                                    onClick={() => {
-                                      if (manualDraft?.originalId) {
-                                        deleteByOriginalId(
-                                          manualDraft.originalId,
-                                        )
-                                      } else if (manualDraft) {
-                                        deleteByLocalId(manualDraft.localId)
-                                      } else if (item.originalId) {
-                                        deleteByOriginalId(item.originalId)
-                                      }
-                                    }}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              )}
                             </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </Card>
-                )
-              })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Card>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </motion.div>
       </motion.div>
-    </motion.div>
+      {chartPosition && (
+        <InstrumentPriceChartCard
+          request={{
+            type:
+              chartPosition.equityType === EquityType.ETF
+                ? InstrumentType.ETF
+                : InstrumentType.STOCK,
+            ticker: chartPosition.symbol || undefined,
+            isin: chartPosition.isin || undefined,
+            name: chartPosition.name,
+          }}
+          displayName={chartPosition.name}
+          open={true}
+          onClose={() => setChartPosition(null)}
+        />
+      )}
+    </>
   )
 }

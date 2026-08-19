@@ -106,6 +106,38 @@ async function yfQuoteSummary(symbol: string, modules: string[]): Promise<any> {
   return result
 }
 
+async function yfChart(symbol: string, range: string, interval: string): Promise<any> {
+  const crumb = await ensureCrumb()
+  const params = new URLSearchParams({
+    range,
+    interval,
+    includePrePost: "false",
+    events: "div,splits",
+    crumb,
+  })
+
+  const res = await fetch(
+    `${YF_BASE}/v8/finance/chart/${encodeURIComponent(symbol)}?${params}`,
+    {
+      headers: { "User-Agent": USER_AGENT },
+      credentials: "include",
+    },
+  )
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      resetCrumb()
+      throw new Error("Crumb expired, retry needed")
+    }
+    throw new Error(`Chart failed: ${res.status}`)
+  }
+
+  const data = await res.json()
+  const result = data.chart?.result?.[0]
+  if (!result) throw new Error(`No chart data for ${symbol}`)
+  return result
+}
+
 function mapQuoteType(
   instrumentType: string,
 ): "EQUITY" | "ETF" | "MUTUALFUND" | undefined {
@@ -299,10 +331,20 @@ async function resolveSymbol(
   if (!query) return null
 
   try {
+    const normalizedQuery = query.trim().toUpperCase()
     const searchResult = await yfSearch(query, 5)
     const targetQuoteType = mapQuoteType(instrumentType)
+    const quotes = searchResult.quotes ?? []
 
-    for (const q of searchResult.quotes ?? []) {
+    // Prefer an exact ticker match even when Yahoo classifies it under a
+    // different quoteType than the selected instrument type (same handling
+    // as the exact-match promotion in lookup()).
+    const exactMatch = quotes.find(
+      (q: any) => String(q.symbol ?? "").toUpperCase() === normalizedQuery,
+    )
+    if (exactMatch?.symbol) return String(exactMatch.symbol)
+
+    for (const q of quotes) {
       if (!q.symbol) continue
       if (!targetQuoteType) return String(q.symbol)
       if (q.quoteType === targetQuoteType) return String(q.symbol)
@@ -314,7 +356,46 @@ async function resolveSymbol(
   }
 }
 
+async function getInstrumentHistory(
+  query: string,
+  instrumentType: string,
+  range: string,
+  interval: string,
+): Promise<string> {
+  try {
+    const symbol = await resolveSymbol(query, instrumentType)
+    if (!symbol) return JSON.stringify(null)
+
+    const result = await yfChart(symbol, range, interval)
+    const timestamps: number[] = result.timestamp ?? []
+    const quote = result.indicators?.quote?.[0] ?? {}
+    const { open = [], high = [], low = [], close = [], volume = [] } = quote
+    const currency = result.meta?.currency ?? null
+
+    const candles = timestamps
+      .map((ts, i) => ({
+        date: new Date(ts * 1000).toISOString().slice(0, 10),
+        open: open[i],
+        high: high[i],
+        low: low[i],
+        close: close[i],
+        volume: volume[i] ?? null,
+      }))
+      .filter(
+        c => c.open != null && c.high != null && c.low != null && c.close != null,
+      )
+
+    if (candles.length === 0) return JSON.stringify(null)
+
+    return JSON.stringify({ symbol, currency, candles })
+  } catch (error) {
+    appConsole.error("[YahooFinanceBridge] getInstrumentHistory failed", error)
+    return JSON.stringify(null)
+  }
+}
+
 export const yahooFinanceBridge = {
   lookup,
   getInstrumentInfo,
+  getInstrumentHistory,
 }

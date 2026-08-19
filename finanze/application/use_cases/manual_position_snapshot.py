@@ -3,7 +3,10 @@ from datetime import date
 from typing import Optional
 from uuid import uuid4
 
-from application.use_cases.position_snapshot_ids import regenerate_snapshot_ids
+from application.use_cases.position_snapshot_ids import (
+    flatten_crypto_wallet_assets,
+    regenerate_snapshot_ids,
+)
 from application.ports.loan_calculator_port import LoanCalculatorPort
 from application.ports.manual_position_data_port import ManualPositionDataPort
 from application.ports.position_port import PositionPort
@@ -77,12 +80,7 @@ class ManualPositionSnapshotWriter:
             return
         container_entries = container.entries
         if isinstance(container, CryptoCurrencies):
-            container_entries = [
-                asset
-                for wallet in container_entries
-                if hasattr(wallet, "assets")
-                for asset in wallet.assets
-            ]
+            container_entries = flatten_crypto_wallet_assets(container_entries)
         seen = set()
         for e in container_entries:
             if hasattr(e, "id"):
@@ -126,10 +124,7 @@ class ManualPositionSnapshotWriter:
                 continue
             container_entries = container.entries
             if isinstance(container, CryptoCurrencies):
-                if container_entries and hasattr(container_entries[0], "assets"):
-                    container_entries = container_entries[0].assets
-                else:
-                    container_entries = []
+                container_entries = flatten_crypto_wallet_assets(container_entries)
             for entry in container_entries:
                 manual_pos_data = self._map_manual_position_data(
                     entry, position, product_type

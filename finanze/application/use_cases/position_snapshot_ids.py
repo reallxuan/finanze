@@ -3,6 +3,15 @@ from uuid import uuid4
 from domain.global_position import CryptoCurrencies, GlobalPosition, ProductType
 
 
+def flatten_crypto_wallet_assets(container_entries):
+    return [
+        asset
+        for wallet in container_entries
+        if hasattr(wallet, "assets")
+        for asset in wallet.assets
+    ]
+
+
 def regenerate_snapshot_ids(position: GlobalPosition):
     products = position.products
     accounts_container = products.get(ProductType.ACCOUNT)
@@ -52,12 +61,7 @@ def regenerate_snapshot_ids(position: GlobalPosition):
             continue
         container_entries = container.entries
         if isinstance(container, CryptoCurrencies):
-            container_entries = [
-                asset
-                for wallet in container_entries
-                if hasattr(wallet, "assets")
-                for asset in wallet.assets
-            ]
+            container_entries = flatten_crypto_wallet_assets(container_entries)
         for entry in container_entries:
             if hasattr(entry, "id"):
                 entry.id = uuid4()

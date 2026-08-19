@@ -8,8 +8,6 @@ import {
   ChangePasswordRequest,
   StatusResponse,
   ExchangeRates,
-  CreateCryptoWalletRequest,
-  UpdateCryptoWalletConnectionRequest,
   SaveCommodityRequest,
   ImportResult,
   ExternalIntegrations,
@@ -38,9 +36,8 @@ import {
   InstrumentDataRequest,
   InstrumentOverview,
   InstrumentsResponse,
-  CryptoWalletConnectionResult,
-  DerivedAddressesResult,
-  DeriveCryptoAddressesRequest,
+  InstrumentHistory,
+  InstrumentHistoryRangeKey,
   TemplateType,
   Template,
   TemplateCreatePayload,
@@ -64,7 +61,6 @@ import {
   GetBackupsInfoRequest,
   CryptoAssetDetails,
   AvailableCryptoAssetsResult,
-  WalletAddressesResponse,
   UpdateTrackedResult,
 } from "@/types"
 import {
@@ -549,47 +545,6 @@ export async function getForecast(
   return (await getApiClient()).post("/forecast", request)
 }
 
-export async function createCryptoWallet(
-  request: CreateCryptoWalletRequest,
-): Promise<CryptoWalletConnectionResult> {
-  return (await getApiClient()).post("/crypto-wallet", request)
-}
-
-export async function updateCryptoWallet(
-  request: UpdateCryptoWalletConnectionRequest,
-): Promise<void> {
-  return (await getApiClient()).put("/crypto-wallet", request)
-}
-
-export async function deleteCryptoWallet(id: string): Promise<void> {
-  return (await getApiClient()).delete(`/crypto-wallet/${id}`)
-}
-
-export async function getCryptoWalletAddresses(
-  walletId: string,
-): Promise<WalletAddressesResponse> {
-  return (await getApiClient()).get(
-    `/crypto-wallet/addresses?wallet_id=${encodeURIComponent(walletId)}`,
-  )
-}
-
-export async function deriveCryptoAddresses(
-  request: DeriveCryptoAddressesRequest,
-): Promise<DerivedAddressesResult> {
-  const params = new URLSearchParams()
-  params.set("xpub", request.xpub)
-  params.set("network", request.network)
-  if (request.script_type) {
-    params.set("script_type", request.script_type)
-  }
-  if (request.range != null) {
-    params.set("range", request.range.toString())
-  }
-  return (await getApiClient()).get(
-    `/crypto-wallet/derivate?${params.toString()}`,
-  )
-}
-
 export async function saveCommodity(
   request: SaveCommodityRequest,
 ): Promise<void> {
@@ -869,6 +824,46 @@ export async function getInstrumentDetails(
 
   return (await getApiClient()).get(
     `/assets/instruments/details?${params.toString()}`,
+  )
+}
+
+const RANGE_TO_YF_PERIOD: Record<InstrumentHistoryRangeKey, string> = {
+  "1m": "1mo",
+  "3m": "3mo",
+  "6m": "6mo",
+  "1y": "1y",
+  "5y": "5y",
+  max: "max",
+}
+
+function getIntervalForRange(range: InstrumentHistoryRangeKey): string {
+  switch (range) {
+    case "1m":
+    case "3m":
+    case "6m":
+    case "1y":
+      return "1d"
+    case "5y":
+      return "1wk"
+    case "max":
+      return "1mo"
+  }
+}
+
+export async function getInstrumentHistory(
+  request: InstrumentDataRequest,
+  range: InstrumentHistoryRangeKey,
+): Promise<InstrumentHistory> {
+  const params = new URLSearchParams()
+  params.append("type", request.type)
+  if (request.isin) params.append("isin", request.isin)
+  if (request.name) params.append("name", request.name)
+  if (request.ticker) params.append("ticker", request.ticker)
+  params.append("range", RANGE_TO_YF_PERIOD[range])
+  params.append("interval", getIntervalForRange(range))
+
+  return (await getApiClient()).get(
+    `/assets/instruments/history?${params.toString()}`,
   )
 }
 

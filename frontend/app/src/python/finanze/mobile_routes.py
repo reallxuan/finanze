@@ -463,6 +463,13 @@ def setup_lazy_routes(router: "Router", lazy: "LazyComponents") -> None:
         ),
         (
             "GET",
+            "/api/v1/assets/instruments/history",
+            "instrument_history",
+            "instrument_history",
+            lz.get_inst_history,
+        ),
+        (
+            "GET",
             "/api/v1/assets/crypto",
             "search_crypto_assets",
             "search_crypto_assets",

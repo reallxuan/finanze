@@ -1,10 +1,13 @@
+from datetime import date
 from unittest.mock import AsyncMock
 
 import pytest
 
 from domain.dezimal import Dezimal
 from domain.instrument import (
+    InstrumentCandle,
     InstrumentDataRequest,
+    InstrumentHistory,
     InstrumentInfo,
     InstrumentOverview,
     InstrumentType,
@@ -165,3 +168,60 @@ async def test_instrument_info_falls_back_to_justetf_when_yfinance_returns_no_in
     adapter._yf.get_instrument_info.assert_awaited_once_with(request.isin, request.type)
     adapter._je.get_instrument_info.assert_awaited_once_with(request.isin, request.type)
     adapter._ee.get_instrument_info.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_get_history_returns_none_when_yfinance_disabled():
+    adapter = InstrumentProviderAdapter(enabled_clients=[])
+    request = InstrumentDataRequest(type=InstrumentType.STOCK, ticker="AAPL")
+    adapter._finect = AsyncMock()
+
+    result = await adapter.get_history(request, "1y", "1d")
+
+    assert result is None
+    adapter._finect.get_history.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_get_history_delegates_to_yfinance_only():
+    adapter = InstrumentProviderAdapter(enabled_clients=[])
+    request = InstrumentDataRequest(type=InstrumentType.STOCK, ticker="AAPL")
+    expected = InstrumentHistory(
+        symbol="AAPL",
+        currency="USD",
+        interval="1d",
+        candles=(
+            InstrumentCandle(
+                date=date(2024, 1, 1),
+                open=Dezimal("1"),
+                high=Dezimal("2"),
+                low=Dezimal("0.5"),
+                close=Dezimal("1.5"),
+            ),
+        ),
+    )
+    adapter._yf = AsyncMock()
+    adapter._yf.get_history = AsyncMock(return_value=expected)
+    adapter._finect = AsyncMock()
+    adapter._ee = AsyncMock()
+    adapter._je = AsyncMock()
+
+    result = await adapter.get_history(request, "1y", "1d")
+
+    assert result == expected
+    adapter._yf.get_history.assert_awaited_once_with(request, "1y", "1d")
+    adapter._finect.get_history.assert_not_awaited()
+    adapter._ee.get_history.assert_not_awaited()
+    adapter._je.get_history.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_get_history_returns_none_when_yfinance_raises():
+    adapter = InstrumentProviderAdapter(enabled_clients=[])
+    request = InstrumentDataRequest(type=InstrumentType.STOCK, ticker="AAPL")
+    adapter._yf = AsyncMock()
+    adapter._yf.get_history = AsyncMock(side_effect=RuntimeError("boom"))
+
+    result = await adapter.get_history(request, "1y", "1d")
+
+    assert result is None

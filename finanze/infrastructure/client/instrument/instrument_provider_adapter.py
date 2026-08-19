@@ -7,6 +7,7 @@ from application.ports.instrument_info_provider import InstrumentInfoProvider
 from domain.dezimal import Dezimal
 from domain.instrument import (
     InstrumentDataRequest,
+    InstrumentHistory,
     InstrumentInfo,
     InstrumentOverview,
     InstrumentType,
@@ -202,6 +203,21 @@ class InstrumentProviderAdapter(InstrumentInfoProvider):
             return None
 
         return self._normalize_info(info)
+
+    async def get_history(
+        self, request: InstrumentDataRequest, range_: str, interval: str
+    ) -> Optional[InstrumentHistory]:
+        query = request.isin or request.ticker or request.name
+        if not query or self._yf is None:
+            return None
+
+        try:
+            return await self._yf.get_history(request, range_, interval)
+        except Exception:
+            self._log.exception(
+                "InstrumentProviderAdapter get_history failed, returning None"
+            )
+            return None
 
     async def _get_instrument_info(
         self, query: str, instrument_type: InstrumentType

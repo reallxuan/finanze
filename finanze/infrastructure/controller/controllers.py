@@ -1,39 +1,17 @@
-from domain.use_cases.add_entity_credentials import AddEntityCredentials
 from domain.use_cases.add_manual_transaction import AddManualTransaction
-from domain.use_cases.cancel_entity_login import CancelEntityLogin
 from domain.use_cases.calculate_loan import CalculateLoan
 from domain.use_cases.calculate_savings import CalculateSavings
 from domain.use_cases.change_user_password import ChangeUserPassword
-from domain.use_cases.complete_external_entity_connection import (
-    CompleteExternalEntityConnection,
-)
-from domain.use_cases.connect_crypto_wallet import ConnectCryptoWallet
-from domain.use_cases.connect_external_entity import ConnectExternalEntity
-from domain.use_cases.connect_external_integration import ConnectExternalIntegration
 from domain.use_cases.create_real_estate import CreateRealEstate
 from domain.use_cases.create_template import CreateTemplate
-from domain.use_cases.delete_crypto_wallet import DeleteCryptoWalletConnection
-from domain.use_cases.get_crypto_wallet_addresses import GetCryptoWalletAddresses
-from domain.use_cases.delete_external_entity import DeleteExternalEntity
 from domain.use_cases.delete_manual_transaction import DeleteManualTransaction
-from domain.use_cases.derive_crypto_addresses import DeriveCryptoAddresses
 from domain.use_cases.delete_periodic_flow import DeletePeriodicFlow
 from domain.use_cases.delete_real_estate import DeleteRealEstate
 from domain.use_cases.delete_template import DeleteTemplate
-from domain.use_cases.disconnect_entity import DisconnectEntity
-from domain.use_cases.disconnect_external_integration import (
-    DisconnectExternalIntegration,
-)
 from domain.use_cases.export_file import ExportFile
 from domain.use_cases.export_sheets import ExportSheets
-from domain.use_cases.fetch_crypto_data import FetchCryptoData
-from domain.use_cases.fetch_external_financial_data import FetchExternalFinancialData
-from domain.use_cases.fetch_financial_data import FetchFinancialData
 from domain.use_cases.forecast import Forecast
 from domain.use_cases.get_available_entities import GetAvailableEntities
-from domain.use_cases.get_available_external_entities import (
-    GetAvailableExternalEntities,
-)
 from domain.use_cases.get_backup_settings import GetBackupSettings
 from domain.use_cases.get_backups import GetBackups
 from domain.use_cases.get_cloud_auth import GetCloudAuth
@@ -41,9 +19,9 @@ from domain.use_cases.get_contributions import GetContributions
 from domain.use_cases.get_crypto_asset_details import GetCryptoAssetDetails
 from domain.use_cases.get_euribor_rates import GetEuriborRates
 from domain.use_cases.get_exchange_rates import GetExchangeRates
-from domain.use_cases.get_external_integrations import GetExternalIntegrations
 from domain.use_cases.get_historic import GetHistoric
 from domain.use_cases.get_networth_timeline import GetNetworthTimeline
+from domain.use_cases.get_instrument_history import GetInstrumentHistory
 from domain.use_cases.get_instrument_info import GetInstrumentInfo
 from domain.use_cases.get_instruments import GetInstruments
 from domain.use_cases.get_money_events import GetMoneyEvents
@@ -56,10 +34,6 @@ from domain.use_cases.unsettle_manual_investment import (
 )
 from domain.use_cases.delete_manual_historic_entry import DeleteManualHistoricEntry
 from domain.use_cases.query_pending_flows import QueryPendingFlows
-from domain.use_cases.get_market_forecast_closed_positions import (
-    GetMarketForecastClosedPositions,
-)
-from domain.use_cases.get_market_forecast_pnl import GetMarketForecastPnl
 from domain.use_cases.get_periodic_flows import GetPeriodicFlows
 from domain.use_cases.get_position import GetPosition
 from domain.use_cases.get_settings import GetSettings
@@ -82,7 +56,6 @@ from domain.use_cases.settle_pending_flow import SettlePendingFlow
 from domain.use_cases.save_periodic_flow import SavePeriodicFlow
 from domain.use_cases.search_crypto_assets import SearchCryptoAssets
 from domain.use_cases.update_contributions import UpdateContributions
-from domain.use_cases.update_crypto_wallet import UpdateCryptoWalletConnection
 from domain.use_cases.update_manual_transaction import UpdateManualTransaction
 from domain.use_cases.update_periodic_flow import UpdatePeriodicFlow
 from domain.use_cases.update_position import UpdatePosition
@@ -95,34 +68,15 @@ from domain.use_cases.upload_backup import UploadBackup
 from domain.use_cases.user_login import UserLogin
 from domain.use_cases.user_logout import UserLogout
 from infrastructure.controller.config import QuartApp
-from infrastructure.controller.routes.add_entity_login import add_entity_login
 from infrastructure.controller.routes.add_manual_transaction import (
     add_manual_transaction,
 )
-from infrastructure.controller.routes.cancel_entity_login import cancel_entity_login
 from infrastructure.controller.routes.calculate_loan import calculate_loan
 from infrastructure.controller.routes.calculate_savings import calculate_savings
 from infrastructure.controller.routes.change_user_password import change_user_password
-from infrastructure.controller.routes.complete_external_entity_connection import (
-    complete_external_entity_connection,
-)
-from infrastructure.controller.routes.connect_crypto_wallet import connect_crypto_wallet
-from infrastructure.controller.routes.connect_external_entity import (
-    connect_external_entity,
-)
-from infrastructure.controller.routes.connect_external_integration import (
-    connect_external_integration,
-)
 from infrastructure.controller.routes.contributions import contributions
 from infrastructure.controller.routes.create_real_estate import create_real_estate
 from infrastructure.controller.routes.create_template import create_template
-from infrastructure.controller.routes.delete_crypto_wallet import delete_crypto_wallet
-from infrastructure.controller.routes.get_crypto_wallet_addresses import (
-    get_crypto_wallet_addresses,
-)
-from infrastructure.controller.routes.delete_external_entity import (
-    delete_external_entity,
-)
 from infrastructure.controller.routes.delete_manual_transaction import (
     delete_manual_transaction,
 )
@@ -139,28 +93,13 @@ from infrastructure.controller.routes.delete_manual_historic_entry import (
     delete_manual_historic_entry,
 )
 from infrastructure.controller.routes.delete_periodic_flow import delete_periodic_flow
-from infrastructure.controller.routes.derive_crypto_addresses import (
-    derive_crypto_addresses,
-)
 from infrastructure.controller.routes.delete_real_estate import delete_real_estate
 from infrastructure.controller.routes.delete_template import delete_template
-from infrastructure.controller.routes.disconnect_entity import disconnect_entity
-from infrastructure.controller.routes.disconnect_external_integration import (
-    disconnect_external_integration,
-)
 from infrastructure.controller.routes.exchange_rates import exchange_rates
 from infrastructure.controller.routes.get_euribor_rates import get_euribor_rates
 from infrastructure.controller.routes.export_file import export_file
 from infrastructure.controller.routes.export_sheets import export_sheets
-from infrastructure.controller.routes.fetch_crypto_data import fetch_crypto_data
-from infrastructure.controller.routes.fetch_external_financial_data import (
-    fetch_external_financial_data,
-)
-from infrastructure.controller.routes.fetch_financial_data import fetch_financial_data
 from infrastructure.controller.routes.forecast import forecast
-from infrastructure.controller.routes.get_available_external_entities import (
-    get_available_external_entities,
-)
 from infrastructure.controller.routes.get_crypto_asset_details import (
     get_crypto_asset_details,
 )
@@ -168,9 +107,6 @@ from infrastructure.controller.routes.get_available_sources import get_available
 from infrastructure.controller.routes.get_backup_settings import get_backup_settings
 from infrastructure.controller.routes.get_backups import get_backups
 from infrastructure.controller.routes.get_cloud_auth import get_cloud_auth
-from infrastructure.controller.routes.get_external_integrations import (
-    get_external_integrations,
-)
 from infrastructure.controller.routes.get_money_events import get_money_events
 from infrastructure.controller.routes.get_pending_flows import get_pending_flows
 from infrastructure.controller.routes.get_periodic_flows import get_periodic_flows
@@ -187,6 +123,7 @@ from infrastructure.controller.routes.import_backup import import_backup
 from infrastructure.controller.routes.import_file import import_file_route
 from infrastructure.controller.routes.import_sheets import import_sheets
 from infrastructure.controller.routes.instrument_details import instrument_details
+from infrastructure.controller.routes.instrument_history import instrument_history
 from infrastructure.controller.routes.instruments import instruments
 from infrastructure.controller.routes.list_real_estate import list_real_estate
 from infrastructure.controller.routes.logout import logout
@@ -195,10 +132,6 @@ from infrastructure.controller.routes.manage_manual_entities import (
     delete_manual_entity,
     rename_manual_entity,
 )
-from infrastructure.controller.routes.market_forecast_closed_positions import (
-    market_forecast_closed_positions,
-)
-from infrastructure.controller.routes.market_forecast_pnl import market_forecast_pnl
 from infrastructure.controller.routes.oauth_callback import oauth_callback
 from infrastructure.controller.routes.positions import positions
 from infrastructure.controller.routes.register_user import register_user
@@ -211,7 +144,6 @@ from infrastructure.controller.routes.settle_pending_flow import settle_pending_
 from infrastructure.controller.routes.save_periodic_flow import save_periodic_flow
 from infrastructure.controller.routes.transactions import transactions
 from infrastructure.controller.routes.update_contributions import update_contributions
-from infrastructure.controller.routes.update_crypto_wallet import update_crypto_wallet
 from infrastructure.controller.routes.update_manual_transaction import (
     update_manual_transaction,
 )
@@ -234,20 +166,14 @@ async def register_routes(
     change_user_password_uc: ChangeUserPassword,
     get_available_entities_uc: GetAvailableEntities,
     manage_manual_entities_uc,
-    fetch_financial_data_uc: FetchFinancialData,
-    fetch_crypto_data_uc: FetchCryptoData,
-    fetch_external_financial_data_uc: FetchExternalFinancialData,
     export_sheets_uc: ExportSheets,
     export_file_uc: ExportFile,
     import_sheets_uc: ImportSheets,
     import_file_uc: ImportFile,
-    add_entity_credentials_uc: AddEntityCredentials,
-    cancel_entity_login_uc: CancelEntityLogin,
     get_status_uc: GetStatus,
     user_logout_uc: UserLogout,
     get_settings_uc: GetSettings,
     update_settings_uc: UpdateSettings,
-    disconnect_entity_uc: DisconnectEntity,
     get_position_uc: GetPosition,
     get_contributions_uc: GetContributions,
     get_historic_uc: GetHistoric,
@@ -255,25 +181,11 @@ async def register_routes(
     get_transactions_uc: GetTransactions,
     get_exchange_rates_uc: GetExchangeRates,
     get_money_events_uc: GetMoneyEvents,
-    connect_external_entity_uc: ConnectExternalEntity,
-    complete_external_entity_connection_uc: CompleteExternalEntityConnection,
-    delete_external_entity_uc: DeleteExternalEntity,
-    get_available_external_entities_uc: GetAvailableExternalEntities,
-    connect_crypto_wallet_uc: ConnectCryptoWallet,
-    update_crypto_wallet_uc: UpdateCryptoWalletConnection,
-    delete_crypto_wallet_uc: DeleteCryptoWalletConnection,
-    get_crypto_wallet_addresses_uc: GetCryptoWalletAddresses,
-    derive_crypto_addresses_uc: DeriveCryptoAddresses,
     save_commodities_uc: SaveCommodities,
-    get_external_integrations_uc: GetExternalIntegrations,
-    connect_external_integrations_uc: ConnectExternalIntegration,
-    disconnect_external_integrations_uc: DisconnectExternalIntegration,
     save_periodic_flow_uc: SavePeriodicFlow,
     update_periodic_flow_uc: UpdatePeriodicFlow,
     delete_periodic_flow_uc: DeletePeriodicFlow,
     get_periodic_flows_uc: GetPeriodicFlows,
-    get_market_forecast_pnl_uc: GetMarketForecastPnl,
-    get_market_forecast_closed_positions_uc: GetMarketForecastClosedPositions,
     save_pending_flow_uc: SavePendingFlow,
     update_pending_flow_uc: UpdatePendingFlow,
     delete_pending_flow_uc: DeletePendingFlow,
@@ -297,6 +209,7 @@ async def register_routes(
     delete_manual_transaction_uc: DeleteManualTransaction,
     get_instruments_uc: GetInstruments,
     get_instrument_info_uc: GetInstrumentInfo,
+    get_instrument_history_uc: GetInstrumentHistory,
     update_tracked_quotes_uc: UpdateTrackedQuotes,
     update_tracked_loans_uc: UpdateTrackedLoans,
     search_crypto_assets_uc: SearchCryptoAssets,
@@ -514,6 +427,10 @@ async def register_routes(
     @app.route("/api/v1/assets/instruments/details", methods=["GET"])
     async def instrument_details_route():
         return await instrument_details(get_instrument_info_uc)
+
+    @app.route("/api/v1/assets/instruments/history", methods=["GET"])
+    async def instrument_history_route():
+        return await instrument_history(get_instrument_history_uc)
 
     @app.route("/api/v1/assets/crypto", methods=["GET"])
     async def crypto_assets_route():

@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
-import { EditDialog } from "@/components/ui/EditDialog"
 import { InvestmentFilters } from "@/components/InvestmentFilters"
 import { InvestmentDistributionChart } from "@/components/InvestmentDistributionChart"
 import type { OrbitBubbleItem } from "@/components/DonutOrbitBubbles"
@@ -54,14 +53,12 @@ import {
   Wallet,
   Edit3,
   Trash2,
-  MoreVertical,
   Layers,
   FlaskConical,
   X,
   DollarSign,
   ShieldAlert,
   Tag,
-  List,
 } from "lucide-react"
 import { getIconForAssetType } from "@/utils/dashboardUtils"
 import { PinAssetButton } from "@/components/ui/PinAssetButton"
@@ -70,7 +67,6 @@ import { MultiSelectOption } from "@/components/ui/MultiSelect"
 import { AnimatePresence, motion } from "framer-motion"
 import { fadeListContainer, fadeListItem } from "@/lib/animations"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs"
-import { deleteCryptoWallet, updateCryptoWallet } from "@/services/api"
 import {
   ManualPositionsManager,
   ManualPositionsControls,
@@ -85,7 +81,6 @@ import {
 } from "@/components/ui/Popover"
 import { cn } from "@/lib/utils"
 import { useModalBackHandler } from "@/hooks/useModalBackHandler"
-import { WalletAddressesDialog } from "@/components/WalletAddressesDialog"
 
 const STABLECOIN_CURRENCIES: Record<string, string> = { BNFCR: "USD" }
 const normalizeDerivativeCurrency = (currency: string) =>
@@ -331,68 +326,9 @@ function WalletOwnershipBadge({
   )
 }
 
-interface WalletActionsMenuProps {
-  onEdit: () => void
-  onDelete: () => void
-  disabled?: boolean
-}
-
-function WalletActionsMenu({
-  onEdit,
-  onDelete,
-  disabled,
-}: WalletActionsMenuProps) {
-  const { t } = useI18n()
-  const [open, setOpen] = useState(false)
-
-  const handleEdit = useCallback(() => {
-    onEdit()
-    setOpen(false)
-  }, [onEdit])
-
-  const handleDelete = useCallback(() => {
-    onDelete()
-    setOpen(false)
-  }, [onDelete])
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          disabled={disabled}
-          type="button"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-44 p-2 space-y-1">
-        <button
-          type="button"
-          onClick={handleEdit}
-          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-left transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          <Edit3 className="h-3.5 w-3.5" />
-          {t.common.edit}
-        </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-left text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-500/10"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          {t.common.delete}
-        </button>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
 export default function CryptoInvestmentPage() {
   const { positionsData, isLoading } = useFinancialData()
-  const { settings, exchangeRates, entities, fetchEntities } = useAppContext()
+  const { settings, exchangeRates, entities } = useAppContext()
 
   if (isLoading) {
     return (
@@ -409,7 +345,6 @@ export default function CryptoInvestmentPage() {
         settings={settings}
         exchangeRates={exchangeRates}
         entities={entities}
-        fetchEntities={fetchEntities}
       />
     </ManualPositionsManager>
   )
@@ -420,7 +355,6 @@ interface CryptoInvestmentContentProps {
   settings: ReturnType<typeof useAppContext>["settings"]
   exchangeRates: ReturnType<typeof useAppContext>["exchangeRates"]
   entities: ReturnType<typeof useAppContext>["entities"]
-  fetchEntities: ReturnType<typeof useAppContext>["fetchEntities"]
 }
 
 function CryptoInvestmentContent({
@@ -428,11 +362,9 @@ function CryptoInvestmentContent({
   settings,
   exchangeRates,
   entities,
-  fetchEntities,
 }: CryptoInvestmentContentProps) {
   const { t, locale } = useI18n()
   const navigate = useNavigate()
-  const { refreshEntity } = useFinancialData()
   const {
     drafts,
     isEntryDeleted,
@@ -466,33 +398,9 @@ function CryptoInvestmentContent({
   const symbolRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [highlightedAsset, setHighlightedAsset] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>("wallets")
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [walletToEdit, setWalletToEdit] = useState<CryptoCurrencyWallet | null>(
-    null,
-  )
-  const [editWalletName, setEditWalletName] = useState("")
-  const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [walletToDelete, setWalletToDelete] =
-    useState<CryptoCurrencyWallet | null>(null)
-  const [isDeletingWallet, setIsDeletingWallet] = useState(false)
-  const [editWalletEntityId, setEditWalletEntityId] = useState<string | null>(
-    null,
-  )
-  const [deleteWalletEntityId, setDeleteWalletEntityId] = useState<
-    string | null
-  >(null)
   const [showConnectConfirm, setShowConnectConfirm] = useState(false)
-  const [showAddressesDialog, setShowAddressesDialog] = useState(false)
-  const [addressesDialogWalletId, setAddressesDialogWalletId] = useState<
-    string | null
-  >(null)
-  const [addressesDialogWalletName, setAddressesDialogWalletName] = useState("")
 
-  useModalBackHandler(showEditDialog, () => setShowEditDialog(false))
-  useModalBackHandler(showDeleteConfirm, () => setShowDeleteConfirm(false))
   useModalBackHandler(showConnectConfirm, () => setShowConnectConfirm(false))
-  useModalBackHandler(showAddressesDialog, () => setShowAddressesDialog(false))
   const [selectedDerivative, setSelectedDerivative] =
     useState<DerivativeDetail | null>(null)
   useModalBackHandler(!!selectedDerivative, () => setSelectedDerivative(null))
@@ -1440,103 +1348,6 @@ function CryptoInvestmentContent({
     [setCopiedAddress],
   )
 
-  const handleEditWallet = (wallet: CryptoCurrencyWallet, entityId: string) => {
-    setWalletToEdit(wallet)
-    setEditWalletName(wallet.name ?? getPrimaryWalletDisplayValue(wallet) ?? "")
-    setEditWalletEntityId(entityId)
-    setShowEditDialog(true)
-  }
-
-  const confirmEditWallet = async () => {
-    const trimmedName = editWalletName.trim()
-    if (!walletToEdit || !trimmedName || !walletToEdit.id) {
-      return
-    }
-
-    if (trimmedName === walletToEdit.name) {
-      setShowEditDialog(false)
-      setWalletToEdit(null)
-      setEditWalletName("")
-      setEditWalletEntityId(null)
-      return
-    }
-
-    setIsUpdatingWallet(true)
-    try {
-      await updateCryptoWallet({
-        id: walletToEdit.id,
-        name: trimmedName,
-      })
-
-      try {
-        if (editWalletEntityId) {
-          await refreshEntity(editWalletEntityId)
-        } else {
-          await refreshEntity("crypto")
-        }
-      } catch (refreshError) {
-        console.error(
-          "Error refreshing crypto data after wallet update:",
-          refreshError,
-        )
-      }
-
-      setShowEditDialog(false)
-      setWalletToEdit(null)
-      setEditWalletName("")
-      setEditWalletEntityId(null)
-    } catch (error) {
-      console.error("Error updating wallet:", error)
-    } finally {
-      setIsUpdatingWallet(false)
-    }
-  }
-
-  const handleDeleteWallet = (
-    wallet: CryptoCurrencyWallet,
-    entityId: string,
-  ) => {
-    if (!wallet.id) {
-      console.error("Cannot delete wallet without ID", wallet)
-      return
-    }
-    setWalletToDelete(wallet)
-    setShowDeleteConfirm(true)
-    setDeleteWalletEntityId(entityId)
-  }
-
-  const confirmDeleteWallet = async () => {
-    if (!walletToDelete?.id) {
-      return
-    }
-
-    setIsDeletingWallet(true)
-    try {
-      await deleteCryptoWallet(walletToDelete.id)
-      try {
-        if (deleteWalletEntityId) {
-          await refreshEntity(deleteWalletEntityId)
-        } else {
-          await refreshEntity("crypto")
-        }
-        await fetchEntities()
-      } catch (refreshError) {
-        console.error(
-          "Error refreshing crypto data after wallet deletion:",
-          refreshError,
-        )
-      }
-
-      setShowDeleteConfirm(false)
-      setWalletToDelete(null)
-      setDeleteWalletEntityId(null)
-    } catch (error) {
-      console.error("Error deleting wallet:", error)
-    } finally {
-      setIsDeletingWallet(false)
-    }
-  }
-
   const handleViewAllTokens = useCallback((wallet: CryptoCurrencyWallet) => {
     setSelectedWalletFilters([getWalletIdentifier(wallet)])
     setViewMode("network")
@@ -1806,35 +1617,6 @@ function CryptoInvestmentContent({
                             </div>
                           ) : null}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {walletXpub && wallet.id && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="p-1 h-7 w-7 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300"
-                            onClick={() => {
-                              setAddressesDialogWalletId(wallet.id!)
-                              setAddressesDialogWalletName(walletName)
-                              setShowAddressesDialog(true)
-                            }}
-                            title={
-                              (t.walletManagement as Record<string, string>)
-                                .viewAddresses
-                            }
-                          >
-                            <List className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                        <WalletActionsMenu
-                          onEdit={() =>
-                            handleEditWallet(wallet, entityGroup.entity.id)
-                          }
-                          onDelete={() =>
-                            handleDeleteWallet(wallet, entityGroup.entity.id)
-                          }
-                          disabled={isUpdatingWallet || isDeletingWallet}
-                        />
                       </div>
                     </div>
                     <div className="text-lg font-medium">
@@ -2956,24 +2738,6 @@ function CryptoInvestmentContent({
       )}
 
       <ConfirmationDialog
-        isOpen={showDeleteConfirm}
-        title={t.common.warning}
-        message={t.walletManagement.deleteWalletConfirm.replace(
-          "{{walletName}}",
-          walletToDelete?.name || getPrimaryWalletAddress(walletToDelete) || "",
-        )}
-        onConfirm={confirmDeleteWallet}
-        onCancel={() => {
-          setShowDeleteConfirm(false)
-          setWalletToDelete(null)
-          setDeleteWalletEntityId(null)
-        }}
-        isLoading={isDeletingWallet}
-        confirmText={t.common.delete}
-        cancelText={t.common.cancel}
-      />
-
-      <ConfirmationDialog
         isOpen={showConnectConfirm}
         title={t.management.manualPositions.shared.discardChangesTitle}
         message={t.management.manualPositions.shared.discardChangesMessage}
@@ -2984,24 +2748,6 @@ function CryptoInvestmentContent({
         }}
         onCancel={() => setShowConnectConfirm(false)}
         confirmText={t.common.discard}
-        cancelText={t.common.cancel}
-      />
-
-      <EditDialog
-        isOpen={showEditDialog}
-        title={t.walletManagement.editWalletName}
-        value={editWalletName}
-        onValueChange={setEditWalletName}
-        onConfirm={confirmEditWallet}
-        onCancel={() => {
-          setShowEditDialog(false)
-          setWalletToEdit(null)
-          setEditWalletName("")
-          setEditWalletEntityId(null)
-        }}
-        isLoading={isUpdatingWallet}
-        placeholder={t.walletManagement.walletNamePlaceholder}
-        confirmText={t.common.save}
         cancelText={t.common.cancel}
       />
 
@@ -3282,12 +3028,6 @@ function CryptoInvestmentContent({
             : dialogContent
         })()}
 
-      <WalletAddressesDialog
-        isOpen={showAddressesDialog}
-        onClose={() => setShowAddressesDialog(false)}
-        walletId={addressesDialogWalletId}
-        walletName={addressesDialogWalletName}
-      />
     </div>
   )
 }

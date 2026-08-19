@@ -196,6 +196,7 @@
     "pending": "Pending",
     "gross": "gross",
     "openInfoSheet": "View fund sheet",
+    "viewChart": "View chart",
     "issuer": "Issuer",
     "symbol": "Symbol",
     "shares": "Shares",
@@ -1198,6 +1199,19 @@
     "negativeCashWarningTitle": "Unfeasible projection",
     "negativeCashWarning": "Projected cash would be {amount} (negative). Automatic contributions, expenses or debt payments exceed future available cash. Adjust assumptions or flows.",
     "includeRealEstateTaxes": "Include real estate taxes"
+  },
+  "instrumentPriceChart": {
+    "collapse": "Collapse",
+    "noData": "No chart data available for this instrument",
+    "loadError": "Failed to load chart data",
+    "ranges": {
+      "1m": "1M",
+      "3m": "3M",
+      "6m": "6M",
+      "1y": "1Y",
+      "5y": "5Y",
+      "max": "Max"
+    }
   },
   "netWorthTimeline": {
     "title": "Net Worth",

@@ -69,6 +69,7 @@ from application.use_cases.get_euribor_rates import GetEuriborRatesImpl
 from application.use_cases.get_external_integrations import GetExternalIntegrationsImpl
 from application.use_cases.get_historic import GetHistoricImpl
 from application.use_cases.get_networth_timeline import GetNetworthTimelineImpl
+from application.use_cases.get_instrument_history import GetInstrumentHistoryImpl
 from application.use_cases.get_instrument_info import GetInstrumentInfoImpl
 from application.use_cases.get_instruments import GetInstrumentsImpl
 from application.use_cases.get_market_forecast_closed_positions import (
@@ -350,14 +351,6 @@ class FinanzeServer:
             ),
         }
 
-        external_integrations = {
-            ExternalIntegrationId.GOOGLE_SHEETS: sheets_initiator,
-            ExternalIntegrationId.ETHERSCAN: etherscan_client,
-            ExternalIntegrationId.GOCARDLESS: gocardless_client,
-            ExternalIntegrationId.ENABLE_BANKING: enablebanking_client,
-            ExternalIntegrationId.ETHPLORER: ethplorer_client,
-        }
-
         sheets_adapter = SheetsAdapter(sheets_initiator)
         csv_tsv_adapter = CSVFileTableAdapter()
         table_rw_adapter = TableRWDispatcher(
@@ -474,45 +467,6 @@ class FinanzeServer:
             crypto_entity_fetchers,
         )
         loan_calculator = LoanCalculator()
-        fetch_financial_data = FetchFinancialDataImpl(
-            position_repository,
-            auto_contrib_repository,
-            transaction_repository,
-            historic_repository,
-            financial_entity_fetchers,
-            config_loader,
-            credentials_port,
-            sessions_repository,
-            last_fetches_repository,
-            crypto_asset_repository,
-            crypto_asset_info_client,
-            transaction_handler,
-            public_keychain,
-            entity_account_repository,
-            loan_calculator,
-            real_estate_repository,
-            feature_flag_port,
-        )
-        fetch_crypto_data = FetchCryptoDataImpl(
-            position_repository,
-            crypto_entity_fetchers,
-            crypto_wallet_repository,
-            crypto_asset_repository,
-            crypto_asset_info_client,
-            last_fetches_repository,
-            external_integration_repository,
-            transaction_handler,
-            public_key_derivation,
-        )
-        fetch_external_financial_data = FetchExternalFinancialDataImpl(
-            entity_repository,
-            external_entity_repository,
-            position_repository,
-            external_entity_fetchers,
-            external_integration_repository,
-            last_fetches_repository,
-            transaction_handler,
-        )
         export_sheets = ExportSheetsImpl(
             position_repository,
             auto_contrib_repository,
@@ -558,25 +512,6 @@ class FinanzeServer:
             template_parser=template_parser,
             transaction_handler_port=transaction_handler,
         )
-        add_entity_credentials = AddEntityCredentialsImpl(
-            financial_entity_fetchers,
-            credentials_port,
-            sessions_repository,
-            transaction_handler,
-            public_keychain,
-            entity_account_repository,
-            feature_flag_port,
-        )
-        cancel_entity_login = CancelEntityLoginImpl(financial_entity_fetchers)
-        disconnect_entity = DisconnectEntityImpl(
-            credentials_port,
-            sessions_repository,
-            transaction_handler,
-            entity_account_repository,
-            transaction_repository,
-            auto_contrib_repository,
-            historic_repository,
-        )
         get_settings = GetSettingsImpl(config_loader)
         update_settings = UpdateSettingsImpl(config_loader)
         get_entities_position = GetPositionImpl(position_repository, entity_repository)
@@ -594,67 +529,12 @@ class FinanzeServer:
         get_transactions = GetTransactionsImpl(
             transaction_repository, entity_repository
         )
-        market_forecast_provider = polymarket_fetcher
-        get_market_forecast_pnl = GetMarketForecastPnlImpl(
-            entity_account_repository,
-            credentials_port,
-            market_forecast_provider,
-        )
-        get_market_forecast_closed_positions = GetMarketForecastClosedPositionsImpl(
-            entity_account_repository,
-            credentials_port,
-            market_forecast_provider,
-        )
         get_exchange_rates = GetExchangeRatesImpl(
             exchange_rate_client,
             crypto_asset_info_client,
             metal_price_client,
             exchange_rate_storage,
             position_repository,
-        )
-        connect_external_entity = ConnectExternalEntityImpl(
-            entity_repository,
-            external_entity_repository,
-            external_entity_fetchers,
-            external_integration_repository,
-        )
-        complete_external_entity_connection = CompleteExternalEntityConnectionImpl(
-            external_entity_repository,
-            external_entity_fetchers,
-            external_integration_repository,
-        )
-        delete_external_entity = DeleteExternalEntityImpl(
-            external_entity_repository,
-            external_entity_fetchers,
-            external_integration_repository,
-        )
-        get_available_external_entities = GetAvailableExternalEntitiesImpl(
-            entity_repository,
-            external_entity_repository,
-            external_entity_fetchers,
-            external_integration_repository,
-        )
-        connect_crypto_wallet = ConnectCryptoWalletImpl(
-            crypto_wallet_repository,
-            crypto_entity_fetchers,
-            external_integration_repository,
-            public_key_derivation,
-            transaction_handler,
-        )
-        update_crypto_wallet = UpdateCryptoWalletConnectionImpl(
-            crypto_wallet_repository
-        )
-        delete_crypto_wallet = DeleteCryptoWalletConnectionImpl(
-            crypto_wallet_repository,
-            position_repository,
-            transaction_handler,
-        )
-        get_crypto_wallet_addresses = GetCryptoWalletAddressesImpl(
-            crypto_wallet_repository
-        )
-        derive_crypto_addresses = DeriveCryptoAddressesImpl(
-            public_key_derivation,
-            entity_repository,
         )
         save_commodities = SaveCommoditiesImpl(
             position_repository,
@@ -663,19 +543,9 @@ class FinanzeServer:
             last_fetches_repository,
             transaction_handler,
         )
-        get_external_integrations = GetExternalIntegrationsImpl(
-            external_integration_repository, external_integrations
-        )
-        connect_external_integrations = ConnectExternalIntegrationImpl(
-            external_integration_repository,
-            external_integrations,
-        )
-        disconnect_external_integrations = DisconnectExternalIntegrationImpl(
-            external_integration_repository
-        )
-
         get_instruments = GetInstrumentsImpl(instrument_provider)
         get_instrument_info = GetInstrumentInfoImpl(instrument_provider)
+        get_instrument_history = GetInstrumentHistoryImpl(instrument_provider)
         search_crypto_assets = SearchCryptoAssetsImpl(crypto_asset_info_client)
         get_crypto_asset_details = GetCryptoAssetDetailsImpl(
             crypto_asset_info_client, entity_repository
@@ -907,20 +777,14 @@ class FinanzeServer:
             change_user_password,
             get_available_entities,
             manage_manual_entities,
-            fetch_financial_data,
-            fetch_crypto_data,
-            fetch_external_financial_data,
             export_sheets,
             export_file,
             import_sheets,
             import_file,
-            add_entity_credentials,
-            cancel_entity_login,
             get_status,
             user_logout,
             get_settings,
             update_settings,
-            disconnect_entity,
             get_entities_position,
             get_contributions,
             get_historic,
@@ -928,25 +792,11 @@ class FinanzeServer:
             get_transactions,
             get_exchange_rates,
             get_money_events,
-            connect_external_entity,
-            complete_external_entity_connection,
-            delete_external_entity,
-            get_available_external_entities,
-            connect_crypto_wallet,
-            update_crypto_wallet,
-            delete_crypto_wallet,
-            get_crypto_wallet_addresses,
-            derive_crypto_addresses,
             save_commodities,
-            get_external_integrations,
-            connect_external_integrations,
-            disconnect_external_integrations,
             save_periodic_flow,
             update_periodic_flow,
             delete_periodic_flow,
             get_periodic_flows,
-            get_market_forecast_pnl,
-            get_market_forecast_closed_positions,
             save_pending_flow,
             update_pending_flow,
             delete_pending_flow,
@@ -970,6 +820,7 @@ class FinanzeServer:
             delete_manual_transaction,
             get_instruments,
             get_instrument_info,
+            get_instrument_history,
             update_tracked_quotes,
             update_tracked_loans,
             search_crypto_assets,

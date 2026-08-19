@@ -1228,6 +1228,24 @@ export interface InstrumentsResponse {
   entries: InstrumentInfo[]
 }
 
+export interface InstrumentCandle {
+  date: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume?: number | null
+}
+
+export interface InstrumentHistory {
+  symbol: string
+  currency: string
+  interval: string
+  candles: InstrumentCandle[]
+}
+
+export type InstrumentHistoryRangeKey = "1m" | "3m" | "6m" | "1y" | "5y" | "max"
+
 export interface CryptoAssetPlatform {
   provider_id: string
   name: string

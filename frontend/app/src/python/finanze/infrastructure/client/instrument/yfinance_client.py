@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import date
 from typing import Optional
 
 import js
@@ -7,7 +8,9 @@ from aiocache import cached
 
 from domain.dezimal import Dezimal
 from domain.instrument import (
+    InstrumentCandle,
     InstrumentDataRequest,
+    InstrumentHistory,
     InstrumentInfo,
     InstrumentOverview,
     InstrumentType,
@@ -76,6 +79,45 @@ class YFinanceClient:
             type=resolved_type,
             price=Dezimal(data["price"]),
             symbol=data.get("symbol"),
+        )
+
+    @cached(ttl=300)
+    async def get_history(
+        self, request: InstrumentDataRequest, range_: str, interval: str
+    ) -> Optional[InstrumentHistory]:
+        query = request.isin or request.ticker or request.name
+        if not query:
+            return None
+
+        try:
+            raw = await js.jsBridge.yahooFinance.getInstrumentHistory(
+                query, request.type.value, range_, interval
+            )
+            data = json.loads(raw)
+        except Exception:
+            self._log.exception("yahooFinance bridge getInstrumentHistory failed")
+            return None
+
+        if data is None:
+            return None
+
+        candles = tuple(
+            InstrumentCandle(
+                date=date.fromisoformat(c["date"]),
+                open=Dezimal(c["open"]),
+                high=Dezimal(c["high"]),
+                low=Dezimal(c["low"]),
+                close=Dezimal(c["close"]),
+                volume=c.get("volume"),
+            )
+            for c in data.get("candles", [])
+        )
+
+        return InstrumentHistory(
+            symbol=data.get("symbol", query),
+            currency=data.get("currency") or "",
+            interval=interval,
+            candles=candles,
         )
 
     @staticmethod

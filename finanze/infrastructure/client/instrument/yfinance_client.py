@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import Optional
 
 import yfinance as yf
@@ -6,7 +7,9 @@ from aiocache import cached
 
 from domain.dezimal import Dezimal
 from domain.instrument import (
+    InstrumentCandle,
     InstrumentDataRequest,
+    InstrumentHistory,
     InstrumentInfo,
     InstrumentOverview,
     InstrumentType,
@@ -123,6 +126,56 @@ class YFinanceClient:
             type=resolved_type,
             price=Dezimal(price),
             symbol=symbol,
+        )
+
+    @cached(ttl=300)
+    async def get_history(
+        self, request: InstrumentDataRequest, range_: str, interval: str
+    ) -> Optional[InstrumentHistory]:
+        query = request.isin or request.ticker or request.name
+        if not query:
+            return None
+
+        symbol = await self._resolve_symbol(query, request.type)
+        if not symbol:
+            return None
+
+        ticker = yf.Ticker(symbol)
+        df = ticker.history(period=range_, interval=interval, auto_adjust=False)
+        if df is None or df.empty:
+            return None
+
+        candles = []
+        for idx, row in df.iterrows():
+            volume = row.get("Volume")
+            candles.append(
+                InstrumentCandle(
+                    date=idx.date(),
+                    open=Dezimal(row["Open"]),
+                    high=Dezimal(row["High"]),
+                    low=Dezimal(row["Low"]),
+                    close=Dezimal(row["Close"]),
+                    volume=(
+                        int(volume)
+                        if volume is not None and not math.isnan(volume)
+                        else None
+                    ),
+                )
+            )
+
+        currency = None
+        fast_info = getattr(ticker, "fast_info", None)
+        if fast_info:
+            currency = fast_info.get("currency")
+        if not currency:
+            info = getattr(ticker, "info", {}) or {}
+            currency = info.get("currency")
+
+        return InstrumentHistory(
+            symbol=symbol,
+            currency=str(currency) if currency else "",
+            interval=interval,
+            candles=tuple(candles),
         )
 
     @staticmethod

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { Pencil, Plus, RefreshCw, Trash2 } from "lucide-react"
 import { useAppContext } from "@/context/AppContext"
 import { useFinancialData } from "@/context/FinancialDataContext"
+import { useQuoteRefresh } from "@/hooks/useQuoteRefresh"
 import { useI18n } from "@/i18n"
 import {
   createManualEntity,
@@ -23,16 +24,15 @@ export default function ManualEntitiesPage() {
     exchangeRates,
     fetchEntities,
     showToast,
-    refreshTrackedQuotes,
     quoteRefreshStatus,
     lastQuoteUpdatedAt,
   } = useAppContext()
   const { positionsData, refreshData } = useFinancialData()
+  const { refreshQuotes, isRefreshing } = useQuoteRefresh(refreshData)
   const [name, setName] = useState("")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const manualEntities = useMemo(
     () => (entities ?? []).filter(entity => entity.origin === EntityOrigin.MANUAL),
@@ -61,10 +61,11 @@ export default function ManualEntitiesPage() {
   }
 
   const errorMessage = (error: any) => {
-    if (error?.data?.code === "ENTITY_NOT_EMPTY") {
+    const code = error?.code ?? error?.data?.code
+    if (code === "ENTITY_NOT_EMPTY") {
       return t.manualEntities.notEmpty
     }
-    if (error?.data?.code === "ENTITY_NAME_EXISTS") {
+    if (code === "ENTITY_NAME_EXISTS") {
       return t.manualEntities.nameExists
     }
     return t.manualEntities.operationFailed
@@ -112,27 +113,6 @@ export default function ManualEntitiesPage() {
       showToast(errorMessage(error), "error")
     } finally {
       setIsSaving(false)
-    }
-  }
-
-  const refreshQuotes = async () => {
-    setIsRefreshing(true)
-    try {
-      const result = await refreshTrackedQuotes()
-      await refreshData()
-      showToast(
-        result?.throttled
-          ? t.manualEntities.refreshThrottled
-          : t.manualEntities.refreshed,
-        result?.throttled ? "info" : "success",
-      )
-    } catch (error) {
-      showToast(
-        t.manualEntities.refreshError,
-        "error",
-      )
-    } finally {
-      setIsRefreshing(false)
     }
   }
 

@@ -48,7 +48,10 @@ import {
   ChevronDown,
   BarChart3,
   Loader2,
+  ChartCandlestick,
 } from "lucide-react"
+import { InstrumentType } from "@/types"
+import InstrumentPriceChartCard from "@/components/instrument/InstrumentPriceChartCard"
 import { getIconForAssetType } from "@/utils/dashboardUtils"
 import { getIssuerIconPath } from "@/utils/issuerIcons"
 import {
@@ -606,6 +609,9 @@ function FundsInvestmentPageContent({
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {},
   )
+  const [chartPosition, setChartPosition] = useState<StockFundPosition | null>(
+    null,
+  )
 
   const toggleCardExpanded = useCallback((key: string) => {
     setExpandedCards(prev => ({ ...prev, [key]: !prev[key] }))
@@ -666,730 +672,765 @@ function FundsInvestmentPageContent({
   }
 
   return (
-    <motion.div
-      variants={fadeListContainer}
-      initial="hidden"
-      animate="show"
-      className="space-y-6"
-    >
-      <motion.div variants={fadeListItem} className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-8 w-8"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">
-                {t.common.fundsInvestments}
-              </h1>
-              <PinAssetButton
-                assetId="funds"
-                className="hidden md:inline-flex"
-              />
+    <>
+      <motion.div
+        variants={fadeListContainer}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
+        <motion.div variants={fadeListItem} className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-8 w-8"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft size={20} />
+              </Button>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">
+                  {t.common.fundsInvestments}
+                </h1>
+                <PinAssetButton
+                  assetId="funds"
+                  className="hidden md:inline-flex"
+                />
+              </div>
             </div>
+            <FundsCombinedControls
+              className="flex justify-center sm:flex-row gap-2 sm:items-center sm:justify-end"
+              fundsContext={fundsContext}
+              portfolioContext={portfolioContext}
+            />
           </div>
-          <FundsCombinedControls
-            className="flex justify-center sm:flex-row gap-2 sm:items-center sm:justify-end"
+          <FundsCombinedEditBanner
             fundsContext={fundsContext}
             portfolioContext={portfolioContext}
           />
-        </div>
-        <FundsCombinedEditBanner
-          fundsContext={fundsContext}
-          portfolioContext={portfolioContext}
-        />
-      </motion.div>
-
-      <motion.div variants={fadeListItem}>
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-            <Filter size={16} />
-            <span>{t.transactions.filters}:</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            <div className="w-full sm:max-w-xs">
-              <EntitySelector
-                entities={filteredEntities}
-                selectedEntityIds={selectedEntities}
-                onSelectionChange={setSelectedEntities}
-              />
-            </div>
-            {portfolioOptions.length > 0 && (
-              <div className="w-full sm:max-w-xs">
-                <MultiSelect
-                  options={portfolioOptions}
-                  value={selectedPortfolios}
-                  onChange={setSelectedPortfolios}
-                  placeholder={(t.investments as any).portfolio}
-                />
-              </div>
-            )}
-          </div>
-          {(selectedEntities.length > 0 || selectedPortfolios.length > 0) && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearAllFilters}
-              className="flex items-center gap-2 self-start lg:self-auto"
-            >
-              <FilterX size={16} />
-              {t.transactions.clear}
-            </Button>
-          )}
-        </div>
-      </motion.div>
-
-      {showDraftList ? (
-        <motion.div variants={fadeListItem} initial="hidden" animate="show">
-          <FundPortfolioDraftList
-            manualDrafts={manualPortfolioDrafts}
-            readOnlyPortfolios={readOnlyFundPortfolios}
-            context={portfolioManual}
-            isEditMode={portfolioManual.isEditMode}
-            onAddPortfolio={handleAddPortfolioDraft}
-            canAddPortfolio={portfolioManual.manualEntities.length > 0}
-          />
         </motion.div>
-      ) : null}
 
-      <motion.div variants={fadeListItem}>
-        {sortedDisplayItems.length === 0 ? (
-          <Card className="p-14 text-center flex flex-col items-center gap-4">
-            {getIconForAssetType(
-              ProductType.FUND,
-              "h-16 w-16",
-              "text-gray-400 dark:text-gray-600",
-            )}
-            <div className="text-gray-500 dark:text-gray-400 text-sm max-w-md">
-              {selectedEntities.length > 0
-                ? t.investments.noPositionsFound.replace(
-                    "{type}",
-                    t.common.fundsInvestments.toLowerCase(),
-                  )
-                : t.investments.noPositionsAvailable.replace(
-                    "{type}",
-                    t.common.fundsInvestments.toLowerCase(),
-                  )}
+        <motion.div variants={fadeListItem}>
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Filter size={16} />
+              <span>{t.transactions.filters}:</span>
             </div>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            <Card className="-mx-6 rounded-none border-x-0">
-              <CardContent className="pt-6">
-                <InvestmentDistributionChart
-                  data={
-                    fundsChartView === "asset" ? chartData : assetTypeChartData
-                  }
-                  title={t.common.distribution}
-                  locale={locale}
-                  currency={settings.general.defaultCurrency}
-                  hideLegend
-                  containerClassName="overflow-visible w-full"
-                  variant="bare"
-                  onSliceClick={
-                    fundsChartView === "asset" ? handleSliceClick : undefined
-                  }
-                  toggleConfig={{
-                    activeView: fundsChartView,
-                    onViewChange: v => setFundsChartView(v as "asset" | "type"),
-                    options: [
-                      { value: "asset", label: t.investments.byAsset },
-                      { value: "type", label: t.investments.byType },
-                    ],
-                  }}
-                  centerContent={{
-                    rawValue: totalValue,
-                    gainPercentage:
-                      totalInitialInvestment > 0
-                        ? ((totalValue - totalInitialInvestment) /
-                            totalInitialInvestment) *
-                          100
-                        : undefined,
-                    badgeText:
-                      fundsChartView === "type" &&
-                      assetTypeSplitPercentages.equity +
-                        assetTypeSplitPercentages.fixed >
-                        0
-                        ? `${Math.round(assetTypeSplitPercentages.equity)} / ${Math.round(assetTypeSplitPercentages.fixed)}`
-                        : undefined,
-                    infoRows: [
-                      {
-                        label: t.dashboard.totalValue,
-                        value: formatCurrency(
-                          totalValue,
-                          locale,
-                          settings.general.defaultCurrency,
-                        ),
-                      },
-                      ...(totalInitialInvestment > 0
-                        ? [
-                            {
-                              label: t.dashboard.investedAmount,
-                              value: formatCurrency(
-                                totalInitialInvestment,
-                                locale,
-                                settings.general.defaultCurrency,
-                              ),
-                            },
-                            {
-                              label: t.investments.sortAbsoluteGain,
-                              value: `${totalValue - totalInitialInvestment >= 0 ? "+" : ""}${formatCurrency(
-                                totalValue - totalInitialInvestment,
-                                locale,
-                                settings.general.defaultCurrency,
-                              )}`,
-                              valueClassName:
-                                totalValue - totalInitialInvestment >= 0
-                                  ? "text-green-500"
-                                  : "text-red-500",
-                            },
-                          ]
-                        : []),
-                    ],
-                  }}
-                  badges={[
-                    {
-                      icon: <Layers className="h-3 w-3" />,
-                      value: `${sortedDisplayItems.length} ${sortedDisplayItems.length === 1 ? t.investments.asset : t.investments.assets}`,
-                    },
-                  ]}
-                  orbitBubbles={orbitBubbleData}
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+              <div className="w-full sm:max-w-xs">
+                <EntitySelector
+                  entities={filteredEntities}
+                  selectedEntityIds={selectedEntities}
+                  onSelectionChange={setSelectedEntities}
                 />
-              </CardContent>
-            </Card>
-
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                <ArrowUpDown size={14} />
-                <span className="hidden min-[400px]:inline">
-                  {t.investments.sortBy}
-                </span>
-              </span>
-              <div className="flex items-center bg-muted rounded-lg p-1">
-                {(
-                  [
-                    { value: "amount", label: t.investments.sortAmount },
-                    {
-                      value: "relativeGain",
-                      label: t.investments.sortRelativeGain,
-                    },
-                    {
-                      value: "absoluteGain",
-                      label: t.investments.sortAbsoluteGain,
-                    },
-                  ] as const
-                ).map(option => (
-                  <button
-                    key={option.value}
-                    onClick={() => setSortBy(option.value)}
-                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${
-                      sortBy === option.value
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
               </div>
-              <button
-                onClick={() =>
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
-                className="p-1 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                aria-label={
-                  sortOrder === "asc" ? "Sort descending" : "Sort ascending"
-                }
-              >
-                {sortOrder === "asc" ? (
-                  <ArrowRight size={16} className="rotate-[-90deg]" />
-                ) : (
-                  <ArrowRight size={16} className="rotate-90" />
-                )}
-              </button>
+              {portfolioOptions.length > 0 && (
+                <div className="w-full sm:max-w-xs">
+                  <MultiSelect
+                    options={portfolioOptions}
+                    value={selectedPortfolios}
+                    onChange={setSelectedPortfolios}
+                    placeholder={(t.investments as any).portfolio}
+                  />
+                </div>
+              )}
             </div>
+            {(selectedEntities.length > 0 || selectedPortfolios.length > 0) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearAllFilters}
+                className="flex items-center gap-2 self-start lg:self-auto"
+              >
+                <FilterX size={16} />
+                {t.transactions.clear}
+              </Button>
+            )}
+          </div>
+        </motion.div>
 
-            {/* Positions List */}
-            <div className="space-y-4">
-              {sortedDisplayItems.map(item => {
-                const { position, manualDraft, isManual, isDirty } = item
-                const identifier = position.name || position.symbol || item.key
+        {showDraftList ? (
+          <motion.div variants={fadeListItem} initial="hidden" animate="show">
+            <FundPortfolioDraftList
+              manualDrafts={manualPortfolioDrafts}
+              readOnlyPortfolios={readOnlyFundPortfolios}
+              context={portfolioManual}
+              isEditMode={portfolioManual.isEditMode}
+              onAddPortfolio={handleAddPortfolioDraft}
+              canAddPortfolio={portfolioManual.manualEntities.length > 0}
+            />
+          </motion.div>
+        ) : null}
 
-                const percentageOfFunds =
-                  totalFundValue > 0
-                    ? ((position.value || 0) / totalFundValue) * 100
-                    : 0
+        <motion.div variants={fadeListItem}>
+          {sortedDisplayItems.length === 0 ? (
+            <Card className="p-14 text-center flex flex-col items-center gap-4">
+              {getIconForAssetType(
+                ProductType.FUND,
+                "h-16 w-16",
+                "text-gray-400 dark:text-gray-600",
+              )}
+              <div className="text-gray-500 dark:text-gray-400 text-sm max-w-md">
+                {selectedEntities.length > 0
+                  ? t.investments.noPositionsFound.replace(
+                      "{type}",
+                      t.common.fundsInvestments.toLowerCase(),
+                    )
+                  : t.investments.noPositionsAvailable.replace(
+                      "{type}",
+                      t.common.fundsInvestments.toLowerCase(),
+                    )}
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              <Card className="-mx-6 rounded-none border-x-0">
+                <CardContent className="pt-6">
+                  <InvestmentDistributionChart
+                    data={
+                      fundsChartView === "asset"
+                        ? chartData
+                        : assetTypeChartData
+                    }
+                    title={t.common.distribution}
+                    locale={locale}
+                    currency={settings.general.defaultCurrency}
+                    hideLegend
+                    containerClassName="overflow-visible w-full"
+                    variant="bare"
+                    onSliceClick={
+                      fundsChartView === "asset" ? handleSliceClick : undefined
+                    }
+                    toggleConfig={{
+                      activeView: fundsChartView,
+                      onViewChange: v =>
+                        setFundsChartView(v as "asset" | "type"),
+                      options: [
+                        { value: "asset", label: t.investments.byAsset },
+                        { value: "type", label: t.investments.byType },
+                      ],
+                    }}
+                    centerContent={{
+                      rawValue: totalValue,
+                      gainPercentage:
+                        totalInitialInvestment > 0
+                          ? ((totalValue - totalInitialInvestment) /
+                              totalInitialInvestment) *
+                            100
+                          : undefined,
+                      badgeText:
+                        fundsChartView === "type" &&
+                        assetTypeSplitPercentages.equity +
+                          assetTypeSplitPercentages.fixed >
+                          0
+                          ? `${Math.round(assetTypeSplitPercentages.equity)} / ${Math.round(assetTypeSplitPercentages.fixed)}`
+                          : undefined,
+                      infoRows: [
+                        {
+                          label: t.dashboard.totalValue,
+                          value: formatCurrency(
+                            totalValue,
+                            locale,
+                            settings.general.defaultCurrency,
+                          ),
+                        },
+                        ...(totalInitialInvestment > 0
+                          ? [
+                              {
+                                label: t.dashboard.investedAmount,
+                                value: formatCurrency(
+                                  totalInitialInvestment,
+                                  locale,
+                                  settings.general.defaultCurrency,
+                                ),
+                              },
+                              {
+                                label: t.investments.sortAbsoluteGain,
+                                value: `${totalValue - totalInitialInvestment >= 0 ? "+" : ""}${formatCurrency(
+                                  totalValue - totalInitialInvestment,
+                                  locale,
+                                  settings.general.defaultCurrency,
+                                )}`,
+                                valueClassName:
+                                  totalValue - totalInitialInvestment >= 0
+                                    ? "text-green-500"
+                                    : "text-red-500",
+                              },
+                            ]
+                          : []),
+                      ],
+                    }}
+                    badges={[
+                      {
+                        icon: <Layers className="h-3 w-3" />,
+                        value: `${sortedDisplayItems.length} ${sortedDisplayItems.length === 1 ? t.investments.asset : t.investments.assets}`,
+                      },
+                    ]}
+                    orbitBubbles={orbitBubbleData}
+                  />
+                </CardContent>
+              </Card>
 
-                const distributionEntry = chartData.find(
-                  c => c.name === (position.name || position.symbol),
-                )
-                const borderColor = distributionEntry?.color || "transparent"
-                const isHighlighted = highlighted === identifier
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                  <ArrowUpDown size={14} />
+                  <span className="hidden min-[400px]:inline">
+                    {t.investments.sortBy}
+                  </span>
+                </span>
+                <div className="flex items-center bg-muted rounded-lg p-1">
+                  {(
+                    [
+                      { value: "amount", label: t.investments.sortAmount },
+                      {
+                        value: "relativeGain",
+                        label: t.investments.sortRelativeGain,
+                      },
+                      {
+                        value: "absoluteGain",
+                        label: t.investments.sortAbsoluteGain,
+                      },
+                    ] as const
+                  ).map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSortBy(option.value)}
+                      className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${
+                        sortBy === option.value
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                  }
+                  className="p-1 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                  aria-label={
+                    sortOrder === "asc" ? "Sort descending" : "Sort ascending"
+                  }
+                >
+                  {sortOrder === "asc" ? (
+                    <ArrowRight size={16} className="rotate-[-90deg]" />
+                  ) : (
+                    <ArrowRight size={16} className="rotate-90" />
+                  )}
+                </button>
+              </div>
 
-                const highlightClass = isDirty
-                  ? "ring-2 ring-offset-0 ring-blue-400/60 dark:ring-blue-500/40"
-                  : isHighlighted
-                    ? "ring-2 ring-offset-0 ring-primary"
+              {/* Positions List */}
+              <div className="space-y-4">
+                {sortedDisplayItems.map(item => {
+                  const { position, manualDraft, isManual, isDirty } = item
+                  const identifier =
+                    position.name || position.symbol || item.key
+
+                  const percentageOfFunds =
+                    totalFundValue > 0
+                      ? ((position.value || 0) / totalFundValue) * 100
+                      : 0
+
+                  const distributionEntry = chartData.find(
+                    c => c.name === (position.name || position.symbol),
+                  )
+                  const borderColor = distributionEntry?.color || "transparent"
+                  const isHighlighted = highlighted === identifier
+
+                  const highlightClass = isDirty
+                    ? "ring-2 ring-offset-0 ring-blue-400/60 dark:ring-blue-500/40"
+                    : isHighlighted
+                      ? "ring-2 ring-offset-0 ring-primary"
+                      : ""
+
+                  const showActions = isEditMode && isManual
+
+                  const infoSheetUrl = position.infoSheetUrl?.trim()
+                  const isExpanded = expandedCards[item.key] ?? false
+
+                  const rawShares = position.shares
+                  const numericShares =
+                    rawShares !== undefined && rawShares !== null
+                      ? Number(rawShares)
+                      : null
+                  const formattedShares =
+                    numericShares !== null && !Number.isNaN(numericShares)
+                      ? numericShares.toLocaleString(locale)
+                      : null
+                  const sharesLabelSource = t.investments.shares || ""
+                  const sharesLabel = sharesLabelSource
+                    ? sharesLabelSource.toLocaleLowerCase(locale)
                     : ""
 
-                const showActions = isEditMode && isManual
-
-                const infoSheetUrl = position.infoSheetUrl?.trim()
-                const isExpanded = expandedCards[item.key] ?? false
-
-                const rawShares = position.shares
-                const numericShares =
-                  rawShares !== undefined && rawShares !== null
-                    ? Number(rawShares)
-                    : null
-                const formattedShares =
-                  numericShares !== null && !Number.isNaN(numericShares)
-                    ? numericShares.toLocaleString(locale)
-                    : null
-                const sharesLabelSource = t.investments.shares || ""
-                const sharesLabel = sharesLabelSource
-                  ? sharesLabelSource.toLocaleLowerCase(locale)
-                  : ""
-
-                const rawPrice = position.price
-                const formattedAvgBuyPrice =
-                  rawPrice !== undefined && rawPrice !== null
-                    ? formatCurrency(
-                        rawPrice,
-                        locale,
-                        position.currency,
-                        undefined,
-                        { narrowSymbol: true },
-                      )
-                    : null
-
-                const marketPricePerShare =
-                  numericShares != null &&
-                  numericShares > 0 &&
-                  position.originalValue
-                    ? Math.round(
-                        (position.originalValue / numericShares) * 10000,
-                      ) / 10000
-                    : null
-                const formattedMarketPrice =
-                  marketPricePerShare != null
-                    ? formatCurrency(
-                        marketPricePerShare,
-                        locale,
-                        position.currency,
-                        undefined,
-                        { narrowSymbol: true },
-                      )
-                    : null
-
-                const eachLabelSource = t.common.each || ""
-                const eachLabel = eachLabelSource
-                  ? eachLabelSource.toLocaleLowerCase(locale)
-                  : ""
-
-                const issuerIcon = getIssuerIconPath(position.issuer)
-
-                return (
-                  <Card
-                    key={item.key}
-                    ref={el => {
-                      if (identifier) {
-                        itemRefs.current[identifier] = el
-                      }
-                    }}
-                    className={cn(
-                      "border-l-4 transition-all overflow-hidden",
-                      highlightClass,
-                    )}
-                    style={{ borderLeftColor: borderColor }}
-                  >
-                    <div
-                      className="relative flex items-start justify-between gap-3 p-4 cursor-pointer transition-colors hover:bg-accent/40"
-                      onClick={e => {
-                        if (
-                          (e.target as HTMLElement).closest("[data-no-expand]")
+                  const rawPrice = position.price
+                  const formattedAvgBuyPrice =
+                    rawPrice !== undefined && rawPrice !== null
+                      ? formatCurrency(
+                          rawPrice,
+                          locale,
+                          position.currency,
+                          undefined,
+                          { narrowSymbol: true },
                         )
-                          return
-                        toggleCardExpanded(item.key)
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault()
-                          toggleCardExpanded(item.key)
+                      : null
+
+                  const marketPricePerShare =
+                    numericShares != null &&
+                    numericShares > 0 &&
+                    position.originalValue
+                      ? Math.round(
+                          (position.originalValue / numericShares) * 10000,
+                        ) / 10000
+                      : null
+                  const formattedMarketPrice =
+                    marketPricePerShare != null
+                      ? formatCurrency(
+                          marketPricePerShare,
+                          locale,
+                          position.currency,
+                          undefined,
+                          { narrowSymbol: true },
+                        )
+                      : null
+
+                  const eachLabelSource = t.common.each || ""
+                  const eachLabel = eachLabelSource
+                    ? eachLabelSource.toLocaleLowerCase(locale)
+                    : ""
+
+                  const issuerIcon = getIssuerIconPath(position.issuer)
+
+                  return (
+                    <Card
+                      key={item.key}
+                      ref={el => {
+                        if (identifier) {
+                          itemRefs.current[identifier] = el
                         }
                       }}
-                      role="button"
-                      tabIndex={0}
-                      aria-expanded={isExpanded}
-                    >
-                      {issuerIcon ? (
-                        <img
-                          src={issuerIcon}
-                          alt={position.issuer!}
-                          className="hidden sm:block h-9 w-9 rounded-md object-contain shrink-0 self-center"
-                        />
-                      ) : (
-                        <div className="hidden sm:flex h-9 w-9 rounded-md bg-muted items-center justify-center shrink-0 self-center">
-                          <BarChart3 className="h-5 w-5 text-muted-foreground" />
-                        </div>
+                      className={cn(
+                        "border-l-4 transition-all overflow-hidden",
+                        highlightClass,
                       )}
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <h3 className="flex items-center gap-1.5 text-base sm:text-lg font-semibold leading-tight">
-                          {issuerIcon ? (
-                            <img
-                              src={issuerIcon}
-                              alt={position.issuer!}
-                              className="sm:hidden h-5 w-5 rounded-sm object-contain shrink-0"
-                            />
-                          ) : (
-                            <BarChart3 className="sm:hidden h-5 w-5 text-muted-foreground shrink-0" />
-                          )}
-                          <span>{position.name}</span>
-                        </h3>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {position.assetType && (
-                            <span
-                              className={cn(
-                                "text-[0.7rem] inline-flex items-center rounded-full px-2 py-0.5 font-medium",
-                                getAssetTypeBadgeClass(position.assetType) ||
-                                  "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
-                              )}
-                            >
-                              {(t.enums?.assetType as any)?.[
-                                position.assetType
-                              ] || position.assetType}
-                            </span>
-                          )}
-                          {position.fundType &&
-                            position.fundType !== FundType.MUTUAL_FUND && (
+                      style={{ borderLeftColor: borderColor }}
+                    >
+                      <div
+                        className="relative flex items-start justify-between gap-3 p-4 cursor-pointer transition-colors hover:bg-accent/40"
+                        onClick={e => {
+                          if (
+                            (e.target as HTMLElement).closest(
+                              "[data-no-expand]",
+                            )
+                          )
+                            return
+                          toggleCardExpanded(item.key)
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            toggleCardExpanded(item.key)
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                      >
+                        {issuerIcon ? (
+                          <img
+                            src={issuerIcon}
+                            alt={position.issuer!}
+                            className="hidden sm:block h-9 w-9 rounded-md object-contain shrink-0 self-center"
+                          />
+                        ) : (
+                          <div className="hidden sm:flex h-9 w-9 rounded-md bg-muted items-center justify-center shrink-0 self-center">
+                            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <h3 className="flex items-center gap-1.5 text-base sm:text-lg font-semibold leading-tight">
+                            {issuerIcon ? (
+                              <img
+                                src={issuerIcon}
+                                alt={position.issuer!}
+                                className="sm:hidden h-5 w-5 rounded-sm object-contain shrink-0"
+                              />
+                            ) : (
+                              <BarChart3 className="sm:hidden h-5 w-5 text-muted-foreground shrink-0" />
+                            )}
+                            <span>{position.name}</span>
+                          </h3>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {position.assetType && (
                               <span
                                 className={cn(
                                   "text-[0.7rem] inline-flex items-center rounded-full px-2 py-0.5 font-medium",
-                                  position.fundType === FundType.PRIVATE_EQUITY
-                                    ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
-                                    : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+                                  getAssetTypeBadgeClass(position.assetType) ||
+                                    "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
                                 )}
                               >
-                                {(t.enums?.fundType as any)?.[
-                                  position.fundType
-                                ] || position.fundType}
+                                {(t.enums?.assetType as any)?.[
+                                  position.assetType
+                                ] || position.assetType}
                               </span>
                             )}
-                          {position.entity && (
-                            <button
-                              type="button"
-                              data-no-expand
-                              onClick={() => {
-                                const candidateId =
-                                  typeof position.entityId === "string"
-                                    ? position.entityId
-                                    : ""
-                                if (
-                                  !candidateId ||
-                                  candidateId.startsWith("new-")
-                                )
-                                  return
-                                const isValid = filteredEntities.some(
-                                  e => e.id === candidateId,
-                                )
-                                if (!isValid) return
-                                setSelectedEntities(prev =>
-                                  prev.includes(candidateId)
-                                    ? prev
-                                    : [...prev, candidateId],
-                                )
-                              }}
-                              className={cn(
-                                "px-2 py-0.5 rounded-full text-xs font-semibold transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary",
-                                getColorForName(position.entity),
+                            {position.fundType &&
+                              position.fundType !== FundType.MUTUAL_FUND && (
+                                <span
+                                  className={cn(
+                                    "text-[0.7rem] inline-flex items-center rounded-full px-2 py-0.5 font-medium",
+                                    position.fundType ===
+                                      FundType.PRIVATE_EQUITY
+                                      ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+                                      : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+                                  )}
+                                >
+                                  {(t.enums?.fundType as any)?.[
+                                    position.fundType
+                                  ] || position.fundType}
+                                </span>
                               )}
-                            >
-                              {position.entity}
-                            </button>
-                          )}
-                          {position.portfolioName && (
-                            <button
-                              type="button"
-                              data-no-expand
-                              onClick={() => {
-                                setSelectedPortfolios(prev =>
-                                  prev.includes(position.portfolioName!)
-                                    ? prev
-                                    : [...prev, position.portfolioName!],
-                                )
-                              }}
-                              className="text-xs inline-flex items-center rounded-full bg-secondary px-2 py-0.5 font-medium transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary"
-                            >
-                              {position.portfolioName}
-                            </button>
-                          )}
-                          {position.source &&
-                            position.source !== DataSource.REAL && (
-                              <SourceBadge
-                                source={position.source}
-                                title={t.management?.source}
-                                className="text-[0.65rem]"
+                            {position.entity && (
+                              <button
+                                type="button"
+                                data-no-expand
                                 onClick={() => {
-                                  if (!fundsContext.isEditMode)
-                                    fundsContext.enterEditMode()
-                                  if (!portfolioContext.isEditMode)
-                                    portfolioContext.enterEditMode()
+                                  const candidateId =
+                                    typeof position.entityId === "string"
+                                      ? position.entityId
+                                      : ""
+                                  if (
+                                    !candidateId ||
+                                    candidateId.startsWith("new-")
+                                  )
+                                    return
+                                  const isValid = filteredEntities.some(
+                                    e => e.id === candidateId,
+                                  )
+                                  if (!isValid) return
+                                  setSelectedEntities(prev =>
+                                    prev.includes(candidateId)
+                                      ? prev
+                                      : [...prev, candidateId],
+                                  )
                                 }}
-                              />
+                                className={cn(
+                                  "px-2 py-0.5 rounded-full text-xs font-semibold transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary",
+                                  getColorForName(position.entity),
+                                )}
+                              >
+                                {position.entity}
+                              </button>
                             )}
-                          {isDirty && (
-                            <span className="text-[0.65rem] font-semibold text-blue-600 dark:text-blue-400">
-                              {manualTranslate("management.unsavedChanges")}
-                            </span>
-                          )}
-                        </div>
-                        {(formattedShares || formattedMarketPrice) && (
-                          <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            {formattedShares && (
-                              <span>
-                                <Sensitive>{formattedShares}</Sensitive>
+                            {position.portfolioName && (
+                              <button
+                                type="button"
+                                data-no-expand
+                                onClick={() => {
+                                  setSelectedPortfolios(prev =>
+                                    prev.includes(position.portfolioName!)
+                                      ? prev
+                                      : [...prev, position.portfolioName!],
+                                  )
+                                }}
+                                className="text-xs inline-flex items-center rounded-full bg-secondary px-2 py-0.5 font-medium transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary"
+                              >
+                                {position.portfolioName}
+                              </button>
+                            )}
+                            {position.source &&
+                              position.source !== DataSource.REAL && (
+                                <SourceBadge
+                                  source={position.source}
+                                  title={t.management?.source}
+                                  className="text-[0.65rem]"
+                                  onClick={() => {
+                                    if (!fundsContext.isEditMode)
+                                      fundsContext.enterEditMode()
+                                    if (!portfolioContext.isEditMode)
+                                      portfolioContext.enterEditMode()
+                                  }}
+                                />
+                              )}
+                            {isDirty && (
+                              <span className="text-[0.65rem] font-semibold text-blue-600 dark:text-blue-400">
+                                {manualTranslate("management.unsavedChanges")}
                               </span>
                             )}
-                            {formattedShares && formattedMarketPrice && (
-                              <span>×</span>
-                            )}
-                            {formattedMarketPrice && (
-                              <span>{formattedMarketPrice}</span>
-                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-right space-y-0.5">
-                          <div className="text-base sm:text-lg font-semibold leading-tight">
-                            <Sensitive>
-                              {position.formattedOriginalValue ||
-                                position.formattedValue}
-                            </Sensitive>
-                          </div>
-                          {position.currency !==
-                            settings.general.defaultCurrency && (
-                            <div className="text-xs text-muted-foreground">
-                              <Sensitive>{position.formattedValue}</Sensitive>
+                          {(formattedShares || formattedMarketPrice) && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                              {formattedShares && (
+                                <span>
+                                  <Sensitive>{formattedShares}</Sensitive>
+                                </span>
+                              )}
+                              {formattedShares && formattedMarketPrice && (
+                                <span>×</span>
+                              )}
+                              {formattedMarketPrice && (
+                                <span>{formattedMarketPrice}</span>
+                              )}
                             </div>
                           )}
-                          <div
-                            className={cn(
-                              "flex items-center gap-1 text-sm justify-end mt-1",
-                              position.change >= 0
-                                ? "text-green-500"
-                                : "text-red-500",
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-right space-y-0.5">
+                            <div className="text-base sm:text-lg font-semibold leading-tight">
+                              <Sensitive>
+                                {position.formattedOriginalValue ||
+                                  position.formattedValue}
+                              </Sensitive>
+                            </div>
+                            {position.currency !==
+                              settings.general.defaultCurrency && (
+                              <div className="text-xs text-muted-foreground">
+                                <Sensitive>{position.formattedValue}</Sensitive>
+                              </div>
                             )}
-                          >
-                            <Sensitive>
-                              {position.change >= 0 ? (
-                                <TrendingUp size={14} />
-                              ) : (
-                                <TrendingDown size={14} />
+                            <div
+                              className={cn(
+                                "flex items-center gap-1 text-sm justify-end mt-1",
+                                position.change >= 0
+                                  ? "text-green-500"
+                                  : "text-red-500",
                               )}
-                              <span>{position.change.toFixed(2)}%</span>
-                            </Sensitive>
+                            >
+                              <Sensitive>
+                                {position.change >= 0 ? (
+                                  <TrendingUp size={14} />
+                                ) : (
+                                  <TrendingDown size={14} />
+                                )}
+                                <span>{position.change.toFixed(2)}%</span>
+                              </Sensitive>
+                            </div>
                           </div>
+                          <ChevronDown
+                            className={cn(
+                              "hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200",
+                              isExpanded && "rotate-180",
+                            )}
+                          />
                         </div>
                         <ChevronDown
                           className={cn(
-                            "hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200",
+                            "sm:hidden absolute bottom-3 right-3 h-4 w-4 text-muted-foreground transition-transform duration-200",
                             isExpanded && "rotate-180",
                           )}
                         />
                       </div>
-                      <ChevronDown
-                        className={cn(
-                          "sm:hidden absolute bottom-3 right-3 h-4 w-4 text-muted-foreground transition-transform duration-200",
-                          isExpanded && "rotate-180",
-                        )}
-                      />
-                    </div>
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          key="expanded"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2, ease: "easeInOut" }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-4 pb-4">
-                            <div className="border-t border-border/50 pt-3 space-y-3">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
-                                {(formattedShares || formattedMarketPrice) && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      {t.investments.shares}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-foreground">
-                                      {formattedShares && (
-                                        <>
-                                          <span>
-                                            <Sensitive>
-                                              {formattedShares}
-                                            </Sensitive>
-                                          </span>
-                                          {sharesLabel && (
-                                            <span className="text-muted-foreground">
-                                              {sharesLabel}
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            key="expanded"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-4 pb-4">
+                              <div className="border-t border-border/50 pt-3 space-y-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+                                  {(formattedShares ||
+                                    formattedMarketPrice) && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        {t.investments.shares}
+                                      </div>
+                                      <div className="flex items-center gap-1 text-foreground">
+                                        {formattedShares && (
+                                          <>
+                                            <span>
+                                              <Sensitive>
+                                                {formattedShares}
+                                              </Sensitive>
                                             </span>
-                                          )}
-                                        </>
-                                      )}
-                                      {formattedShares &&
-                                        formattedMarketPrice && (
-                                          <span className="text-muted-foreground">
-                                            ×
-                                          </span>
+                                            {sharesLabel && (
+                                              <span className="text-muted-foreground">
+                                                {sharesLabel}
+                                              </span>
+                                            )}
+                                          </>
                                         )}
-                                      {formattedMarketPrice && (
-                                        <>
-                                          <span>{formattedMarketPrice}</span>
-                                          {formattedShares && eachLabel && (
+                                        {formattedShares &&
+                                          formattedMarketPrice && (
                                             <span className="text-muted-foreground">
-                                              {eachLabel}
+                                              ×
                                             </span>
                                           )}
-                                        </>
+                                        {formattedMarketPrice && (
+                                          <>
+                                            <span>{formattedMarketPrice}</span>
+                                            {formattedShares && eachLabel && (
+                                              <span className="text-muted-foreground">
+                                                {eachLabel}
+                                              </span>
+                                            )}
+                                          </>
+                                        )}
+                                      </div>
+                                      {formattedAvgBuyPrice && (
+                                        <div className="text-xs text-muted-foreground mt-0.5">
+                                          {t.investments.averageBuyPrice}:{" "}
+                                          <Sensitive>
+                                            {formattedAvgBuyPrice}
+                                          </Sensitive>
+                                        </div>
                                       )}
                                     </div>
-                                    {formattedAvgBuyPrice && (
-                                      <div className="text-xs text-muted-foreground mt-0.5">
-                                        {t.investments.averageBuyPrice}:{" "}
+                                  )}
+                                  {position.isin && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        ISIN
+                                      </div>
+                                      <div className="text-foreground font-mono text-xs">
+                                        {position.isin}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {position.issuer && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        {t.investments.issuer}
+                                      </div>
+                                      <div className="text-foreground text-sm">
+                                        {position.issuer}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {position.formattedGainLossAmount && (
+                                    <div>
+                                      <div className="text-xs text-muted-foreground font-medium mb-0.5">
+                                        {t.investments.sortAbsoluteGain}
+                                      </div>
+                                      <div
+                                        className={cn(
+                                          "font-medium",
+                                          position.change >= 0
+                                            ? "text-green-500"
+                                            : "text-red-500",
+                                        )}
+                                      >
                                         <Sensitive>
-                                          {formattedAvgBuyPrice}
+                                          {position.formattedGainLossAmount}
                                         </Sensitive>
                                       </div>
-                                    )}
-                                  </div>
-                                )}
-                                {position.isin && (
+                                    </div>
+                                  )}
                                   <div>
                                     <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      ISIN
-                                    </div>
-                                    <div className="text-foreground font-mono text-xs">
-                                      {position.isin}
-                                    </div>
-                                  </div>
-                                )}
-                                {position.issuer && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      {t.investments.issuer}
-                                    </div>
-                                    <div className="text-foreground text-sm">
-                                      {position.issuer}
-                                    </div>
-                                  </div>
-                                )}
-                                {position.formattedGainLossAmount && (
-                                  <div>
-                                    <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                      {t.investments.sortAbsoluteGain}
-                                    </div>
-                                    <div
-                                      className={cn(
-                                        "font-medium",
-                                        position.change >= 0
-                                          ? "text-green-500"
-                                          : "text-red-500",
+                                      {t.investments.ofInvestmentType.replace(
+                                        "{type}",
+                                        t.common.funds.toLowerCase(),
                                       )}
-                                    >
+                                    </div>
+                                    <div className="font-medium text-blue-600 dark:text-blue-400">
                                       <Sensitive>
-                                        {position.formattedGainLossAmount}
+                                        {percentageOfFunds.toFixed(1)}%
                                       </Sensitive>
                                     </div>
                                   </div>
+                                </div>
+                                {infoSheetUrl && (
+                                  <a
+                                    href={infoSheetUrl}
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    data-no-expand
+                                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    {t.investments.openInfoSheet}
+                                  </a>
                                 )}
-                                <div>
-                                  <div className="text-xs text-muted-foreground font-medium mb-0.5">
-                                    {t.investments.ofInvestmentType.replace(
-                                      "{type}",
-                                      t.common.funds.toLowerCase(),
-                                    )}
+                                {position.isin && (
+                                  <button
+                                    type="button"
+                                    data-no-expand
+                                    onClick={() => setChartPosition(position)}
+                                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
+                                  >
+                                    <ChartCandlestick className="h-3.5 w-3.5" />
+                                    {t.investments.viewChart}
+                                  </button>
+                                )}
+                                {showActions && (
+                                  <div
+                                    className="flex items-center gap-2 pt-2 border-t border-border/30"
+                                    data-no-expand
+                                  >
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex items-center gap-2"
+                                      onClick={() => {
+                                        if (manualDraft?.originalId) {
+                                          editByOriginalId(
+                                            manualDraft.originalId,
+                                          )
+                                        } else if (manualDraft) {
+                                          editByLocalId(manualDraft.localId)
+                                        } else if (item.originalId) {
+                                          editByOriginalId(item.originalId)
+                                        }
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                      {t.common.edit}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-red-500 hover:text-red-600"
+                                      onClick={() => {
+                                        if (manualDraft?.originalId) {
+                                          deleteByOriginalId(
+                                            manualDraft.originalId,
+                                          )
+                                        } else if (manualDraft) {
+                                          deleteByLocalId(manualDraft.localId)
+                                        } else if (item.originalId) {
+                                          deleteByOriginalId(item.originalId)
+                                        }
+                                      }}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
                                   </div>
-                                  <div className="font-medium text-blue-600 dark:text-blue-400">
-                                    <Sensitive>
-                                      {percentageOfFunds.toFixed(1)}%
-                                    </Sensitive>
-                                  </div>
-                                </div>
+                                )}
                               </div>
-                              {infoSheetUrl && (
-                                <a
-                                  href={infoSheetUrl}
-                                  target="_blank"
-                                  rel="noreferrer noopener"
-                                  data-no-expand
-                                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline transition-colors"
-                                >
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  {t.investments.openInfoSheet}
-                                </a>
-                              )}
-                              {showActions && (
-                                <div
-                                  className="flex items-center gap-2 pt-2 border-t border-border/30"
-                                  data-no-expand
-                                >
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center gap-2"
-                                    onClick={() => {
-                                      if (manualDraft?.originalId) {
-                                        editByOriginalId(manualDraft.originalId)
-                                      } else if (manualDraft) {
-                                        editByLocalId(manualDraft.localId)
-                                      } else if (item.originalId) {
-                                        editByOriginalId(item.originalId)
-                                      }
-                                    }}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    {t.common.edit}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-red-500 hover:text-red-600"
-                                    onClick={() => {
-                                      if (manualDraft?.originalId) {
-                                        deleteByOriginalId(
-                                          manualDraft.originalId,
-                                        )
-                                      } else if (manualDraft) {
-                                        deleteByLocalId(manualDraft.localId)
-                                      } else if (item.originalId) {
-                                        deleteByOriginalId(item.originalId)
-                                      }
-                                    }}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              )}
                             </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </Card>
-                )
-              })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Card>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </motion.div>
       </motion.div>
-    </motion.div>
+      {chartPosition && (
+        <InstrumentPriceChartCard
+          request={{
+            type: InstrumentType.MUTUAL_FUND,
+            isin: chartPosition.isin || undefined,
+            name: chartPosition.name,
+          }}
+          displayName={chartPosition.name}
+          open={true}
+          onClose={() => setChartPosition(null)}
+        />
+      )}
+    </>
   )
 }
 

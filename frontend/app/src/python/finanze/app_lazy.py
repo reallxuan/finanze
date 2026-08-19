@@ -233,6 +233,9 @@ class LazyComponents:
         from application.use_cases.get_historic import GetHistoricImpl
         from application.use_cases.get_instruments import GetInstrumentsImpl
         from application.use_cases.get_instrument_info import GetInstrumentInfoImpl
+        from application.use_cases.get_instrument_history import (
+            GetInstrumentHistoryImpl,
+        )
         from application.use_cases.search_crypto_assets import SearchCryptoAssetsImpl
         from application.use_cases.get_crypto_asset_details import (
             GetCryptoAssetDetailsImpl,
@@ -623,6 +626,7 @@ class LazyComponents:
         self.get_historic = GetHistoricImpl(historic_repo, d.entity_repo)
         self.get_instruments = GetInstrumentsImpl(d.inst_provider)
         self.get_inst_info = GetInstrumentInfoImpl(d.inst_provider)
+        self.get_inst_history = GetInstrumentHistoryImpl(d.inst_provider)
         self.search_crypto = SearchCryptoAssetsImpl(d.crypto_info)
         self.get_crypto_details = GetCryptoAssetDetailsImpl(
             d.crypto_info, d.entity_repo

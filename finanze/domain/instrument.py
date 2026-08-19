@@ -1,3 +1,4 @@
+from datetime import date
 from enum import Enum
 from typing import Optional
 
@@ -37,3 +38,21 @@ class InstrumentInfo:
     type: InstrumentType
     price: Dezimal
     symbol: Optional[str] = None
+
+
+@dataclass
+class InstrumentCandle:
+    date: date
+    open: Dezimal
+    high: Dezimal
+    low: Dezimal
+    close: Dezimal
+    volume: Optional[int] = None
+
+
+@dataclass
+class InstrumentHistory:
+    symbol: str
+    currency: str
+    interval: str
+    candles: tuple[InstrumentCandle, ...] = ()
