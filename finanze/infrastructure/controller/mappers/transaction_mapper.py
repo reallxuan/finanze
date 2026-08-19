@@ -40,6 +40,8 @@ def _build_account(body: dict, base_kwargs: dict, tx_id: Optional[UUID]) -> Base
         if body.get("avg_balance") is not None
         else None,
         net_amount=None,
+        category=body.get("category"),
+        account_name=body.get("account_name"),
         **base_kwargs,
     )
 

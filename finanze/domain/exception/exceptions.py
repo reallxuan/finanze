@@ -171,6 +171,14 @@ class TransactionNotFound(Exception):
     pass
 
 
+class MpfPortfolioNotFound(Exception):
+    pass
+
+
+class MpfContributionNotFound(Exception):
+    pass
+
+
 class RelatedAccountNotFound(Exception):
     def __init__(self, account_id):
         super().__init__(f"Related account not found: {account_id}")

@@ -93,7 +93,18 @@ import {
   TransactionQueryRequest,
   TransactionsResult,
   ManualTransactionPayload,
+  SpendingSummaryResult,
+  AccountLedgerResult,
 } from "../types/transactions"
+import {
+  MpfFundQuote,
+  MpfPortfolioSummary,
+  MpfPortfolio,
+  MpfContribution,
+  CreateMpfPortfolioPayload,
+  UpdateMpfPortfolioPayload,
+  RecordMpfContributionPayload,
+} from "../types/mpf"
 import { handleApiError } from "@/utils/apiErrors"
 import { getApiClient } from "./apiClient"
 import { AppSettings } from "@/context/AppContext"
@@ -377,6 +388,87 @@ export async function getTransactions(
 
   const queryString = params.toString() ? `?${params.toString()}` : ""
   return (await getApiClient()).get(`/transactions${queryString}`)
+}
+
+export async function getSpendingSummary(params?: {
+  from_date?: string
+  to_date?: string
+}): Promise<SpendingSummaryResult> {
+  const qs = new URLSearchParams()
+  if (params?.from_date) qs.append("from_date", params.from_date)
+  if (params?.to_date) qs.append("to_date", params.to_date)
+  const queryString = qs.toString() ? `?${qs.toString()}` : ""
+  return (await getApiClient()).get(
+    `/transactions/spending-summary${queryString}`,
+  )
+}
+
+export async function getAccountLedger(
+  entityId: string,
+  accountName: string,
+): Promise<AccountLedgerResult> {
+  const qs = new URLSearchParams({
+    entity_id: entityId,
+    account_name: accountName,
+  })
+  return (await getApiClient()).get(`/accounts/ledger?${qs.toString()}`)
+}
+
+export async function getMpfFundQuotes(
+  scheme?: string,
+): Promise<{ quotes: MpfFundQuote[] }> {
+  const qs = scheme ? `?scheme=${encodeURIComponent(scheme)}` : ""
+  return (await getApiClient()).get(`/mpf/fund-quotes${qs}`)
+}
+
+export async function getMpfPortfolios(): Promise<{
+  portfolios: MpfPortfolioSummary[]
+}> {
+  return (await getApiClient()).get("/mpf/portfolios")
+}
+
+export async function createMpfPortfolio(
+  payload: CreateMpfPortfolioPayload,
+): Promise<MpfPortfolio> {
+  return (await getApiClient()).post("/mpf/portfolios", payload)
+}
+
+export async function updateMpfPortfolio(
+  portfolioId: string,
+  payload: UpdateMpfPortfolioPayload,
+): Promise<void> {
+  return (await getApiClient()).put(
+    `/mpf/portfolios/${portfolioId}`,
+    payload,
+  )
+}
+
+export async function deleteMpfPortfolio(portfolioId: string): Promise<void> {
+  return (await getApiClient()).delete(`/mpf/portfolios/${portfolioId}`)
+}
+
+export async function getMpfContributions(
+  portfolioId: string,
+): Promise<{ contributions: MpfContribution[] }> {
+  return (await getApiClient()).get(
+    `/mpf/portfolios/${portfolioId}/contributions`,
+  )
+}
+
+export async function recordMpfContribution(
+  portfolioId: string,
+  payload: RecordMpfContributionPayload,
+): Promise<MpfContribution> {
+  return (await getApiClient()).post(
+    `/mpf/portfolios/${portfolioId}/contributions`,
+    payload,
+  )
+}
+
+export async function deleteMpfContribution(
+  contributionId: string,
+): Promise<void> {
+  return (await getApiClient()).delete(`/mpf/contributions/${contributionId}`)
 }
 
 export async function getMarketForecastPnl(

@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils"
 import { useDataDisplayMode } from "@/context/DataDisplayModeContext"
 import { DataDisplayMode } from "@/types"
 
-const APPLICATION_LOCALES: Locale[] = ["en-US", "es-ES", "it-IT", "zh-CN"]
+const APPLICATION_LOCALES: Locale[] = ["en-US", "zh-CN"]
 
 export default function SettingsPage() {
   const { t, locale, changeLocale } = useI18n()

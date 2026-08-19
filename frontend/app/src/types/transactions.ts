@@ -21,6 +21,9 @@ export enum TxType {
   INTEREST = "INTEREST",
 
   FEE = "FEE",
+
+  EXPENSE = "EXPENSE",
+  INCOME = "INCOME",
 }
 
 // Base transaction interface
@@ -51,6 +54,8 @@ export interface AccountTx extends BaseTx {
   interest_rate?: number
   avg_balance?: number
   net_amount?: number
+  category?: string
+  account_name?: string
 }
 
 // Stock transaction interface
@@ -148,6 +153,8 @@ export interface ManualAccountTransactionPayload extends ManualTransactionBasePa
   retentions?: number
   interest_rate?: number
   avg_balance?: number
+  category?: string
+  account_name?: string
 }
 
 export interface ManualStockTransactionPayload extends ManualTransactionBasePayload {
@@ -249,4 +256,43 @@ export interface TransactionQueryRequest {
   to_date?: string
   types?: TxType[]
   historic_entry_id?: string
+}
+
+// Spending analysis types
+export interface CategorySpend {
+  category: string
+  amount: number
+  currency: string
+}
+
+export interface MonthlySpend {
+  month: string
+  expense: number
+  income: number
+  currency: string
+}
+
+export interface CurrencyAmount {
+  amount: number
+  currency: string
+}
+
+export interface SpendingSummaryResult {
+  by_category: CategorySpend[]
+  by_month: MonthlySpend[]
+  total_expense: CurrencyAmount[]
+  total_income: CurrencyAmount[]
+}
+
+// Account ledger (running balance) types
+export interface AccountLedgerEntry {
+  transaction: AccountTx
+  balance_after: number
+}
+
+export interface AccountLedgerResult {
+  account_name: string
+  currency: string
+  current_balance: number
+  entries: AccountLedgerEntry[]
 }

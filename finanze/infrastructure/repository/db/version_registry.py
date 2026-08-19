@@ -179,6 +179,24 @@ from infrastructure.repository.db.versions.v0.v10.v0100_0_crescenta import (
 from infrastructure.repository.db.versions.v0.v10.v0100_1_polymarket import (
     V01001Polymarket,
 )
+from infrastructure.repository.db.versions.v0.v10.v0100_2_add_account_tx_category import (
+    V01002AccountTxCategory,
+)
+from infrastructure.repository.db.versions.v0.v10.v0100_3_add_account_tx_account_name import (
+    V01003AccountTxAccountName,
+)
+from infrastructure.repository.db.versions.v0.v10.v0100_4_mpf_tables import (
+    V01004MpfTables,
+)
+from infrastructure.repository.db.versions.v0.v10.v0100_2_recurring_workflow import (
+    V01002RecurringWorkflow,
+)
+from infrastructure.repository.db.versions.v0.v10.v0100_3_mpf_provider import (
+    V01003MpfProvider,
+)
+from infrastructure.repository.db.versions.v0.v10.v0100_4_recurring_dates import (
+    V01004RecurringDates,
+)
 
 versions = [
     V0Genesis(),
@@ -252,4 +270,13 @@ versions = [
     V0908HistoricSource(),
     V0100Crescenta(),
     V01001Polymarket(),
+    V01002AccountTxCategory(),
+    V01003AccountTxAccountName(),
+    V01004MpfTables(),
+    # Compatibility entries: recognize migrations applied by an earlier,
+    # never-merged build on some devices. See the migration files for
+    # details; these are safe no-ops in this codebase.
+    V01002RecurringWorkflow(),
+    V01003MpfProvider(),
+    V01004RecurringDates(),
 ]

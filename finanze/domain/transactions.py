@@ -36,6 +36,23 @@ class TxType(str, Enum):
 
     FEE = "FEE"
 
+    EXPENSE = "EXPENSE"
+    INCOME = "INCOME"
+
+
+OUTGOING_ACCOUNT_TX_TYPES = {
+    TxType.EXPENSE,
+    TxType.TRANSFER_OUT,
+    TxType.FEE,
+}
+
+
+def account_tx_signed_amount(tx_type: "TxType", amount: "Dezimal") -> "Dezimal":
+    """Signed balance effect of an account-product transaction: negative for
+    outgoing types (expense/transfer-out/fee), positive otherwise (income,
+    transfer-in, interest, ...)."""
+    return -amount if tx_type in OUTGOING_ACCOUNT_TX_TYPES else amount
+
 
 @dataclass(kw_only=True)
 class BaseTx(BaseData):
@@ -64,6 +81,8 @@ class AccountTx(BaseTx):
     interest_rate: Optional[Dezimal] = None
     avg_balance: Optional[Dezimal] = None
     net_amount: Optional[Dezimal] = None
+    category: Optional[str] = None
+    account_name: Optional[str] = None
 
 
 @dataclass(kw_only=True)
@@ -173,3 +192,52 @@ class TransactionQueryRequest:
     to_date: Optional[datetime] = None
     types: Optional[list[TxType]] = None
     historic_entry_id: Optional[UUID] = None
+
+
+@dataclass
+class CategorySpend:
+    category: str
+    amount: Dezimal
+    currency: str
+
+
+@dataclass
+class MonthlySpend:
+    month: str
+    expense: Dezimal
+    income: Dezimal
+    currency: str
+
+
+@dataclass
+class CurrencyAmount:
+    amount: Dezimal
+    currency: str
+
+
+@dataclass
+class SpendingSummaryRequest:
+    from_date: Optional[datetime] = None
+    to_date: Optional[datetime] = None
+
+
+@dataclass
+class SpendingSummaryResult:
+    by_category: list[CategorySpend]
+    by_month: list[MonthlySpend]
+    total_expense: list[CurrencyAmount]
+    total_income: list[CurrencyAmount]
+
+
+@dataclass
+class AccountLedgerEntry:
+    transaction: AccountTx
+    balance_after: Dezimal
+
+
+@dataclass
+class AccountLedgerResult:
+    account_name: str
+    currency: str
+    current_balance: Dezimal
+    entries: list[AccountLedgerEntry]

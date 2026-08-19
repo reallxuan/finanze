@@ -1,4 +1,5 @@
 import abc
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -47,6 +48,21 @@ class TransactionPort(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     async def delete_by_entity_account_id(self, entity_account_id: UUID):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def get_account_ledger(
+        self, entity_id: UUID, account_name: str
+    ) -> list[BaseTx]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def get_account_tx_summary_rows(
+        self,
+        from_date: Optional[datetime] = None,
+        to_date: Optional[datetime] = None,
+        excluded_entities: Optional[list[UUID]] = None,
+    ) -> list[dict]:
         raise NotImplementedError
 
     @abc.abstractmethod

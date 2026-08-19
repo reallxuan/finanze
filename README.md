@@ -1,230 +1,51 @@
-<p align="center">
-  <a href="https://github.com/finanze/finanze/releases/latest"><img src="https://img.shields.io/github/v/release/finanze/finanze?style=for-the-badge&color=blue&label=Latest%20Release" alt="Latest release of Finanze"></a>
-</p>
-
 <p align="center"><img src="frontend/app/public/finanze-app.png" alt="Finanze logo — self-hosted personal finance and net worth tracker" width="220px"></p>
-<h1 align="center">Finanze — Self-hosted Personal Finance & Net Worth Tracker</h1>
+<h1 align="center">Finanze (personal fork)</h1>
+
+> **This is a personal fork of [finanze/finanze](https://github.com/finanze/finanze), and it has diverged significantly from the upstream project.**
+>
+> Most notably, this fork **removed all automated bank/broker/crypto-exchange login and scraping** (PSD2, Enable Banking, GoCardless, entity credential login, background data fetching) in favor of a **manual-entities-only** workflow — see [`c0e2108`](../../commit/c0e2108) "simplify app to manual institutions and positions". It also changes the default currency to **HKD** and adds **Chinese localization**. Anything in the upstream README about connecting real financial entities, 2FA, or automated syncing **does not apply here**.
+>
+> The links, badges, and download channels from the original project (official releases, Uptodown, TestFlight, App Store, Docker Hub images) point to the **upstream** project, not this fork — this fork is not published anywhere; build it yourself from source (see [Development](#development)).
 
 <p align="center">
-<a href="https://finanze.me">Finanze</a> is a private, self-hosted personal finance and portfolio manager that aggregates your assets and investments across banks, brokers, crowdfunding platforms, crypto exchanges & wallets and real estate into a unified application.
-It connects to real financial entities via public ways and open banking (PSD2), supports multiple asset types (real estate, crypto, funds, stocks, commodities...) and stores everything in a local encrypted database.
-</p>
-
-<h3 align="center">Available On</h3>
-
-<table align="center">
-  <tr>
-    <td align="center" width="30%"><b>🖥️ Desktop</b></td>
-    <td align="center" width="30%"><b>📱 Android</b></td>
-    <td align="center" width="40%"><b>🍎 iOS</b></td>
-  </tr>
-  <tr>
-    <td align="center">
-      Latest release<br>
-      <a href="https://github.com/finanze/finanze/releases/latest">Download here</a>
-    </td>
-    <td align="center">
-      Get it at <br>
-      <a href="https://finanze.en.uptodown.com/android" title="Download Finanze"><img src="https://stc.utdstc.com/img/mediakit/isotipo.png" alt="Uptodown" height="14"> Uptodown</a>
-      <br>
-      <b>or </b><a href="https://github.com/finanze/finanze/releases/latest">Download .apk</a>
-    </td>
-    <td align="center">
-      Install <a href="https://altstore.io/download"><img src="resources/altstore.png" alt="AltStore" height="14"> AltStore</a>, then <a href="https://addaltstore.finanze.me">add the app</a><br>
-      <b>or </b>join <a href="https://testflight.finanze.me"><img src="resources/testflight.png" alt="TestFlight" height="14">TestFlight</a><br>
-      <b>or </b><a href="https://apps.apple.com/es/app/finanze-portfolio-tracker/id6763042710"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="28"></a>*
-    </td>
-  </tr>
-</table>
-
-<h2 align="center"></h2>
-
-<p align="middle">
-  <img src="resources/dashboard.png" alt="Finanze net worth dashboard aggregating banks, investments and crypto" width="49%" />
-  <img src="resources/m-stocks.png" alt="Finanze mobile stocks and ETFs portfolio view" width="19%" /> 
-  <img src="resources/entitiespage.png" alt="Finanze connected financial entities and open banking accounts" width="49%" /> 
-  <img src="resources/earningsexpenses.png" alt="Finanze earnings and expenses tracking with contribution forecasting" width="49%" /> 
-  <img src="resources/realestate.png" alt="Finanze real estate investment tracking with KPIs and metrics" width="49%" />
-  <img src="resources/savingscalculator.png" alt="Finanze savings and retirement calculator with multiple scenarios" width="49%" /> 
-  <img src="resources/crypto.png" alt="Finanze crypto portfolio tracking across wallets and exchanges" width="49%" /> 
+A private, self-hosted personal finance and net worth tracker. You manually create institutions/entities and their positions (accounts, stocks, funds, real estate, commodities, crypto...), and the app tracks value, multicurrency conversion, earnings/expenses, and forecasts over time. Everything is stored in a local encrypted database.
 </p>
 
 ## Table of Contents
 
 - [Features](#features)
-- [Usage](#usage)
 - [Development](#development)
 - [Credits](#credits)
 
 ## Features
 
-- 🔄 Fetch financial data from multiple entities
-- 💼 Support for various financial products:
-    - 📈 Stocks, funds, portfolios, accounts, real estate crowdfunding, cryptocurrencies, etc. from real sources or
-      imported
-    - 🏠 Real estate investments with a variety of metrics and KPIs
-    - 🪙 Commodities with market value tracking
-- 💵 Earnings and expenses tracking with periodic asset contributions to forecast future positions
-- 💱 Multicurrency support with automatic exchange rate fetching
+- 🏦 Manually defined institutions/entities, each holding one or more positions
+- 💼 Supported position types: accounts, cards, deposits, funds, stocks/ETFs, portfolios, loans/mortgages, real estate, commodities, crypto
+- 🏠 Real estate investments with a variety of metrics and KPIs
+- 🪙 Commodities with market value tracking (gold, silver, platinum, palladium)
+- 💵 Earnings and expenses tracking with periodic contributions to forecast future positions
+- 💱 Multicurrency support with automatic exchange rate fetching (HKD default)
 - 🔐 Local encrypted database for secure data storage
-- 📤 Dynamic and customizable data export to Google Sheets
-- 📥 Manual data importing
-- ⚙️ Highly configurable with templating for exports and imports
-- 📊 Complex savings & retirement calculator with multiple scenarios and variables
-
-### Supported Assets by Financial Entity & Crypto Exchanges
-
-| Financial Entity    | Accounts        | Cards | Funds | Stock/<br>ETFs | Deposits | Portfolios | Loans/<br>Mortgages | Crypto | Bonds | Specific            |
-| ------------------- | --------------- | ----- | ----- | -------------- | -------- | ---------- | ------------------- | ------ | ----- | ------------------- |
-| Urbanitae           | ✅              | -     | -     | -              | -        | -          | -                   | -      | -     | Lending Investments |
-| MyInvestor          | ✅              | ✅    | ✅    | ✅             | ✅       | ✅         | Credits             | -      | -     |                     |
-| SEGO                | ✅              | -     | -     | -              | -        | -          | -                   | -      | -     | Factoring           |
-| Trade Republic      | ✅              | -     | ✅    | ✅             | -        | -          | -                   | ✅     | ❌    | Private Markets     |
-| Unicaja             | ✅              | ✅    | ❌    | ❌             | ❌       | -          | ✅                  | -      | -     |                     |
-| Wecity              | ✅              | -     | -     | -              | -        | -          | -                   | -      | -     | Investments         |
-| Mintos              | ✅ (Smart Cash) | -     | -     | ❌             | -        | -          | -                   | ❌     | ❌    | Crowdlending        |
-| Freedom24           | ✅              | -     | -     | ❌             | -        | -          | -                   | ❌     | ❌    |                     |
-| Indexa Capital      | ✅              | -     | ✅️    | -              | -        | ✅️         | -                   | -      | -     |                     |
-| ING                 | ✅              | ✅    | ✅️    | ✅             | ❌       | -          | ❌                  | -      | -     |                     |
-| Grupo Cajamar       | ✅              | ✅    | ❌️    | ❌             | ❌       | -          | ✅                  | -      | -     |                     |
-| DEGIRO              | ✅              | -     | ✅️    | ✅️             | -        | -          | -                   | -      | -     |                     |
-| Interactive Brokers | ✅              | -     | ❌    | ✅️ Stocks      | -        | -          | -                   | -      | ❌    |                     |
-| B100                | ✅              | ✅    | -     | -              | -        | -          | -                   | -      | -     |                     |
-
-| Crypto Exchange | Crypto            | Specific |
-| --------------- | ----------------- | -------- |
-| Binance         | ✅ Spot & Futures | Futures  |
-
-#### Enable Banking Integration
-
-Provides a way to connect to EU banks that are not natively supported by the app, via PSD2 compliant bank account information.
-Instructions to set it up can be found in the app Settings/Integrations tab.
-
-#### GoCardless Integration
-
-Only if you already have an account, another option is GoCardless, which also provides PSD2 compliant bank account information for many EU/UK banks.
-
-### Financial Entity & Crypto Exchanges Features
-
-Not all entities support the same features, in general we can group data in the following categories:
-
-- **Global Position**: current financial position including the current state of assets mentioned above, this is
-  supported by all entities.
-- **Periodic Contributions**: automatic periodic contributions made to investments such as Funds (MyInvestor) or
-  Stocks/ETFs (Trade Republic).
-- **Transactions**: all the account/investment related transactions, interest payments, stock of fund operations, asset
-  maturity, fees...
-- **Investment Historic**: aggregates past positions and TXs to create a history of past and current investments (
-  deposits are not included here).
-
-| Financial Entity    | Global Position | Periodic<br>Contributions | Transactions<br>(inv. related) | Investment<br>Historic |
-| ------------------- | --------------- | ------------------------- | ------------------------------ | ---------------------- |
-| Urbanitae           | ✅              | -                         | ✅                             | ✅                     |
-| MyInvestor          | ✅              | ✅                        | ✅                             | ❌                     |
-| SEGO                | ✅              | -                         | ✅                             | ✅                     |
-| Trade Republic      | ✅              | ✅                        | ✅                             | -                      |
-| Unicaja             | ✅              | ✅                        | ❌                             | -                      |
-| Wecity              | ✅              | -                         | ✅                             | ✅                     |
-| Mintos              | ✅              | -                         | ❌                             | ❌                     |
-| Freedom24           | ✅              | -                         | ✅                             | ❌                     |
-| Indexa Capital      | ✅              | -                         | ✅                             | -                      |
-| ING                 | ✅              | ✅                        | ✅                             | -                      |
-| Grupo Cajamar       | ✅              | -                         | ❌                             | -                      |
-| DEGIRO              | ✅              | ❌                        | ✅                             | -                      |
-| Interactive Brokers | ✅              | ❌                        | ✅⚠️                           | -                      |
-| B100                | ✅              | ❌                        | ✅ (interest)                  | -                      |
-
-| Crypto Exchange | Global Position | Periodic<br>Contributions | Transactions<br>(inv. related) | Investment<br>Historic |
-| --------------- | --------------- | ------------------------- | ------------------------------ | ---------------------- |
-| Binance         | ✅ Spot         | ❌                        | ✅️                             | -                      |
-
-### Financial Entity notes
-
-Some entities require a 2FA to login or get its data, which doesn't allow to background update, this applies to the
-following ones:
-
-- **SEGO** (e-mail)
-- **Trade Republic** (mobile app or SMS)
-- **Wecity** (SMS)
-- Sometimes **MyInvestor** (SMS) and may ask sometimes for captcha
-- **DEGIRO** (mobile app confirmation)
-
-Important points to remark:
-
-- **Unicaja**:
-    - May fail sometimes in mobile app.
-    - If not using the app, it requires setting `UNICAJA_ABCK` environment variable to login, as it uses
-      Akamai for antibot protection.
-- **Mintos** needs Selenium to resolve reCAPTCHA when not using the app.
-- **Trade Republic**, **ING** and **IBKR** only work via app, as require user interaction to log in.
-- **Freedom24** D-Account interest (swaps) txs were supported and its related transactions, but not anymore since its
-  removal.
+- 📤 Dynamic and customizable data export to Google Sheets or CSV/TSV/Excel files
+- 📥 Manual data importing, highly configurable via templates
+- 📊 Savings & retirement calculator with multiple scenarios and variables
+- 📱 Desktop (Electron), Android and iOS (Capacitor + Pyodide-based local Python backend on mobile)
+- 🌐 Localized UI, including Chinese
 
 ### Crypto
 
-Crypto is a bit special, as it is not a financial entity, but a financial product. To add it just set up a wallet,
-currently the following are supported:
-
-- **Bitcoin** (xpub supported)
-- **Ethereum**: ERC20 tokens are supported too.
-- **Litecoin** (xpub supported)
-- **Tron**: TRC20 tokens are supported too.
-- **Binance Smart Chain**: BSC tokens are supported too (requires Etherscan integration setup with an API Key).
-
-At the moment the only available feature for crypto is **Global Position**, transactions are WIP.
-
-Some financial entities such as Trade Republic support crypto too.
-
-### Commodities
-
-Manual commodity input is feature that allows to track market value for them. Currently, the following are supported:
-
-- **Gold**
-- **Silver**
-- **Platinum**
-- **Palladium**
+Crypto is tracked as manually entered positions rather than live wallet balances. Chain/address-based wallet monitoring (BTC, ETH, LTC, TRON, BSC — read-only, no login) is planned but not yet implemented; see [FUTURE.md](FUTURE.md).
 
 ### Export and Importing
 
-This project allows to create specific tables in different formats, aggregating and formatting the scraped data.
-Currently two modalities are supported:
+This project allows creating specific tables in different formats, aggregating and formatting your manually entered data. Two modalities are supported:
 
-- **Google Sheets**: supported for exporting and importing, which requires to set up a Google Service Account.
-  Also keep in mind that in this modality when importing, the spreadsheets data is considered like a fake source, so
-  each time data is
-  imported will override previous data from Google Sheets (won't affect real data or manually provided).
-- **Files**: CSV, TSV and Excel files are supported for exporting and importing, no special setup is needed for this.
+- **Google Sheets**: supported for exporting and importing, which requires setting up a Google Service Account. When importing, the spreadsheet data is treated as a source of truth for that import — each import overrides previous data from Google Sheets (does not affect manually provided data).
+- **Files**: CSV, TSV and Excel files are supported for exporting and importing, no special setup needed.
 
 #### Templating
 
-Exporting and importing is highly customizable using templates, which allows to define the structure of the tables,
-data formatting, filters and other features. It's required for importing.
-
-Check [Export & Import Configuration](#export--import-configuration) for more technical info.
-
-## Usage
-
-### Download
-
-Download the latest version of the app from the [Releases](https://github.com/finanze/finanze/releases) for your OS.
-
-Want to try the latest in-development features? Grab a build from the rolling
-[`next` pre-release](https://github.com/finanze/finanze/releases/tag/next), which is automatically updated on every push
-to `develop`. These builds may be unstable and not intended for production use.
-
-### Docker
-
-Two Docker images are available, a Selenium one (`latest-selenium`) and a lighter default one (`latest`).
-
-In case you don't use Mintos, `latest` is highly recommended.
-The first one is required for Mintos, as it contains Selenium and reCAPTCHA resolution related Python and SO
-dependencies (like ffmpeg).
-
-Both are available at Docker Hub [finanze/finanze](https://hub.docker.com/r/finanze/finanze).
-
-Frontend is available at [finanze/finanze-frontend](https://hub.docker.com/r/finanze/finanze-frontend).
-
-Checkout example [docker-compose.yml](docker-compose.yml) for a complete setup.
+Exporting and importing is highly customizable using templates, which define table structure, data formatting, filters and other options. Templates are required for importing.
 
 ## Development
 
@@ -233,10 +54,10 @@ For the frontend use `pnpm`, and `node 24`.
 
 ### Setup
 
-1. Clone the repository:
+1. Clone the repository (this fork):
 
     ```sh
-    git clone https://github.com/finanze/finanze.git
+    git clone <this repo's URL>
     cd finanze
     ```
 
@@ -251,7 +72,6 @@ For the frontend use `pnpm`, and `node 24`.
 
     ```sh
     pip install -r requirements.txt -r requirements-dev.txt -r requirements-lint.txt -r requirements-packaging.txt
-    pip install -r requirements-selenium.txt  # If you want to use Selenium for reCAPTCHA, only for Mintos
     pre-commit install
     ```
 
@@ -275,25 +95,13 @@ For the frontend use `pnpm`, and `node 24`.
                         # ---- Mobile SPECIFIC ----
     pnpm dev:mobile     # For mobile app (web feature limited, but useful for basic development and testing)
     pnpm cap:ios        # For iOS development (requires Xcode and Mac)
-    pnpm cap:android    # For Android development (requires Android Studio and related SDKs
+    pnpm cap:android    # For Android development (requires Android Studio and related SDKs)
     pnpm cap:sync       # To sync changes to native projects after frontend development
-
-                        # ---- App Store SPECIFIC ----
-    pnpm cap:sync:store # Same as above but this excludes all non App/Play Store compliant stuff (entity connections)
     ```
 
-#### Mobile specific step
+#### Building an Android APK
 
-6. TLS client for mobile (required for some entities needing TLS fingerprint impersonation):
-
-    Requires: Go, Xcode (iOS), Android NDK r28+ (Android), gomobile (
-    `go install golang.org/x/mobile/cmd/gomobile@latest && go install golang.org/x/mobile/cmd/gobind@latest`).
-
-    ```sh
-    cd frontend/app           # If not already
-    go mod tidy -C native/tlsclient
-    pnpm native:setup         # Builds iOS xcframework + Android AAR and copies to native projects
-    ```
+See [CLAUDE.md](CLAUDE.md) for the full mobile build steps, the Android `versionCode` convention, and known build pitfalls (missing `install:pyodide`, git-worktree path issues).
 
 #### Other
 
@@ -323,28 +131,20 @@ For the frontend use `pnpm`, and `node 24`.
 
 ### Environment Variables
 
-Checkout example docker-compose.yml for the environment variables that can be used to override the default config, most
-important ones are::
+Checkout example [docker-compose.yml](docker-compose.yml) for the environment variables that can be used to override the default config, most important ones are:
 
 - `USERNAME` and `PASSWORD` optional, to auto start session on load.
 - `MULTI_USER` optional, to allow multiple user sign up (only recommended for local development).
-- Other Selenium related ones.
 
-## Attributions & Credits
+### Docker
+
+`docker-compose.yml` references the upstream `finanze/finanze` Docker Hub images by default — those do **not** contain this fork's changes. Build your own images from this repo's `Dockerfile` / `frontend/app/Dockerfile` instead of pulling the upstream tags.
+
+## Credits
+
+This project is a fork of [finanze/finanze](https://github.com/finanze/finanze).
 
 - Powered by [CoinGecko](https://www.coingecko.com/).
 - Powered by [CoinMarketCap](https://coinmarketcap.com/).
 - Powered by [CryptoCompare](https://www.cryptocompare.com/).
 - [Pyodide](https://github.com/pyodide/pyodide) is used for mobile backend compatibility.
-- Trade Republic client is based on project [pytr-org/pytr](https://github.com/pytr-org/pytr), although it has been
-  heavily modified, this library has been vital for the entity integration.
-- Selenium reCAPTCHA resolution is based
-  on [sarperavci/GoogleRecaptchaBypass](https://github.com/sarperavci/GoogleRecaptchaBypass/tree/selenium)
-  project, using a slightly modified version of Selenium version. In an attempt of using Playwright I made an adaptation
-  for it [here](finanze/infrastructure/scrapers/mintos/recaptcha_solver_playwright.py), it works, but has some troubles
-  with headless mode.
-
----
-
-<small>\* App Store version has limited features and does not support bank connections. Use AltStore or TestFlight for
-the full experience.</small>

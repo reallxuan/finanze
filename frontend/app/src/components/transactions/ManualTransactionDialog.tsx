@@ -92,6 +92,7 @@ const OUTGOING_TX_TYPES = new Set<TxType>([
   TxType.TRANSFER_OUT,
   TxType.SWITCH_FROM,
   TxType.SWAP_FROM,
+  TxType.EXPENSE,
 ])
 
 export interface ManualTransactionSubmitResult {

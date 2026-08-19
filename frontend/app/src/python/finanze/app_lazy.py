@@ -215,6 +215,9 @@ class LazyComponents:
         from application.use_cases.update_manual_transaction import (
             UpdateManualTransactionImpl,
         )
+        from application.use_cases.adjust_account_balance import (
+            AdjustAccountBalanceImpl,
+        )
         from application.use_cases.delete_manual_transaction import (
             DeleteManualTransactionImpl,
         )
@@ -581,14 +584,25 @@ class LazyComponents:
             d.ex_client,
             d.tx_handler,
         )
+        adjust_account_balance = AdjustAccountBalanceImpl(
+            d.entity_repo,
+            d.position_repo,
+            d.virtual_repo,
+            manual_position_snapshot_writer,
+        )
         self.add_manual_tx = AddManualTransactionImpl(
-            d.entity_repo, d.tx_repo, d.virtual_repo, d.tx_handler, historic_repo
+            d.entity_repo,
+            d.tx_repo,
+            d.virtual_repo,
+            d.tx_handler,
+            historic_repo,
+            adjust_account_balance,
         )
         self.up_manual_tx = UpdateManualTransactionImpl(
-            d.entity_repo, d.tx_repo, d.virtual_repo, d.tx_handler
+            d.entity_repo, d.tx_repo, d.virtual_repo, d.tx_handler, adjust_account_balance
         )
         self.del_manual_tx = DeleteManualTransactionImpl(
-            d.tx_repo, d.virtual_repo, d.tx_handler
+            d.tx_repo, d.virtual_repo, d.tx_handler, adjust_account_balance
         )
         self.settle_manual_inv = SettleManualInvestmentImpl(
             d.entity_repo,

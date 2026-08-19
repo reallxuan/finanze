@@ -9,6 +9,8 @@ from application.use_cases.manual_transaction_common import (
 )
 from domain.exception.exceptions import TransactionNotFound
 from domain.fetch_record import DataSource
+from domain.transactions import AccountTx, account_tx_signed_amount
+from domain.use_cases.adjust_account_balance import AdjustAccountBalance
 from domain.use_cases.delete_manual_transaction import DeleteManualTransaction
 
 
@@ -18,9 +20,11 @@ class DeleteManualTransactionImpl(DeleteManualTransaction, AtomicUCMixin):
         transaction_port: TransactionPort,
         virtual_import_registry: VirtualImportRegistry,
         transaction_handler_port: TransactionHandlerPort,
+        adjust_account_balance: AdjustAccountBalance,
     ):
         AtomicUCMixin.__init__(self, transaction_handler_port)
         self._transaction_port = transaction_port
+        self._adjust_account_balance = adjust_account_balance
         self._helper = ManualTransactionVirtualImportHelper(virtual_import_registry)
 
     async def execute(self, tx_id: UUID):
@@ -32,6 +36,13 @@ class DeleteManualTransactionImpl(DeleteManualTransaction, AtomicUCMixin):
             raise TransactionNotFound(tx_id)
 
         entity_id = existing.entity.id
+
+        if isinstance(existing, AccountTx) and existing.account_name:
+            await self._adjust_account_balance.execute(
+                existing.entity.id,
+                existing.account_name,
+                -account_tx_signed_amount(existing.type, existing.amount),
+            )
 
         await self._transaction_port.delete_by_id(tx_id)
 

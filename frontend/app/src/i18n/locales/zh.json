@@ -132,8 +132,6 @@
     "dataDisplayModePrivate": "开启",
     "applicationLanguageOptions": {
       "en-US": "English",
-      "es-ES": "Español",
-      "it-IT": "Italiano",
       "zh-CN": "简体中文"
     },
     "defaultCurrency": "主货币",
@@ -457,6 +455,8 @@
     "welcome": "欢迎使用 Finanze",
     "summary": "财务摘要",
     "recentTransactions": "最近交易",
+    "dailyTransactions": "消费/转账",
+    "investmentTransactions": "投资买卖",
     "maturity": "到期日",
     "assetDistribution": "分布",
     "assetDistributionByType": "产品",
@@ -616,6 +616,9 @@
     "avgBalance": "平均余额",
     "interestRate": "利率",
     "grossAmount": "总金额",
+    "account": "账户",
+    "category": "分类",
+    "balanceAfter": "交易后余额",
     "portfolioName": "投资组合名称",
     "iban": "IBAN",
     "currency": "货币",
@@ -665,6 +668,23 @@
         "positive": "请输入正数",
         "nonNegative": "请输入零或正数",
         "invalidNumber": "请输入有效数字"
+      },
+      "quickAdd": {
+        "title": "快速记账",
+        "amountLabel": "金额",
+        "institutionLabel": "机构",
+        "accountLabel": "账户",
+        "noAccountsError": "该机构还没有账户，请先在“机构”页面添加一个账户",
+        "noNamedAccountsError": "该机构下的账户还没有设置名称，请先在“机构”页面为账户设置一个名称",
+        "dateLabel": "日期",
+        "noteLabel": "备注",
+        "notePlaceholder": "选填备注",
+        "categoryLabel": "分类",
+        "categoryRequired": "请选择一个分类",
+        "typeExpense": "支出",
+        "typeIncome": "收入",
+        "typeTransfer": "转账",
+        "submit": "保存"
       }
     },
     "deleteManualTransactionTitle": "删除手动交易",
@@ -681,6 +701,88 @@
       "description": "按日期范围筛选已完成或历史记录。",
       "descriptionGeneric": "显示历史交易记录。",
       "clear": "清除历史筛选"
+    }
+  },
+  "spendingAnalysis": {
+    "title": "消费分析",
+    "subtitle": "追踪你的钱花在哪里",
+    "periodLabel": "周期",
+    "period": {
+      "1m": "1个月",
+      "3m": "3个月",
+      "6m": "6个月",
+      "1y": "1年",
+      "all": "全部"
+    },
+    "summary": {
+      "income": "收入",
+      "expense": "支出",
+      "net": "结余"
+    },
+    "categoryChart": {
+      "title": "按分类统计支出",
+      "empty": "该周期内暂无已分类的支出"
+    },
+    "trendChart": {
+      "title": "月度趋势",
+      "empty": "该周期内暂无数据"
+    }
+  },
+  "mpf": {
+    "title": "强积金",
+    "subtitle": "追踪你的强积金（MPF）供款和持仓",
+    "newPortfolio": "新建强积金账户",
+    "empty": "还没有强积金账户，添加一个开始记录供款。",
+    "deletePortfolioConfirm": "删除这个强积金账户？相关的供款记录也会一并删除。",
+    "deletePortfolioSuccess": "强积金账户已删除",
+    "deletePortfolioError": "无法删除强积金账户",
+    "create": {
+      "title": "新建强积金账户",
+      "confirmSunLifeMessage": "目前只支持永明（Sun Life）强积金计划的基金数据，其他受托人的基金净值暂不支持。是否继续创建永明强积金账户？",
+      "confirmSunLifeYes": "是，继续",
+      "confirmSunLifeNo": "否，退出",
+      "entityLabel": "受托人机构",
+      "entityRequired": "请选择一个机构",
+      "nameLabel": "名称",
+      "namePlaceholder": "例如：永明彩虹强积金计划",
+      "nameRequired": "请输入名称",
+      "submit": "创建",
+      "success": "强积金账户已创建",
+      "error": "无法创建强积金账户"
+    },
+    "allocation": {
+      "title": "目标配置比例",
+      "addFund": "添加基金",
+      "total": "合计",
+      "mustSumTo100": "百分比总和必须为 100%",
+      "noFundsAvailable": "暂时无法获取最新基金列表，请稍后重试。",
+      "futureOnlyNote": "修改配置比例只影响从现在起记录的供款——已购买的份额仍保留购买当时生效的配置比例，不会改变。",
+      "updateSuccess": "目标配置比例已更新",
+      "updateError": "无法更新目标配置比例"
+    },
+    "detail": {
+      "totalContributed": "累计供款",
+      "marketValue": "市值",
+      "gainLoss": "盈亏",
+      "holdingsTitle": "持仓",
+      "noHoldings": "暂无持仓，记录一笔供款开始吧。",
+      "units": "单位",
+      "nav": "单位净值"
+    },
+    "contribution": {
+      "title": "记录供款",
+      "recordButton": "记录供款",
+      "history": "供款记录",
+      "noHistory": "还没有供款记录。",
+      "amountLabel": "金额",
+      "dateLabel": "日期",
+      "allocationPreviewLabel": "将按当前目标配置比例拆分",
+      "submit": "记录",
+      "success": "供款已记录",
+      "error": "无法记录供款",
+      "deleteConfirm": "删除这笔供款记录？此操作无法撤销。",
+      "deleteSuccess": "供款记录已删除",
+      "deleteError": "无法删除供款记录"
     }
   },
   "enums": {
@@ -705,7 +807,21 @@
       "SWITCH_FROM": "转换转出",
       "SWITCH_TO": "转换转入",
       "INVESTMENT": "投资",
-      "FEE": "费用"
+      "FEE": "费用",
+      "EXPENSE": "支出",
+      "INCOME": "收入"
+    },
+    "category": {
+      "FOOD": "餐饮",
+      "TRANSPORT": "交通",
+      "SHOPPING": "购物",
+      "HOUSING": "居住",
+      "ENTERTAINMENT": "娱乐",
+      "HEALTH": "医疗",
+      "EDUCATION": "教育",
+      "UTILITIES": "水电通讯",
+      "TRAVEL": "旅行",
+      "OTHER": "其他"
     },
     "productType": {
       "ACCOUNT": "账户",
@@ -2011,7 +2127,7 @@
   "cardTypes": { "CREDIT": "信用卡", "DEBIT": "借记卡" },
   "loanTypes": { "MORTGAGE": "按揭贷款", "STANDARD": "个人贷款" },
   "accountTypes": {
-    "CHECKING": "支票账户",
+    "CHECKING": "活期账户",
     "SAVINGS": "储蓄账户",
     "BROKERAGE": "证券账户",
     "VIRTUAL_WALLET": "钱包",

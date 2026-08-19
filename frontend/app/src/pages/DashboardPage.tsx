@@ -1,6 +1,7 @@
 import { MoneyEventType, type ForecastResult } from "@/types"
-import { ProductType } from "@/types/position"
-import { getForecast, getMoneyEvents } from "@/services/api"
+import { ProductType, AccountType } from "@/types/position"
+import { getForecast, getMoneyEvents, getTransactions } from "@/services/api"
+import { TransactionsResult } from "@/types/transactions"
 import { useEffect, useRef, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
@@ -23,6 +24,7 @@ import { DecimalInput } from "@/components/ui/DecimalInput"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { Badge } from "@/components/ui/Badge"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
 import {
   Popover,
   PopoverContent,
@@ -139,8 +141,6 @@ export default function DashboardPage() {
   const [expandedUpcomingId, setExpandedUpcomingId] = useState<string | null>(
     null,
   )
-
-  const transactions = cachedLastTransactions
 
   type DashboardOptions = {
     includePending: boolean
@@ -847,15 +847,114 @@ export default function DashboardPage() {
   )
   const hasCryptoAssets = cryptoPositions.length > 0
   const hasCommodityAssets = commodityPositions.length > 0
-  const recentTransactions = useMemo(
+
+  const [txView, setTxView] = useState<"daily" | "investment">("daily")
+  const [dailyTxResult, setDailyTxResult] = useState<TransactionsResult | null>(
+    null,
+  )
+  const [investmentTxResult, setInvestmentTxResult] =
+    useState<TransactionsResult | null>(null)
+  const [dailyTxLoading, setDailyTxLoading] = useState(false)
+  const [investmentTxLoading, setInvestmentTxLoading] = useState(false)
+
+  // cachedLastTransactions goes null whenever invalidateTransactionsCache() is
+  // called (e.g. after creating a transaction elsewhere, like quick-add) —
+  // mirror that here so the daily/investment tabs refetch instead of showing
+  // stale data.
+  useEffect(() => {
+    if (cachedLastTransactions === null) {
+      setDailyTxResult(null)
+      setInvestmentTxResult(null)
+    }
+  }, [cachedLastTransactions])
+
+  useEffect(() => {
+    if (txView !== "daily" || dailyTxResult !== null || dailyTxLoading) return
+    setDailyTxLoading(true)
+    getTransactions({ limit: 8, product_types: [ProductType.ACCOUNT] })
+      .then(setDailyTxResult)
+      .catch(() => setDailyTxResult({ transactions: [] }))
+      .finally(() => setDailyTxLoading(false))
+  }, [txView, dailyTxResult, dailyTxLoading])
+
+  useEffect(() => {
+    if (txView !== "investment" || investmentTxResult !== null || investmentTxLoading)
+      return
+    setInvestmentTxLoading(true)
+    getTransactions({ limit: 8 })
+      .then(result =>
+        setInvestmentTxResult({
+          transactions: result.transactions.filter(
+            tx => tx.product_type !== ProductType.ACCOUNT,
+          ),
+        }),
+      )
+      .catch(() => setInvestmentTxResult({ transactions: [] }))
+      .finally(() => setInvestmentTxLoading(false))
+  }, [txView, investmentTxResult, investmentTxLoading])
+
+  // Entities whose ACCOUNT-product entries are exclusively brokerage/fund-portfolio
+  // cash sub-accounts are excluded from the "daily" tab (they're investment-cash
+  // ledger noise, not everyday spending). Entities with no position data yet
+  // (e.g. a transaction just added via quick-add) default to "daily".
+  const entityAccountTypeMap = useMemo(() => {
+    const map = new Map<string, Set<AccountType>>()
+    if (positionsData?.positions) {
+      Object.entries(positionsData.positions).forEach(
+        ([entityId, globalPositions]) => {
+          globalPositions.forEach(gp => {
+            const accountProduct = gp.products?.[ProductType.ACCOUNT] as
+              | { entries?: { type: AccountType }[] }
+              | undefined
+            accountProduct?.entries?.forEach(account => {
+              if (!map.has(entityId)) map.set(entityId, new Set())
+              map.get(entityId)!.add(account.type)
+            })
+          })
+        },
+      )
+    }
+    return map
+  }, [positionsData])
+
+  const filteredDailyTxResult = useMemo(() => {
+    if (!dailyTxResult) return dailyTxResult
+    const investmentAccountTypes = new Set([
+      AccountType.BROKERAGE,
+      AccountType.FUND_PORTFOLIO,
+    ])
+    return {
+      transactions: dailyTxResult.transactions.filter(tx => {
+        const types = entityAccountTypeMap.get(tx.entity.id)
+        if (!types || types.size === 0) return true
+        return ![...types].every(t => investmentAccountTypes.has(t))
+      }),
+    }
+  }, [dailyTxResult, entityAccountTypeMap])
+
+  const dailyRecentTransactions = useMemo(
     () =>
       getRecentTransactions(
-        transactions,
+        filteredDailyTxResult,
         locale,
         settings.general.defaultCurrency,
       ),
-    [transactions, locale, settings.general.defaultCurrency],
+    [filteredDailyTxResult, locale, settings.general.defaultCurrency],
   )
+
+  const investmentRecentTransactions = useMemo(
+    () =>
+      getRecentTransactions(
+        investmentTxResult,
+        locale,
+        settings.general.defaultCurrency,
+      ),
+    [investmentTxResult, locale, settings.general.defaultCurrency],
+  )
+
+  const activeRecentTransactions =
+    txView === "daily" ? dailyRecentTransactions : investmentRecentTransactions
+  const activeTxLoading = txView === "daily" ? dailyTxLoading : investmentTxLoading
 
   const fundItems = useMemo(
     () =>
@@ -3118,7 +3217,7 @@ export default function DashboardPage() {
                   className="lg:col-span-5"
                 >
                   <div className="flex flex-col lg:rounded-lg lg:border lg:bg-card lg:text-card-foreground lg:shadow-sm">
-                    <div className="flex flex-col space-y-1.5 py-4 lg:p-6">
+                    <div className="flex flex-col space-y-3 py-4 lg:p-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-bold flex items-center leading-none tracking-tight">
                           <ArrowLeftRight className="h-5 w-5 mr-2 text-primary" />
@@ -3136,6 +3235,23 @@ export default function DashboardPage() {
                           </Button>
                         )}
                       </div>
+                      {!forecastMode && (
+                        <Tabs
+                          value={txView}
+                          onValueChange={value =>
+                            setTxView(value as "daily" | "investment")
+                          }
+                        >
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="daily">
+                              {t.dashboard.dailyTransactions}
+                            </TabsTrigger>
+                            <TabsTrigger value="investment">
+                              {t.dashboard.investmentTransactions}
+                            </TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      )}
                     </div>
                     <div className="flex-grow lg:px-6 lg:pb-6">
                       {forecastMode ? (
@@ -3145,9 +3261,14 @@ export default function DashboardPage() {
                             {t.forecast.notShowing}
                           </p>
                         </div>
-                      ) : Object.keys(recentTransactions).length > 0 ? (
+                      ) : activeTxLoading &&
+                        Object.keys(activeRecentTransactions).length === 0 ? (
+                        <div className="flex-grow flex flex-col items-center justify-center h-full text-center py-8">
+                          <LoadingSpinner />
+                        </div>
+                      ) : Object.keys(activeRecentTransactions).length > 0 ? (
                         <ul className="space-y-0">
-                          {Object.entries(recentTransactions).map(
+                          {Object.entries(activeRecentTransactions).map(
                             ([date, txsOnDate]) => (
                               <li key={date} className="py-2">
                                 <h4 className="text-sm font-semibold text-muted-foreground mb-2 sticky top-0 bg-card z-5 py-1 px-4 -mx-4 border-b border-t">
