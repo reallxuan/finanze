@@ -55,6 +55,32 @@ async def test_get_history_maps_dataframe_rows_to_candles():
 
 
 @pytest.mark.asyncio
+async def test_get_history_prefers_ticker_over_isin_when_resolving():
+    client = YFinanceClient()
+    request = InstrumentDataRequest(
+        type=InstrumentType.ETF, isin="US9229087690", ticker="VOO"
+    )
+
+    mock_ticker = MagicMock()
+    mock_ticker.history.return_value = _history_df()
+    mock_ticker.fast_info = {"currency": "USD"}
+
+    with (
+        patch.object(
+            client, "_resolve_symbol", return_value="VOO"
+        ) as mock_resolve,
+        patch(
+            "infrastructure.client.instrument.yfinance_client.yf.Ticker",
+            return_value=mock_ticker,
+        ),
+    ):
+        result = await client.get_history(request, "1mo", "1d")
+
+    assert result is not None
+    mock_resolve.assert_awaited_once_with("VOO", InstrumentType.ETF)
+
+
+@pytest.mark.asyncio
 async def test_get_history_returns_none_when_symbol_unresolved():
     client = YFinanceClient()
     request = InstrumentDataRequest(type=InstrumentType.STOCK, ticker="UNKNOWN")

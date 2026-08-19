@@ -85,7 +85,11 @@ class YFinanceClient:
     async def get_history(
         self, request: InstrumentDataRequest, range_: str, interval: str
     ) -> Optional[InstrumentHistory]:
-        query = request.isin or request.ticker or request.name
+        # Prefer the ticker over the ISIN: Yahoo's search resolves a plain
+        # ticker far more reliably than an ISIN (which often returns no
+        # result, or a result whose quoteType doesn't match, so the
+        # exact-match fast path never fires and resolution silently fails).
+        query = request.ticker or request.isin or request.name
         if not query:
             return None
 
