@@ -4891,6 +4891,9 @@ const manualPositionConfigs: ManualPositionConfigMap = {
                   props.updateField("_last_investment_field", "initial" as any)
                   props.clearError("initial_investment")
                   props.clearError("average_buy_price")
+                  if (value.trim() && props.form.average_buy_price) {
+                    props.updateField("average_buy_price", "")
+                  }
                 }}
               />
               {props.form.currency && (
@@ -4920,6 +4923,9 @@ const manualPositionConfigs: ManualPositionConfigMap = {
                   props.updateField("_last_investment_field", "average" as any)
                   props.clearError("average_buy_price")
                   props.clearError("initial_investment")
+                  if (value.trim() && props.form.initial_investment) {
+                    props.updateField("initial_investment", "")
+                  }
                 }}
               />
               {props.form.currency && (
@@ -5589,6 +5595,9 @@ const manualPositionConfigs: ManualPositionConfigMap = {
                   props.updateField("_last_investment_field", "initial" as any)
                   props.clearError("initial_investment")
                   props.clearError("average_buy_price")
+                  if (value.trim() && props.form.average_buy_price) {
+                    props.updateField("average_buy_price", "")
+                  }
                 }}
               />
               {props.form.currency && (
@@ -5618,6 +5627,9 @@ const manualPositionConfigs: ManualPositionConfigMap = {
                   props.updateField("_last_investment_field", "average" as any)
                   props.clearError("average_buy_price")
                   props.clearError("initial_investment")
+                  if (value.trim() && props.form.initial_investment) {
+                    props.updateField("initial_investment", "")
+                  }
                 }}
               />
               {props.form.currency && (
