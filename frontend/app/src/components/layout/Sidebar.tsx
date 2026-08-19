@@ -355,19 +355,21 @@ export function Sidebar() {
           </Button>
         </div>
 
-        <div className="px-3 pt-3">
-          <Button
-            variant="default"
-            className={cn("w-full", collapsed ? "justify-center px-0" : "justify-start")}
-            onClick={openQuickAdd}
-            aria-label={t.transactions.form.quickAdd.title}
-          >
-            <Plus size={18} />
-            {!collapsed && (
-              <span className="ml-2">{t.transactions.form.quickAdd.title}</span>
-            )}
-          </Button>
-        </div>
+        {location.pathname === "/" && (
+          <div className="px-3 pt-3">
+            <Button
+              variant="default"
+              className={cn("w-full", collapsed ? "justify-center px-0" : "justify-start")}
+              onClick={openQuickAdd}
+              aria-label={t.transactions.form.quickAdd.title}
+            >
+              <Plus size={18} />
+              {!collapsed && (
+                <span className="ml-2">{t.transactions.form.quickAdd.title}</span>
+              )}
+            </Button>
+          </div>
+        )}
 
         <nav
           className={cn(

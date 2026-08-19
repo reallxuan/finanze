@@ -147,7 +147,7 @@ function LayoutContent({ children }: LayoutProps) {
           </SwipeBackGesture>
         </main>
         {isNarrowView && <FloatingBottomNav />}
-        {isNarrowView && <FloatingActionButton />}
+        {isNarrowView && location.pathname === "/" && <FloatingActionButton />}
         {isNarrowView && <StatusBarBlur />}
       </div>
 
