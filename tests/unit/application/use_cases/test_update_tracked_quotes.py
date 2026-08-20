@@ -1408,7 +1408,7 @@ class TestThrottle:
     async def test_skips_when_recently_executed(self):
         throttle = AsyncMock(spec=TrackedUpdatesPort)
         throttle.get_last_executed.return_value = datetime.now(tzlocal()) - timedelta(
-            hours=1
+            seconds=5
         )
 
         manual_position_data_port = MagicMock()

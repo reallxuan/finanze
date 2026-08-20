@@ -44,7 +44,7 @@ from domain.virtual_data import VirtualDataSource
 _TRACKABLE_PRODUCTS = (ProductType.STOCK_ETF, ProductType.FUND)
 
 _THROTTLE_KEY = "TRACKED_QUOTES"
-_THROTTLE_INTERVAL = timedelta(minutes=2)
+_THROTTLE_INTERVAL = timedelta(seconds=15)
 
 
 class UpdateTrackedQuotesImpl(UpdateTrackedQuotes):
