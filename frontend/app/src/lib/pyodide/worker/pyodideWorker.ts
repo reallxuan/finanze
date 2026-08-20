@@ -272,7 +272,10 @@ function createMainProxy(methodPrefix: string): any {
     {},
     {
       get(_target, prop) {
-        if (prop === "then") {
+        // Never synthesize a method for `then` (would look thenable/awaitable) or
+        // for well-known symbols (Symbol.iterator, toStringTag, ...) that Pyodide
+        // probes when it wraps this object in a JsProxy.
+        if (prop === "then" || typeof prop === "symbol") {
           return undefined
         }
 
@@ -495,59 +498,15 @@ async function loadBackgroundModules(): Promise<void> {
 function registerWorkerBridge(): void {
   ;(self as any).window = self
 
-  const sqlite = {
-    openDatabase: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.openDatabase", args),
-    executeSql: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.executeSql", args),
-    querySql: (...args: any[]) => requestMain("jsBridge.sqlite.querySql", args),
-    executeTransaction: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.executeTransaction", args),
-    executeBatch: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.executeBatch", args),
-    closeDatabase: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.closeDatabase", args),
-    setEncryptionKey: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.setEncryptionKey", args),
-    exportDatabaseToStaging: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.exportDatabaseToStaging", args),
-    importDatabaseFromStaging: (...args: any[]) =>
-      requestMain("jsBridge.sqlite.importDatabaseFromStaging", args),
+  // Forwarded generically so the worker never has to re-declare each method the
+  // main-thread bridge exposes — hand-maintained lists silently drift out of sync
+  // (that is how `yahooFinance.getInstrumentHistory` went missing on mobile).
+  ;(self as any).jsBridge = {
+    sqlite: createMainProxy("jsBridge.sqlite"),
+    preferences: createMainProxy("jsBridge.preferences"),
+    filesystem: createMainProxy("jsBridge.filesystem"),
+    yahooFinance: createMainProxy("jsBridge.yahooFinance"),
   }
-
-  const preferences = {
-    get: (...args: any[]) => requestMain("jsBridge.preferences.get", args),
-    set: (...args: any[]) => requestMain("jsBridge.preferences.set", args),
-    remove: (...args: any[]) =>
-      requestMain("jsBridge.preferences.remove", args),
-    clear: (...args: any[]) => requestMain("jsBridge.preferences.clear", args),
-  }
-
-  const filesystem = {
-    writeFile: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.writeFile", args),
-    readFile: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.readFile", args),
-    deleteFile: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.deleteFile", args),
-    fileExists: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.fileExists", args),
-    getFileUri: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.getFileUri", args),
-    createDirectory: (...args: any[]) =>
-      requestMain("jsBridge.filesystem.createDirectory", args),
-  }
-
-  const yahooFinance = {
-    lookup: (...args: any[]) =>
-      requestMain("jsBridge.yahooFinance.lookup", args),
-    getInstrumentInfo: (...args: any[]) =>
-      requestMain("jsBridge.yahooFinance.getInstrumentInfo", args),
-    getInstrumentHistory: (...args: any[]) =>
-      requestMain("jsBridge.yahooFinance.getInstrumentHistory", args),
-  }
-
-  ;(self as any).jsBridge = { sqlite, preferences, filesystem, yahooFinance }
   ;(self as any).FileTransfer = createMainProxy("FileTransfer")
   ;(self as any).BackupProcessor = createMainProxy("BackupProcessor")
   ;(self as any).NativeCookies = createMainProxy("NativeCookies")

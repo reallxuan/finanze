@@ -796,6 +796,7 @@
       "submit": "保存",
       "success": "期初结余已记录",
       "error": "无法记录期初结余",
+      "partialFailure": "投资组合已创建，但期初结余未能保存。请从投资组合菜单中补录，不要重复创建投资组合。",
       "amountRequired": "请至少为一只基金填写本金和单位数",
       "unitsRequired": "本金和单位数必须大于 0",
       "historyBadge": "期初结余"

@@ -12,6 +12,8 @@ from quart import Response, set_request
 from domain.exception.exceptions import (
     EntityNotFound,
     TransactionNotFound,
+    MpfPortfolioNotFound,
+    MpfContributionNotFound,
     InvalidProvidedCredentials,
     InvalidUserCredentials,
     UnauthorizedToken,
@@ -147,6 +149,12 @@ async def handle_request(router, method, path, body, headers):
         elif isinstance(e, TransactionNotFound):
             status = 404
             data = {"code": "TX_NOT_FOUND", "message": str(e)}
+        elif isinstance(e, MpfPortfolioNotFound):
+            status = 404
+            data = {"code": "MPF_PORTFOLIO_NOT_FOUND", "message": str(e)}
+        elif isinstance(e, MpfContributionNotFound):
+            status = 404
+            data = {"code": "MPF_CONTRIBUTION_NOT_FOUND", "message": str(e)}
         elif isinstance(e, InvalidUserCredentials):
             status = 401
             data = {"code": "INVALID_CREDENTIALS", "message": str(e)}

@@ -25,8 +25,9 @@ import { useAppContext } from "./AppContext"
 import { useCloud } from "./CloudContext"
 import { triggerLazyInit } from "@/lib/mobile"
 import { EntityType } from "@/types"
-import { getAllRealEstate } from "@/services/api"
+import { getAllRealEstate, getMpfPortfolios } from "@/services/api"
 import type { RealEstate } from "@/types"
+import type { MpfPortfolioSummary } from "@/types/mpf"
 import { BackupMode } from "@/types"
 
 interface FinancialDataContextType {
@@ -46,6 +47,11 @@ interface FinancialDataContextType {
   ensurePeriodicFlows: () => Promise<void>
   realEstateList: RealEstate[]
   refreshRealEstate: () => Promise<void>
+  mpfSummaries: MpfPortfolioSummary[]
+  /** Fetches MPF portfolios once per session; cheap to call on every mount. Resolves false if the fetch failed. */
+  ensureMpfSummaries: () => Promise<boolean>
+  /** Forces a re-fetch, e.g. after a portfolio/contribution mutation. Resolves false if the fetch failed. */
+  refreshMpfSummaries: () => Promise<boolean>
   cachedLastTransactions: TransactionsResult | null
   fetchCachedTransactions: () => Promise<void>
   invalidateTransactionsCache: () => void
@@ -65,6 +71,7 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
   const [pendingFlows, setPendingFlows] = useState<PendingFlow[]>([])
   const flowsLastFetchedAt = useRef<number>(0)
   const [realEstateList, setRealEstateList] = useState<RealEstate[]>([])
+  const [mpfSummaries, setMpfSummaries] = useState<MpfPortfolioSummary[]>([])
   const [cachedLastTransactions, setCachedLastTransactions] =
     useState<TransactionsResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -76,6 +83,8 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
   const periodicFlowsLoaded = useRef(false)
   const periodicFlowsInFlight = useRef<Promise<void> | null>(null)
   const realEstateFetchInFlight = useRef<Promise<void> | null>(null)
+  const mpfLoaded = useRef(false)
+  const mpfFetchInFlight = useRef<Promise<boolean> | null>(null)
   const {
     entities,
     entitiesLoaded,
@@ -239,6 +248,30 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
     realEstateFetchInFlight.current = p
     return p
   }, [])
+
+  const refreshMpfSummaries = useCallback(async () => {
+    if (mpfFetchInFlight.current) return mpfFetchInFlight.current
+    const p = (async () => {
+      try {
+        const { portfolios } = await getMpfPortfolios()
+        setMpfSummaries(portfolios)
+        mpfLoaded.current = true
+        return true
+      } catch (err) {
+        console.error("Error fetching MPF portfolios:", err)
+        return false
+      } finally {
+        mpfFetchInFlight.current = null
+      }
+    })()
+    mpfFetchInFlight.current = p
+    return p
+  }, [])
+
+  const ensureMpfSummaries = useCallback(async () => {
+    if (mpfLoaded.current) return true
+    return refreshMpfSummaries()
+  }, [refreshMpfSummaries])
 
   const fetchCachedTransactions = useCallback(async () => {
     try {
@@ -475,6 +508,9 @@ export function FinancialDataProvider({ children }: { children: ReactNode }) {
         ensurePeriodicFlows,
         realEstateList,
         refreshRealEstate,
+        mpfSummaries,
+        ensureMpfSummaries,
+        refreshMpfSummaries,
         cachedLastTransactions,
         fetchCachedTransactions,
         invalidateTransactionsCache,

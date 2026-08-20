@@ -1829,6 +1829,7 @@
       "submit": "Save",
       "success": "Opening balance recorded",
       "error": "Unable to record opening balance",
+      "partialFailure": "Portfolio created, but the opening balance could not be saved. Record it from the portfolio menu — do not create the portfolio again.",
       "amountRequired": "Enter the principal and units for at least one fund",
       "unitsRequired": "Principal and units must be greater than 0",
       "historyBadge": "Opening balance"

@@ -651,8 +651,15 @@ export const getAssetDistribution = (
   exchangeRates: ExchangeRates,
   pendingFlows?: any[],
   realEstateList?: RealEstate[],
+  mpfTotalValue?: number,
 ): AssetDistributionItem[] => {
-  if (!positionsData || !positionsData.positions) return []
+  if (!positionsData || !positionsData.positions) {
+    // MPF lives outside GlobalPosition, so it can still be the only asset here
+    if (mpfTotalValue && mpfTotalValue > 0) {
+      return [{ type: "MPF", value: mpfTotalValue, percentage: 100, change: 0 }]
+    }
+    return []
+  }
 
   const assetTypes: Record<
     string,
@@ -1053,6 +1060,17 @@ export const getAssetDistribution = (
       assetTypes["REAL_ESTATE"].value += realEstateOwnedTotal
       totalValue += realEstateOwnedTotal
     }
+  }
+
+  // Include MPF market value as its own asset category (not part of GlobalPosition)
+  if (mpfTotalValue && mpfTotalValue > 0) {
+    assetTypes["MPF"] = {
+      type: "MPF",
+      value: mpfTotalValue,
+      percentage: 0,
+      change: 0,
+    }
+    totalValue += mpfTotalValue
   }
 
   // Add pending flows if provided (both earnings and expenses)
