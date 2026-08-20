@@ -110,14 +110,6 @@ export default function InvestmentsPage() {
         assetId: "crypto" as const,
       },
       {
-        path: "/investments/market-forecast",
-        label: t.common.marketForecast,
-        icon: getIconForProductType(ProductType.MARKET_FORECAST, "h-8 w-8"),
-        color: "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-200",
-        productType: ProductType.MARKET_FORECAST,
-        assetId: "market-forecast" as const,
-      },
-      {
         path: "/investments/commodities",
         label: t.common.commodities,
         icon: getIconForProductType(ProductType.COMMODITY, "h-8 w-8"),

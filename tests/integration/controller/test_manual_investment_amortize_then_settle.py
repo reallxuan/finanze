@@ -101,7 +101,7 @@ def _factoring_position(entity, factoring):
 async def test_factoring_settle_repays_pending_after_amortize(client, app):
     await _signup(client)
 
-    db_client = app[1]
+    db_client = app.db_client
 
     position_port = PositionSQLRepository(client=db_client)
     manual_position_data_port = ManualPositionDataSQLRepository(client=db_client)

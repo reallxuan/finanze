@@ -149,13 +149,6 @@ export function Sidebar() {
         hasData: hasProductEntries(ProductType.CRYPTO),
       },
       {
-        path: "/investments/market-forecast",
-        label: t.common.marketForecast,
-        productType: ProductType.MARKET_FORECAST,
-        key: "market-forecast",
-        hasData: hasProductEntries(ProductType.MARKET_FORECAST),
-      },
-      {
         path: "/investments/commodities",
         label: t.common.commodities,
         productType: ProductType.COMMODITY,
