@@ -52,19 +52,29 @@ Also requires `frontend/app/android/local.properties` with `sdk.dir=<path to And
 
 When bumping the version, update in lockstep: `frontend/app/package.json`, `pyproject.toml`, `finanze/version.py`, `frontend/app/android/app/build.gradle` (`versionCode` + `versionName`), `frontend/app/ios/App/App.xcodeproj/project.pbxproj` (`MARKETING_VERSION = {version}00;`), and `.bumpversion.toml`.
 
-## Mobile DI wiring drifts from `server.py` — check it after any use case constructor change
+## DI wiring drifts from `server.py` — check it after any use case constructor change
 
-`frontend/app/src/python/finanze/{app_core,app_lazy,app_deferred,app_background}.py` hand-maintain a **separate, duplicated copy** of `finanze/server.py`'s dependency wiring for the Pyodide/mobile runtime. Desktop and mobile are two independent DI graphs for the same use cases — updating one does not update the other, and nothing enforces they stay in sync.
+`finanze/server.py` is the canonical dependency wiring, but **two other places re-declare it by hand** and nothing keeps them in sync:
 
-This bit us for real: the accounting refactor added a new required `adjust_account_balance` argument to `AddManualTransactionImpl`, `UpdateManualTransactionImpl`, and `DeleteManualTransactionImpl`, updated `server.py` to match, but never touched `app_lazy.py`. The blast radius was much bigger than those three features: each tier's use cases (core/lazy/deferred/background) are all constructed together in one function (e.g. `LazyComponents.__init__`), so the first missing-argument `TypeError` aborted construction of the *entire tier* — breaking every feature backed by any lazy-tier use case, not just the three that changed. Symptom on device: app opens fine, but literally every action that touches the database fails (looked indistinguishable from "the database is corrupted" until the actual traceback was captured — `AddManualTransactionImpl.__init__() missing 1 required positional argument: 'adjust_account_balance'` — via `adb logcat` while reproducing on an emulator).
+- `frontend/app/src/python/finanze/{app_core,app_lazy,app_deferred,app_background}.py` — the Pyodide/mobile runtime, which can't import `server.py` and keeps its own tiered copy.
+- `tests/integration/controller/conftest.py` — the integration-test fixture, which builds the same graph against temporary adapters.
+
+Updating one does not update the others. The same missing-argument bug has now shown up in all three.
+
+This bit us for real, twice, from one change: the accounting refactor added a new required `adjust_account_balance` argument to `AddManualTransactionImpl`, `UpdateManualTransactionImpl`, and `DeleteManualTransactionImpl` and updated `server.py` to match, but touched neither `app_lazy.py` nor the test fixture.
+
+The blast radius was far bigger than those three features in both copies, because each builds its whole graph in one function:
+
+- **Mobile** — each tier's use cases (core/lazy/deferred/background) are constructed together (e.g. `LazyComponents.__init__`), so the first missing-argument `TypeError` aborted the *entire tier*, breaking every feature backed by any lazy-tier use case. Symptom on device: the app opens fine, but literally every action that touches the database fails — indistinguishable from "the database is corrupted" until the traceback was captured (`AddManualTransactionImpl.__init__() missing 1 required positional argument: 'adjust_account_balance'`) via `adb logcat` on an emulator.
+- **Tests** — the fixture builds the whole app, so the one bad call site turned into 386 collection errors across the integration suite.
 
 **After changing any use case's `__init__` signature, run:**
 
 ```bash
-python3 scripts/check_mobile_di_wiring.py
+python3 scripts/check_di_wiring.py
 ```
 
-It statically compares every `SomeNameImpl(...)` call in the four mobile wiring files against that class's actual `__init__` signature and flags any call site with too few arguments. It's best-effort (can't see `**kwargs`-unpacked or dynamically constructed calls), but a clean run is a strong signal; a flagged mismatch is a real bug. This won't catch everything a full mobile boot-and-click test would, but it catches exactly this class of bug in seconds instead of requiring a build + install + emulator repro.
+It statically compares every constructor call in all five wiring files against that class's actual `__init__` signature, flagging missing required arguments, unknown keywords (what a renamed parameter looks like), too many positional arguments, and arguments passed both ways. It's best-effort (can't see `**kwargs`-unpacked or dynamically constructed calls, and skips class names defined twice with different signatures), but a clean run is a strong signal; a flagged mismatch is a real bug. This won't catch everything a full mobile boot-and-click test would, but it catches exactly this class of bug in seconds instead of requiring a build + install + emulator repro.
 
 ## Worktree gotcha in `scripts/bundle-python.js`
 
