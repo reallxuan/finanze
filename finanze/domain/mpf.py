@@ -59,6 +59,7 @@ class MpfContribution:
     currency: str
     note: Optional[str] = None
     line_items: list[MpfContributionLineItem]
+    is_opening_balance: bool = False
 
 
 @dataclass(kw_only=True)
@@ -102,3 +103,18 @@ class RecordMpfContributionRequest:
     date: datetime
     total_amount: Dezimal
     note: Optional[str] = None
+
+
+@dataclass(kw_only=True)
+class MpfOpeningBalanceLineItem:
+    fund_cd: str
+    amount: Dezimal
+    units: Dezimal
+
+
+@dataclass(kw_only=True)
+class RecordMpfOpeningBalanceRequest:
+    portfolio_id: UUID
+    date: datetime
+    note: Optional[str] = None
+    line_items: list[MpfOpeningBalanceLineItem]

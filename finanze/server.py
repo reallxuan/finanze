@@ -91,6 +91,9 @@ from application.use_cases.update_mpf_portfolio import UpdateMpfPortfolioImpl
 from application.use_cases.delete_mpf_portfolio import DeleteMpfPortfolioImpl
 from application.use_cases.get_mpf_portfolios import GetMpfPortfoliosImpl
 from application.use_cases.record_mpf_contribution import RecordMpfContributionImpl
+from application.use_cases.record_mpf_opening_balance import (
+    RecordMpfOpeningBalanceImpl,
+)
 from application.use_cases.delete_mpf_contribution import DeleteMpfContributionImpl
 from application.use_cases.get_mpf_contributions import GetMpfContributionsImpl
 from infrastructure.repository.mpf.mpf_repository import MpfSQLRepository
@@ -566,6 +569,9 @@ class FinanzeServer:
         record_mpf_contribution = RecordMpfContributionImpl(
             mpf_port=mpf_repository, sun_life_mpf_client=sun_life_mpf_client
         )
+        record_mpf_opening_balance = RecordMpfOpeningBalanceImpl(
+            mpf_port=mpf_repository
+        )
         delete_mpf_contribution = DeleteMpfContributionImpl(mpf_port=mpf_repository)
         get_exchange_rates = GetExchangeRatesImpl(
             exchange_rate_client,
@@ -846,6 +852,7 @@ class FinanzeServer:
             delete_mpf_portfolio,
             get_mpf_contributions,
             record_mpf_contribution,
+            record_mpf_opening_balance,
             delete_mpf_contribution,
             get_exchange_rates,
             get_money_events,

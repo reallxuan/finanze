@@ -268,6 +268,9 @@ class LazyComponents:
         from application.use_cases.record_mpf_contribution import (
             RecordMpfContributionImpl,
         )
+        from application.use_cases.record_mpf_opening_balance import (
+            RecordMpfOpeningBalanceImpl,
+        )
         from application.use_cases.delete_mpf_contribution import (
             DeleteMpfContributionImpl,
         )
@@ -683,6 +686,9 @@ class LazyComponents:
         self.get_mpf_contributions = GetMpfContributionsImpl(mpf_port=mpf_repo)
         self.record_mpf_contribution = RecordMpfContributionImpl(
             mpf_port=mpf_repo, sun_life_mpf_client=sun_life_client
+        )
+        self.record_mpf_opening_balance = RecordMpfOpeningBalanceImpl(
+            mpf_port=mpf_repo
         )
         self.delete_mpf_contribution = DeleteMpfContributionImpl(mpf_port=mpf_repo)
         self.get_instruments = GetInstrumentsImpl(d.inst_provider)

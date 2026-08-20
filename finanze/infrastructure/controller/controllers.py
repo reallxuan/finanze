@@ -43,6 +43,7 @@ from domain.use_cases.update_mpf_portfolio import UpdateMpfPortfolio
 from domain.use_cases.delete_mpf_portfolio import DeleteMpfPortfolio
 from domain.use_cases.get_mpf_portfolios import GetMpfPortfolios
 from domain.use_cases.record_mpf_contribution import RecordMpfContribution
+from domain.use_cases.record_mpf_opening_balance import RecordMpfOpeningBalance
 from domain.use_cases.delete_mpf_contribution import DeleteMpfContribution
 from domain.use_cases.get_mpf_contributions import GetMpfContributions
 from domain.use_cases.get_settings import GetSettings
@@ -169,6 +170,9 @@ from infrastructure.controller.routes.get_mpf_contributions import (
 from infrastructure.controller.routes.record_mpf_contribution import (
     record_mpf_contribution,
 )
+from infrastructure.controller.routes.record_mpf_opening_balance import (
+    record_mpf_opening_balance,
+)
 from infrastructure.controller.routes.delete_mpf_contribution import (
     delete_mpf_contribution,
 )
@@ -220,6 +224,7 @@ async def register_routes(
     delete_mpf_portfolio_uc: DeleteMpfPortfolio,
     get_mpf_contributions_uc: GetMpfContributions,
     record_mpf_contribution_uc: RecordMpfContribution,
+    record_mpf_opening_balance_uc: RecordMpfOpeningBalance,
     delete_mpf_contribution_uc: DeleteMpfContribution,
     get_exchange_rates_uc: GetExchangeRates,
     get_money_events_uc: GetMoneyEvents,
@@ -382,6 +387,14 @@ async def register_routes(
     async def record_mpf_contribution_route(portfolio_id: str):
         return await record_mpf_contribution(
             record_mpf_contribution_uc, portfolio_id
+        )
+
+    @app.route(
+        "/api/v1/mpf/portfolios/<portfolio_id>/opening-balance", methods=["POST"]
+    )
+    async def record_mpf_opening_balance_route(portfolio_id: str):
+        return await record_mpf_opening_balance(
+            record_mpf_opening_balance_uc, portfolio_id
         )
 
     @app.route("/api/v1/mpf/contributions/<contribution_id>", methods=["DELETE"])

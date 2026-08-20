@@ -532,6 +532,13 @@ def setup_lazy_routes(router: "Router", lazy: "LazyComponents") -> None:
             lz.record_mpf_contribution,
         ),
         (
+            "POST",
+            "/api/v1/mpf/portfolios/<portfolio_id>/opening-balance",
+            "record_mpf_opening_balance",
+            "record_mpf_opening_balance",
+            lz.record_mpf_opening_balance,
+        ),
+        (
             "DELETE",
             "/api/v1/mpf/contributions/<contribution_id>",
             "delete_mpf_contribution",

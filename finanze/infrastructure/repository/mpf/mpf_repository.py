@@ -125,8 +125,9 @@ class MpfSQLRepository(MpfPort):
         async with self._db_client.tx() as cursor:
             await cursor.execute(
                 """
-                INSERT INTO mpf_contributions (id, portfolio_id, date, total_amount, currency, note, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO mpf_contributions
+                    (id, portfolio_id, date, total_amount, currency, note, created_at, is_opening_balance)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(contribution.id),
@@ -136,6 +137,7 @@ class MpfSQLRepository(MpfPort):
                     contribution.currency,
                     contribution.note,
                     datetime.now().isoformat(),
+                    contribution.is_opening_balance,
                 ),
             )
             for item in contribution.line_items:
@@ -207,6 +209,7 @@ class MpfSQLRepository(MpfPort):
                         currency=row["currency"],
                         note=row["note"],
                         line_items=line_items,
+                        is_opening_balance=bool(row["is_opening_balance"]),
                     )
                 )
             return contributions

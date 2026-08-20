@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { useI18n } from "@/i18n"
@@ -35,8 +35,7 @@ import {
 } from "lucide-react"
 import { Switch } from "@/components/ui/Switch"
 import { Sensitive } from "@/components/ui/Sensitive"
-import { EntityOrigin, DataDisplayMode } from "@/types"
-import { useEntityImages } from "@/hooks/useEntityImages"
+import { DataDisplayMode } from "@/types"
 import { useDataDisplayMode } from "@/context/DataDisplayModeContext"
 
 type DistributionItem = {
@@ -45,26 +44,13 @@ type DistributionItem = {
   percentage: number
 }
 
-type EntityDistributionItem = {
-  id: string
-  name: string
-  value: number
-  percentage: number
-}
-
-type EntityInfo = {
-  id: string
-  name: string
-  origin: EntityOrigin
-  icon_url?: string | null
-}
-
 type DashboardOptions = {
   includePending: boolean
   includeLoans: boolean
   includeCardExpenses: boolean
   includeRealEstate: boolean
   includeResidences: boolean
+  includeMpf: boolean
   compactNumbers: boolean
 }
 
@@ -74,11 +60,6 @@ interface PortfolioDonutChartProps {
   gainPercentage: number
   currency: string
   assetDistribution: DistributionItem[]
-  entityDistribution: EntityDistributionItem[]
-  entityColorMap: Map<string, string>
-  entities: EntityInfo[]
-  distributionView: "by-asset" | "by-entity"
-  setDistributionView: (view: "by-asset" | "by-entity") => void
   forecastMode?: boolean
   dashboardOptions: DashboardOptions
   setDashboardOptions: React.Dispatch<React.SetStateAction<DashboardOptions>>
@@ -93,11 +74,6 @@ export function PortfolioDonutChart({
   gainPercentage,
   currency,
   assetDistribution,
-  entityDistribution,
-  entityColorMap,
-  entities,
-  distributionView,
-  setDistributionView,
   forecastMode = false,
   dashboardOptions,
   setDashboardOptions,
@@ -110,29 +86,18 @@ export function PortfolioDonutChart({
   const isPrivate = dataDisplayMode === DataDisplayMode.PRIVATE
   const navigate = useNavigate()
   const [legendExpanded, setLegendExpanded] = useState(false)
-  const entityImages = useEntityImages(entities)
   const [isOptionsOpen, setIsOptionsOpen] = useState(false)
-  const optionsRef = useRef<HTMLDivElement>(null)
   const isDarkMode = resolvedTheme === "dark"
 
-  const specialEntityIds = new Set([
-    "pending-flows",
-    "real-estate",
-    "forecast-cash-delta",
-    "commodity",
-  ])
-
   const currentDistribution = useMemo(() => {
-    const items =
-      distributionView === "by-asset" ? assetDistribution : entityDistribution
-    return [...items].sort((a, b) => {
+    return [...assetDistribution].sort((a, b) => {
       const aNeg = a.value < 0 ? 0 : 1
       const bNeg = b.value < 0 ? 0 : 1
       if (aNeg !== bNeg) return aNeg - bNeg
       if (aNeg === 0) return a.value - b.value
       return b.value - a.value
     })
-  }, [distributionView, assetDistribution, entityDistribution])
+  }, [assetDistribution])
 
   const visibleItems = useMemo(() => {
     if (legendExpanded || currentDistribution.length <= VISIBLE_ITEMS) {
@@ -169,21 +134,18 @@ export function PortfolioDonutChart({
       PENDING_FLOWS: "/management/pending",
       CASH: "/banking",
       REAL_ESTATE: "/real-estate",
+      MPF: "/mpf",
     }
     return routeMap[assetType] || null
   }
 
-  const handleLegendItemClick = (
-    item: DistributionItem | EntityDistributionItem,
-  ) => {
-    if (distributionView === "by-asset") {
-      const route = getInvestmentRoute((item as DistributionItem).type)
-      if (route) navigate(route)
-    }
+  const handleLegendItemClick = (item: DistributionItem) => {
+    const route = getInvestmentRoute(item.type)
+    if (route) navigate(route)
   }
 
   const handlePieClick = (data: unknown) => {
-    if (distributionView !== "by-asset" || !data || typeof data !== "object") {
+    if (!data || typeof data !== "object") {
       return
     }
 
@@ -202,22 +164,12 @@ export function PortfolioDonutChart({
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
-      const isEntity = "name" in data && "id" in data
       return (
         <div className="bg-popover border border-border rounded-lg shadow-lg p-3 max-w-xs">
           <div className="flex items-center gap-2 mb-2">
-            {isEntity ? (
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: entityColorMap.get(data.id) }}
-              />
-            ) : (
-              getIconForAssetType(data.type)
-            )}
+            {getIconForAssetType(data.type)}
             <p className="font-medium text-sm text-popover-foreground">
-              {isEntity
-                ? data.name
-                : ((t.enums?.productType as any)?.[data.type] ?? data.type)}
+              {(t.enums?.productType as any)?.[data.type] ?? data.type}
             </p>
           </div>
           <div className="space-y-1 text-xs text-muted-foreground">
@@ -238,115 +190,28 @@ export function PortfolioDonutChart({
     return null
   }
 
-  const getEntityIcon = (
-    entityId: string,
-  ):
-    | { type: "asset"; assetType: string }
-    | { type: "image"; url: string }
-    | { type: "dot" } => {
-    if (specialEntityIds.has(entityId)) {
-      const typeMap: Record<string, string> = {
-        "pending-flows": "PENDING_FLOWS",
-        "real-estate": "REAL_ESTATE",
-        "forecast-cash-delta": "CASH",
-        commodity: "COMMODITY",
-      }
-      return { type: "asset", assetType: typeMap[entityId] || "CASH" }
-    }
-    const image = entityImages[entityId]
-    if (image && image.length > 0) {
-      return { type: "image", url: image }
-    }
-    return { type: "dot" }
-  }
-
-  const renderLegendItem = (
-    item: DistributionItem | EntityDistributionItem,
-    index: number,
-  ) => {
-    const isEntity = "name" in item && "id" in item
-    const assetType = isEntity ? null : (item as DistributionItem).type
-    const hasRoute = assetType ? getInvestmentRoute(assetType) !== null : false
-    const color = isEntity
-      ? entityColorMap.get((item as EntityDistributionItem).id)
-      : getPieSliceColorForAssetType((item as DistributionItem).type)
-    const label = isEntity
-      ? (item as EntityDistributionItem).name
-      : ((t.enums?.productType as any)?.[assetType!] ?? assetType)
-
-    const entityId = isEntity ? (item as EntityDistributionItem).id : null
-    const entityIcon = entityId ? getEntityIcon(entityId) : null
+  const renderLegendItem = (item: DistributionItem, index: number) => {
+    const hasRoute = getInvestmentRoute(item.type) !== null
+    const label = (t.enums?.productType as any)?.[item.type] ?? item.type
 
     const isLongLabel = label && label.length > 8
     const iconSize = isLongLabel ? "w-3.5 h-3.5" : "w-4 h-4"
     const iconClass = isLongLabel ? "h-3.5 w-3.5" : "h-4 w-4"
 
-    const renderEntityIcon = () => {
-      if (!entityIcon) return null
-      if (entityIcon.type === "asset") {
-        return (
-          <span className={`flex-shrink-0 ${iconSize}`}>
-            {getIconForAssetType(
-              entityIcon.assetType,
-              iconClass,
-              color ?? null,
-            )}
-          </span>
-        )
-      }
-      if (entityIcon.type === "image") {
-        return (
-          <div
-            className={`${isLongLabel ? "w-4 h-4" : "w-5 h-5"} flex-shrink-0 overflow-hidden rounded`}
-          >
-            <img
-              src={entityIcon.url}
-              alt={label}
-              draggable={false}
-              className="w-full h-full object-contain pointer-events-none select-none"
-              style={
-                {
-                  WebkitUserSelect: "none",
-                  WebkitTouchCallout: "none",
-                } as React.CSSProperties
-              }
-              onError={e => (e.currentTarget.style.display = "none")}
-            />
-          </div>
-        )
-      }
-      return (
-        <div
-          className={`${iconSize} rounded-full flex-shrink-0`}
-          style={{ backgroundColor: color }}
-        />
-      )
-    }
-
     return (
       <button
         key={`legend-${index}`}
         onClick={() => handleLegendItemClick(item)}
-        disabled={!hasRoute && !isEntity}
+        disabled={!hasRoute}
         className={cn(
           "relative flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 min-w-0 transition-colors overflow-hidden",
-          (hasRoute || isEntity) && "hover:bg-muted cursor-pointer",
+          hasRoute && "hover:bg-muted cursor-pointer",
         )}
       >
-        {isEntity && (
-          <div
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-1/2 rounded-t-sm"
-            style={{ backgroundColor: color }}
-          />
-        )}
         <div className="flex items-center gap-1.5 mb-1">
-          {isEntity ? (
-            renderEntityIcon()
-          ) : (
-            <span className={`flex-shrink-0 ${iconSize}`}>
-              {getIconForAssetType(assetType!, iconClass)}
-            </span>
-          )}
+          <span className={`flex-shrink-0 ${iconSize}`}>
+            {getIconForAssetType(item.type, iconClass)}
+          </span>
           <span
             className={cn(
               "font-medium max-w-[90px] whitespace-normal break-words leading-tight",
@@ -377,76 +242,20 @@ export function PortfolioDonutChart({
 
     const displayIcons = overflowItems.slice(0, 3)
 
-    const renderOverflowIcon = (
-      item: DistributionItem | EntityDistributionItem,
-      idx: number,
-    ) => {
-      const isEntity = "name" in item && "id" in item
-      const entityId = isEntity ? (item as EntityDistributionItem).id : null
-      const color = isEntity
-        ? entityColorMap.get((item as EntityDistributionItem).id)
-        : getPieSliceColorForAssetType((item as DistributionItem).type)
+    const renderOverflowIcon = (item: DistributionItem, idx: number) => {
       const marginStyle = {
         marginLeft: idx > 0 ? "-2.5px" : 0,
         zIndex: 4 - idx,
         ...(isDarkMode && { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" }),
       }
 
-      if (isEntity && entityId) {
-        const entityIcon = getEntityIcon(entityId)
-        if (entityIcon.type === "asset") {
-          return (
-            <span
-              key={idx}
-              className="relative flex-shrink-0 w-5 h-5 flex items-center justify-center"
-              style={marginStyle}
-            >
-              {getIconForAssetType(
-                entityIcon.assetType,
-                "h-4 w-4",
-                color ?? null,
-              )}
-            </span>
-          )
-        }
-        if (entityIcon.type === "image") {
-          return (
-            <div
-              key={idx}
-              className="relative w-5 h-5 flex-shrink-0 overflow-hidden rounded"
-              style={marginStyle}
-            >
-              <img
-                src={entityIcon.url}
-                alt=""
-                draggable={false}
-                className="w-full h-full object-contain pointer-events-none select-none"
-                style={
-                  {
-                    WebkitUserSelect: "none",
-                    WebkitTouchCallout: "none",
-                  } as React.CSSProperties
-                }
-                onError={e => (e.currentTarget.style.display = "none")}
-              />
-            </div>
-          )
-        }
-        return (
-          <div
-            key={idx}
-            className="relative w-4 h-4 rounded-full flex-shrink-0"
-            style={{ backgroundColor: color, ...marginStyle }}
-          />
-        )
-      }
       return (
         <span
           key={idx}
           className="relative flex-shrink-0 w-5 h-5 flex items-center justify-center"
           style={marginStyle}
         >
-          {getIconForAssetType((item as DistributionItem).type, "h-4 w-4")}
+          {getIconForAssetType(item.type, "h-4 w-4")}
         </span>
       )
     }
@@ -487,36 +296,8 @@ export function PortfolioDonutChart({
   return (
     <div className={cn("space-y-4 w-full", className)}>
       <div className="flex items-center justify-between">
-        <div className="inline-flex items-center gap-3" role="tablist">
+        <div className="inline-flex items-center gap-3">
           <ChartPie className="h-5 w-5 text-primary" />
-          <button
-            type="button"
-            role="tab"
-            aria-selected={distributionView === "by-asset"}
-            onClick={() => setDistributionView("by-asset")}
-            className={cn(
-              "text-base font-medium transition-colors",
-              distributionView === "by-asset"
-                ? "text-foreground font-extrabold"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t.dashboard.assetDistributionByType}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={distributionView === "by-entity"}
-            onClick={() => setDistributionView("by-entity")}
-            className={cn(
-              "text-base font-medium transition-colors",
-              distributionView === "by-entity"
-                ? "text-foreground font-extrabold"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t.dashboard.assetDistributionByEntity}
-          </button>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -535,7 +316,7 @@ export function PortfolioDonutChart({
               <Eye className="h-4 w-4" />
             )}
           </Button>
-          <div className="relative" ref={optionsRef}>
+          <div className="relative">
             <Button
               variant="ghost"
               size="icon"
@@ -682,6 +463,21 @@ export function PortfolioDonutChart({
                         />
                       </div>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm flex items-center gap-2">
+                        <Landmark className="h-4 w-4 text-muted-foreground" />
+                        {t.dashboard.includeMpf}
+                      </div>
+                      <Switch
+                        checked={dashboardOptions.includeMpf}
+                        onCheckedChange={val =>
+                          setDashboardOptions(prev => ({
+                            ...prev,
+                            includeMpf: Boolean(val),
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="border-t border-border pt-3 mt-3">
                     <div className="flex items-center justify-between">
@@ -742,7 +538,7 @@ export function PortfolioDonutChart({
                   outerRadius="100%"
                   fill="#8884d8"
                   dataKey="value"
-                  nameKey={distributionView === "by-asset" ? "type" : "name"}
+                  nameKey="type"
                   isAnimationActive={false}
                   stroke="hsl(var(--background))"
                   strokeWidth={1}
@@ -752,15 +548,7 @@ export function PortfolioDonutChart({
                   {currentDistribution.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={
-                        distributionView === "by-asset"
-                          ? getPieSliceColorForAssetType(
-                              (entry as DistributionItem).type,
-                            )
-                          : entityColorMap.get(
-                              (entry as EntityDistributionItem).id,
-                            )
-                      }
+                      fill={getPieSliceColorForAssetType(entry.type)}
                       style={{ outline: "none" }}
                     />
                   ))}
