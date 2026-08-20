@@ -61,6 +61,7 @@ export const ASSET_TYPE_TO_COLOR_MAP: Record<string, string> = {
   LOAN: "#dc2626", // Equivalent to text-red-700
   DERIVATIVE: "#ec4899", // Equivalent to text-pink-500
   MARKET_FORECAST: "#db2777", // Equivalent to text-pink-600
+  MPF: "#0d9488", // Equivalent to text-teal-600
 }
 
 export function getPieSliceColorForAssetType(type: string): string {
@@ -178,6 +179,13 @@ export function getIconForAssetType(
       return (
         <TrendingUpDown
           className={getIconClass("text-pink-600")}
+          style={iconStyle}
+        />
+      )
+    case "MPF":
+      return (
+        <Landmark
+          className={getIconClass("text-teal-600")}
           style={iconStyle}
         />
       )

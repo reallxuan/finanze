@@ -46,6 +46,7 @@ export interface MpfContribution {
   currency: string
   note?: string
   line_items: MpfContributionLineItem[]
+  is_opening_balance: boolean
 }
 
 export interface MpfHoldingFund {
@@ -82,4 +83,16 @@ export interface RecordMpfContributionPayload {
   date: string
   total_amount: number
   note?: string
+}
+
+export interface MpfOpeningBalanceLineItemPayload {
+  fund_cd: string
+  amount: number
+  units: number
+}
+
+export interface RecordMpfOpeningBalancePayload {
+  date: string
+  note?: string
+  line_items: MpfOpeningBalanceLineItemPayload[]
 }

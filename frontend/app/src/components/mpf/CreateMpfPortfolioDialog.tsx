@@ -14,12 +14,17 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { MpfAllocationEditor } from "@/components/mpf/MpfAllocationEditor"
+import {
+  MpfOpeningBalanceEditor,
+  type MpfOpeningBalanceRow,
+} from "@/components/mpf/MpfOpeningBalanceEditor"
 import { EntityType } from "@/types"
 import {
   getMpfFundQuotes,
   createMpfPortfolio,
   createManualEntity,
   getEntities,
+  recordMpfOpeningBalance,
 } from "@/services/api"
 import type { MpfAllocationTarget, MpfFundQuote } from "@/types/mpf"
 
@@ -50,6 +55,11 @@ export function CreateMpfPortfolioDialog({
   const [isResolvingEntity, setIsResolvingEntity] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [confirmedSunLife, setConfirmedSunLife] = useState(false)
+  const [hasExistingBalance, setHasExistingBalance] = useState(false)
+  const [showOpeningBalanceStep, setShowOpeningBalanceStep] = useState(false)
+  const [openingBalanceRows, setOpeningBalanceRows] = useState<
+    Record<string, MpfOpeningBalanceRow>
+  >({})
 
   const institutionEntities = useMemo(
     () =>
@@ -75,6 +85,9 @@ export function CreateMpfPortfolioDialog({
     setAllocation([])
     setError(null)
     setConfirmedSunLife(false)
+    setHasExistingBalance(false)
+    setShowOpeningBalanceStep(false)
+    setOpeningBalanceRows({})
   }
 
   const handleClose = () => {
@@ -143,6 +156,11 @@ export function CreateMpfPortfolioDialog({
       return
     }
 
+    if (hasExistingBalance) {
+      setShowOpeningBalanceStep(true)
+      return
+    }
+
     setIsSubmitting(true)
     try {
       await createMpfPortfolio({
@@ -152,6 +170,61 @@ export function CreateMpfPortfolioDialog({
         currency,
         target_allocation: allocation,
       })
+      showToast(t.mpf.create.success, "success")
+      resetForm()
+      onCreated()
+      onClose()
+    } catch (err) {
+      console.error("Error creating MPF portfolio:", err)
+      showToast(t.mpf.create.error, "error")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSubmitWithOpeningBalance = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setError(null)
+
+    const lineItems = Object.entries(openingBalanceRows)
+      .filter(([, row]) => row.amount != null || row.units != null)
+      .map(([fund_cd, row]) => ({
+        fund_cd,
+        amount: row.amount ?? 0,
+        units: row.units ?? 0,
+      }))
+
+    if (lineItems.length === 0) {
+      setError(t.mpf.openingBalance.amountRequired)
+      return
+    }
+    if (lineItems.some(item => item.amount <= 0 || item.units <= 0)) {
+      setError(t.mpf.openingBalance.unitsRequired)
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const portfolio = await createMpfPortfolio({
+        entity_id: entityId,
+        name: name.trim(),
+        scheme: DEFAULT_SCHEME,
+        currency,
+        target_allocation: allocation,
+      })
+      try {
+        await recordMpfOpeningBalance(portfolio.id, {
+          date: new Date().toISOString(),
+          line_items: lineItems,
+        })
+      } catch (err) {
+        console.error("Error recording MPF opening balance:", err)
+        showToast(t.mpf.openingBalance.error, "error")
+        resetForm()
+        onCreated()
+        onClose()
+        return
+      }
       showToast(t.mpf.create.success, "success")
       resetForm()
       onCreated()
@@ -218,6 +291,40 @@ export function CreateMpfPortfolioDialog({
                     </Button>
                   </CardFooter>
                 </>
+              ) : showOpeningBalanceStep ? (
+                <form
+                  onSubmit={handleSubmitWithOpeningBalance}
+                  className="flex flex-1 flex-col overflow-hidden"
+                >
+                  <CardContent className="space-y-4 flex-1 overflow-y-auto">
+                    <MpfOpeningBalanceEditor
+                      funds={allocation}
+                      value={openingBalanceRows}
+                      onChange={setOpeningBalanceRows}
+                      currency={currency}
+                      locale={locale}
+                    />
+
+                    {error && (
+                      <p className="text-xs text-red-600 dark:text-red-400">
+                        {error}
+                      </p>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowOpeningBalanceStep(false)}
+                      disabled={isSubmitting}
+                    >
+                      {t.common.back}
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {t.mpf.create.submit}
+                    </Button>
+                  </CardFooter>
+                </form>
               ) : (
               <form
                 onSubmit={handleSubmit}
@@ -258,6 +365,24 @@ export function CreateMpfPortfolioDialog({
                     )}
                   </div>
 
+                  <div className="flex items-start gap-2">
+                    <input
+                      id="mpf-has-existing-balance"
+                      type="checkbox"
+                      className="mt-0.5"
+                      checked={hasExistingBalance}
+                      onChange={event =>
+                        setHasExistingBalance(event.target.checked)
+                      }
+                    />
+                    <label
+                      htmlFor="mpf-has-existing-balance"
+                      className="text-sm text-muted-foreground"
+                    >
+                      {t.mpf.create.hasExistingBalanceLabel}
+                    </label>
+                  </div>
+
                   {error && (
                     <p className="text-xs text-red-600 dark:text-red-400">
                       {error}
@@ -274,7 +399,9 @@ export function CreateMpfPortfolioDialog({
                     {t.common.cancel}
                   </Button>
                   <Button type="submit" disabled={isSubmitting || loadingFunds}>
-                    {t.mpf.create.submit}
+                    {hasExistingBalance
+                      ? t.mpf.create.nextStep
+                      : t.mpf.create.submit}
                   </Button>
                 </CardFooter>
               </form>

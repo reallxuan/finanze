@@ -11,6 +11,7 @@ import { ChartCandlestick, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { useI18n } from "@/i18n"
+import { useTheme } from "@/context/ThemeContext"
 import { useModalBackHandler } from "@/hooks/useModalBackHandler"
 import { getInstrumentHistory } from "@/services/api"
 import { cn } from "@/lib/utils"
@@ -39,6 +40,8 @@ export default function InstrumentPriceChartCard({
   onClose,
 }: InstrumentPriceChartCardProps) {
   const { t } = useI18n()
+  const { resolvedTheme } = useTheme()
+  const isDarkMode = resolvedTheme === "dark"
   useModalBackHandler(open, onClose)
 
   const [range, setRange] = useState<InstrumentHistoryRangeKey>("1y")
@@ -52,16 +55,6 @@ export default function InstrumentPriceChartCard({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    const root = document.documentElement
-    const updateMode = () => setIsDarkMode(root.classList.contains("dark"))
-    updateMode()
-    const observer = new MutationObserver(updateMode)
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] })
-    return () => observer.disconnect()
-  }, [])
 
   useEffect(() => {
     if (!open) return

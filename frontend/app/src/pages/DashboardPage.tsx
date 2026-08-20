@@ -1,6 +1,12 @@
 import { MoneyEventType, type ForecastResult } from "@/types"
 import { ProductType, AccountType } from "@/types/position"
-import { getForecast, getMoneyEvents, getTransactions } from "@/services/api"
+import {
+  getForecast,
+  getMoneyEvents,
+  getTransactions,
+  getMpfPortfolios,
+} from "@/services/api"
+import type { MpfPortfolioSummary } from "@/types/mpf"
 import { TransactionsResult } from "@/types/transactions"
 import { useEffect, useRef, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
@@ -53,7 +59,6 @@ import {
 } from "lucide-react"
 import {
   getAssetDistribution,
-  getEntityDistribution,
   convertCurrency,
   getOngoingProjects,
   getStockAndFundPositions,
@@ -114,9 +119,21 @@ export default function DashboardPage() {
     null,
   )
   const forecastMode = !!forecastResult
-  const [distributionView, setDistributionView] = useState<
-    "by-asset" | "by-entity"
-  >("by-asset")
+
+  const [mpfSummaries, setMpfSummaries] = useState<MpfPortfolioSummary[]>([])
+  useEffect(() => {
+    let cancelled = false
+    getMpfPortfolios()
+      .then(({ portfolios }) => {
+        if (!cancelled) setMpfSummaries(portfolios)
+      })
+      .catch(() => {
+        if (!cancelled) setMpfSummaries([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const [transactionsLoading, setTransactionsLoading] = useState(false)
   const [transactionsError, setTransactionsError] = useState<string | null>(
@@ -148,6 +165,7 @@ export default function DashboardPage() {
     includeCardExpenses: boolean
     includeRealEstate: boolean
     includeResidences: boolean
+    includeMpf: boolean
     compactNumbers: boolean
   }
   const [dashboardOptions, setDashboardOptions] = useState<DashboardOptions>(
@@ -160,6 +178,7 @@ export default function DashboardPage() {
             return {
               ...parsed,
               includeLoans: parsed.includeLoans === true,
+              includeMpf: parsed.includeMpf !== false,
               compactNumbers: parsed.compactNumbers !== false,
             }
           }
@@ -173,6 +192,7 @@ export default function DashboardPage() {
         includeCardExpenses: false,
         includeRealEstate: true,
         includeResidences: false,
+        includeMpf: true,
         compactNumbers: true,
       }
     },
@@ -483,23 +503,48 @@ export default function DashboardPage() {
     () => filterRealEstateByOptions(realEstateList, dashboardOptions),
     [realEstateList, dashboardOptions],
   )
-  const assetDistributionBase = useMemo(
+  const mpfTotalValue = useMemo(
     () =>
-      getAssetDistribution(
-        effectivePositionsData,
-        targetCurrency,
-        exchangeRates,
-        appliedPendingFlows,
-        appliedRealEstateList,
+      mpfSummaries.reduce(
+        (sum, summary) =>
+          sum +
+          convertCurrency(
+            summary.total_market_value,
+            summary.portfolio.currency,
+            targetCurrency,
+            exchangeRates,
+          ),
+        0,
       ),
-    [
+    [mpfSummaries, targetCurrency, exchangeRates],
+  )
+  const appliedMpfTotalValue = dashboardOptions.includeMpf ? mpfTotalValue : 0
+  const assetDistributionBase = useMemo(() => {
+    const base = getAssetDistribution(
       effectivePositionsData,
       targetCurrency,
       exchangeRates,
       appliedPendingFlows,
       appliedRealEstateList,
-    ],
-  )
+    )
+    if (appliedMpfTotalValue <= 0) return base
+    const merged = [
+      ...base,
+      { type: "MPF", value: appliedMpfTotalValue, percentage: 0, change: 0 },
+    ]
+    const total = merged.reduce((sum, item) => sum + item.value, 0)
+    return merged.map(item => ({
+      ...item,
+      percentage: total > 0 ? Math.round((item.value / total) * 100) : 0,
+    }))
+  }, [
+    effectivePositionsData,
+    targetCurrency,
+    exchangeRates,
+    appliedPendingFlows,
+    appliedRealEstateList,
+    appliedMpfTotalValue,
+  ])
   const assetDistribution = useMemo(() => {
     if (!forecastMode || !forecastResult) {
       // Round percentages to 1 decimal also in non-forecast mode
@@ -571,115 +616,6 @@ export default function DashboardPage() {
     dashboardOptions.includeResidences,
     realEstateList,
   ])
-  const entityDistributionBase = useMemo(
-    () =>
-      getEntityDistribution(
-        effectivePositionsData,
-        targetCurrency,
-        exchangeRates,
-        appliedPendingFlows,
-        appliedRealEstateList,
-        { unknownEntity: t.common.unknownEntity },
-      ),
-    [
-      effectivePositionsData,
-      targetCurrency,
-      exchangeRates,
-      appliedPendingFlows,
-      appliedRealEstateList,
-      t,
-    ],
-  )
-  const entityDistribution = useMemo(() => {
-    if (!forecastMode || !forecastResult) return entityDistributionBase
-    const cryptoFactor = 1 + (forecastResult.crypto_appreciation || 0)
-    const commodityFactor = 1 + (forecastResult.commodity_appreciation || 0)
-    if (cryptoFactor === 1 && commodityFactor === 1)
-      return entityDistributionBase
-    // Build per-entity base crypto & commodity values from raw positions
-    const perEntityDeltas: Record<string, number> = {}
-    const pos = effectivePositionsData?.positions || {}
-    Object.entries(pos).forEach(([entityId, gp]: any) => {
-      let cryptoBase = 0
-      let commodityBase = 0
-      const cryptoProduct = gp.products?.CRYPTO
-      if (cryptoProduct?.entries?.length) {
-        cryptoProduct.entries.forEach((w: any) => {
-          const mv = typeof w.market_value === "number" ? w.market_value : 0
-          const cur = w.currency || targetCurrency
-          cryptoBase += convertCurrency(mv, cur, targetCurrency, exchangeRates)
-        })
-      }
-      const commodityProduct = gp.products?.COMMODITY
-      if (commodityProduct?.entries?.length) {
-        commodityProduct.entries.forEach((c: any) => {
-          const mv = typeof c.market_value === "number" ? c.market_value : 0
-          const cur = c.currency || targetCurrency
-          commodityBase += convertCurrency(
-            mv,
-            cur,
-            targetCurrency,
-            exchangeRates,
-          )
-        })
-      }
-      const delta =
-        cryptoBase * (cryptoFactor - 1) + commodityBase * (commodityFactor - 1)
-      if (delta !== 0) perEntityDeltas[entityId] = delta
-    })
-    // Apply deltas to distribution values
-    const adjusted = entityDistributionBase.map(item => ({
-      ...item,
-      value:
-        item.id in perEntityDeltas
-          ? item.value + perEntityDeltas[item.id]
-          : item.value,
-    }))
-    const total = adjusted.reduce((s, i) => s + i.value, 0)
-    return adjusted
-      .map(i => ({
-        ...i,
-        percentage: total > 0 ? (i.value / total) * 100 : 0,
-      }))
-      .sort((a, b) => b.value - a.value)
-  }, [
-    entityDistributionBase,
-    forecastMode,
-    forecastResult,
-    effectivePositionsData,
-    targetCurrency,
-    exchangeRates,
-  ])
-  const { entities } = useAppContext()
-  const adjustedEntityDistribution = useMemo(() => {
-    const contextIds = new Set(entities.map(e => e.id))
-    return entityDistribution.map(item => {
-      if (contextIds.has(item.id)) {
-        return item
-      } else if (item.id === "pending-flows") {
-        // Handle pending flows entity specifically
-        return {
-          ...item,
-          name: (t.enums?.productType as any)?.PENDING_FLOWS,
-        }
-      } else if (item.id === "real-estate") {
-        return {
-          ...item,
-          name: (t.enums?.productType as any)?.REAL_ESTATE,
-        }
-      } else if (item.id === "forecast-cash-delta") {
-        return {
-          ...item,
-          name: t.forecast.cashDeltaEntity,
-        }
-      } else {
-        return {
-          ...item,
-          name: (t.enums?.productType as any)?.COMMODITY,
-        }
-      }
-    })
-  }, [entityDistribution, entities, t])
   const { adjustedTotalAssets, adjustedInvestedAmount, gainPercentage } =
     useMemo(() => {
       if (!forecastMode) {
@@ -699,7 +635,8 @@ export default function DashboardPage() {
               100
             : 0
         return {
-          adjustedTotalAssets: currentSnapshot.adjustedTotalAssets,
+          adjustedTotalAssets:
+            currentSnapshot.adjustedTotalAssets + appliedMpfTotalValue,
           adjustedInvestedAmount: investmentInvested,
           gainPercentage: gain,
         }
@@ -757,7 +694,7 @@ export default function DashboardPage() {
             100
           : 0
       return {
-        adjustedTotalAssets: projectedTotalAssets,
+        adjustedTotalAssets: projectedTotalAssets + appliedMpfTotalValue,
         adjustedInvestedAmount: investmentInvested,
         gainPercentage: gain,
       }
@@ -773,6 +710,7 @@ export default function DashboardPage() {
       forecastResult,
       locale,
       settings,
+      appliedMpfTotalValue,
     ])
 
   // Base ongoing projects (unfiltered)
@@ -1229,29 +1167,6 @@ export default function DashboardPage() {
     "bg-rose-500",
     "bg-red-500",
   ]
-
-  const ENTITY_COLORS = [
-    "#8b5cf6",
-    "#06b6d4",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#3b82f6",
-    "#84cc16",
-    "#f97316",
-    "#ec4899",
-    "#8b5cf6",
-    "#14b8a6",
-    "#a855f7",
-  ]
-
-  const entityColorMap = useMemo(() => {
-    const mapping = new Map<string, string>()
-    entityDistribution.forEach((entity, index) => {
-      mapping.set(entity.id, ENTITY_COLORS[index % ENTITY_COLORS.length])
-    })
-    return mapping
-  }, [entityDistribution])
 
   const shuffle = <T,>(arr: T[]): T[] =>
     arr
@@ -1910,11 +1825,6 @@ export default function DashboardPage() {
                         gainPercentage={gainPercentage}
                         currency={settings.general.defaultCurrency}
                         assetDistribution={assetDistribution}
-                        entityDistribution={adjustedEntityDistribution}
-                        entityColorMap={entityColorMap}
-                        entities={entities}
-                        distributionView={distributionView}
-                        setDistributionView={setDistributionView}
                         forecastMode={forecastMode}
                         dashboardOptions={dashboardOptions}
                         setDashboardOptions={setDashboardOptions}

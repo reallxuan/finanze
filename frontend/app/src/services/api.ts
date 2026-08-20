@@ -92,6 +92,7 @@ import {
   CreateMpfPortfolioPayload,
   UpdateMpfPortfolioPayload,
   RecordMpfContributionPayload,
+  RecordMpfOpeningBalancePayload,
 } from "../types/mpf"
 import { handleApiError } from "@/utils/apiErrors"
 import { getApiClient } from "./apiClient"
@@ -414,6 +415,16 @@ export async function recordMpfContribution(
 ): Promise<MpfContribution> {
   return (await getApiClient()).post(
     `/mpf/portfolios/${portfolioId}/contributions`,
+    payload,
+  )
+}
+
+export async function recordMpfOpeningBalance(
+  portfolioId: string,
+  payload: RecordMpfOpeningBalancePayload,
+): Promise<MpfContribution> {
+  return (await getApiClient()).post(
+    `/mpf/portfolios/${portfolioId}/opening-balance`,
     payload,
   )
 }

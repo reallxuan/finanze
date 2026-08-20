@@ -22,6 +22,7 @@ import type {
 } from "@/types/mpf"
 import { CreateMpfPortfolioDialog } from "@/components/mpf/CreateMpfPortfolioDialog"
 import { RecordMpfContributionDialog } from "@/components/mpf/RecordMpfContributionDialog"
+import { RecordMpfOpeningBalanceDialog } from "@/components/mpf/RecordMpfOpeningBalanceDialog"
 import { MpfAllocationEditor } from "@/components/mpf/MpfAllocationEditor"
 
 export default function MpfPage() {
@@ -37,6 +38,7 @@ export default function MpfPage() {
   const [loadingContributions, setLoadingContributions] = useState(false)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isContributeOpen, setIsContributeOpen] = useState(false)
+  const [isOpeningBalanceOpen, setIsOpeningBalanceOpen] = useState(false)
   const [isEditingAllocation, setIsEditingAllocation] = useState(false)
   const [editAllocation, setEditAllocation] = useState(
     [] as MpfPortfolioSummary["portfolio"]["target_allocation"],
@@ -324,12 +326,21 @@ export default function MpfPage() {
 
         <Card>
           <CardContent className="pt-6 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <h3 className="font-semibold">{t.mpf.contribution.history}</h3>
-              <Button size="sm" onClick={() => setIsContributeOpen(true)}>
-                <Plus className="mr-2 h-3.5 w-3.5" />
-                {t.mpf.contribution.recordButton}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsOpeningBalanceOpen(true)}
+                >
+                  {t.mpf.openingBalance.addButton}
+                </Button>
+                <Button size="sm" onClick={() => setIsContributeOpen(true)}>
+                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  {t.mpf.contribution.recordButton}
+                </Button>
+              </div>
             </div>
             {loadingContributions ? (
               <LoadingSpinner />
@@ -346,11 +357,18 @@ export default function MpfPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">
-                          {new Date(contribution.date).toLocaleDateString(
-                            locale,
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">
+                            {new Date(contribution.date).toLocaleDateString(
+                              locale,
+                            )}
+                          </p>
+                          {contribution.is_opening_balance && (
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {t.mpf.openingBalance.historyBadge}
+                            </span>
                           )}
-                        </p>
+                        </div>
                         {contribution.note && (
                           <p className="text-xs text-muted-foreground">
                             {contribution.note}
@@ -407,6 +425,16 @@ export default function MpfPage() {
           isOpen={isContributeOpen}
           portfolio={selected.portfolio}
           onClose={() => setIsContributeOpen(false)}
+          onRecorded={() => {
+            loadPortfolios()
+            if (selectedId) loadContributions(selectedId)
+          }}
+        />
+
+        <RecordMpfOpeningBalanceDialog
+          isOpen={isOpeningBalanceOpen}
+          portfolio={selected.portfolio}
+          onClose={() => setIsOpeningBalanceOpen(false)}
           onRecorded={() => {
             loadPortfolios()
             if (selectedId) loadContributions(selectedId)

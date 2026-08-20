@@ -188,6 +188,9 @@ from infrastructure.repository.db.versions.v0.v10.v0100_3_add_account_tx_account
 from infrastructure.repository.db.versions.v0.v10.v0100_4_mpf_tables import (
     V01004MpfTables,
 )
+from infrastructure.repository.db.versions.v0.v10.v0100_5_mpf_opening_balance import (
+    V01005MpfOpeningBalance,
+)
 from infrastructure.repository.db.versions.v0.v10.v0100_2_recurring_workflow import (
     V01002RecurringWorkflow,
 )
@@ -273,6 +276,7 @@ versions = [
     V01002AccountTxCategory(),
     V01003AccountTxAccountName(),
     V01004MpfTables(),
+    V01005MpfOpeningBalance(),
     # Compatibility entries: recognize migrations applied by an earlier,
     # never-merged build on some devices. See the migration files for
     # details; these are safe no-ops in this codebase.

@@ -13,6 +13,7 @@ import { EntityStatus, EntityType } from "@/types"
 import { PinAssetButton } from "@/components/ui/PinAssetButton"
 import { usePinnedShortcuts } from "@/context/PinnedShortcutsContext"
 import { getEntitiesWithProductType } from "@/utils/financialDataUtils"
+import { getMpfPortfolios } from "@/services/api"
 import { RefreshCw, Landmark } from "lucide-react"
 
 export default function InvestmentsPage() {
@@ -28,6 +29,21 @@ export default function InvestmentsPage() {
       entity.type === EntityType.MARKET_FORECAST_PLATFORM &&
       entity.status === EntityStatus.CONNECTED,
   )
+  const [hasMpfPositions, setHasMpfPositions] = React.useState(false)
+
+  React.useEffect(() => {
+    let cancelled = false
+    getMpfPortfolios()
+      .then(({ portfolios }) => {
+        if (!cancelled) setHasMpfPositions(portfolios.length > 0)
+      })
+      .catch(() => {
+        if (!cancelled) setHasMpfPositions(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const investmentRoutes = React.useMemo(() => {
     const allRoutes = [
@@ -181,7 +197,9 @@ export default function InvestmentsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         <Card
-          className="transition-all cursor-pointer relative group overflow-hidden hover:shadow-lg"
+          className={`transition-all cursor-pointer relative group overflow-hidden hover:shadow-lg ${
+            !hasMpfPositions ? "opacity-50" : ""
+          }`}
           onClick={() => navigate("/mpf")}
         >
           <div className="flex items-center justify-center px-4 py-6 bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-200">

@@ -543,6 +543,8 @@ function registerWorkerBridge(): void {
       requestMain("jsBridge.yahooFinance.lookup", args),
     getInstrumentInfo: (...args: any[]) =>
       requestMain("jsBridge.yahooFinance.getInstrumentInfo", args),
+    getInstrumentHistory: (...args: any[]) =>
+      requestMain("jsBridge.yahooFinance.getInstrumentHistory", args),
   }
 
   ;(self as any).jsBridge = { sqlite, preferences, filesystem, yahooFinance }
