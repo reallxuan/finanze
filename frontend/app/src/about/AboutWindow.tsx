@@ -105,7 +105,7 @@ export function AboutWindow() {
   }
 
   const appName = info?.appName ?? "Finanze"
-  const OFFICIAL_PAGE_URL = "https://finanze.me"
+  const REPOSITORY_URL = "https://github.com/reallxuan/finanze"
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -134,10 +134,10 @@ export function AboutWindow() {
             />
             <button
               type="button"
-              onClick={() => handleNavigate(OFFICIAL_PAGE_URL)}
+              onClick={() => handleNavigate(REPOSITORY_URL)}
               className="text-xs font-medium text-primary hover:underline pt-1"
             >
-              finanze.me
+              GitHub
             </button>
           </div>
         </CardHeader>

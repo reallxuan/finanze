@@ -109,8 +109,6 @@
     "loginErrorEntity": "{entity}登录失败",
     "loginSuccessEntity": "已成功登录{entity}",
     "notAvailableOnPlatform": "当前平台不可用",
-    "officialWebpage": "官方网站",
-    "officialWebpageUrl": "官方网站 URL",
     "startingServer": "正在启动服务器…",
     "unsupportedWebView": "当前 WebView 不受支持",
     "updateWebView": "请更新 WebView 后重试"
@@ -519,6 +517,7 @@
     "includeRealEstateEquity": "计入房地产净值",
     "includeRealEstateEquityInfo": "房地产净值等于估值减去相关贷款的未偿还本金。",
     "includeResidences": "计入自住物业",
+    "includeMpf": "计入强积金",
     "compactNumbers": "使用简洁数字格式",
     "privateMode": "隐私模式"
   },
@@ -747,8 +746,10 @@
       "namePlaceholder": "例如：永明彩虹强积金计划",
       "nameRequired": "请输入名称",
       "submit": "创建",
+      "nextStep": "下一步",
       "success": "强积金账户已创建",
-      "error": "无法创建强积金账户"
+      "error": "无法创建强积金账户",
+      "hasExistingBalanceLabel": "我已经有强积金历史供款，需要录入期初结余"
     },
     "allocation": {
       "title": "目标配置比例",
@@ -783,6 +784,21 @@
       "deleteConfirm": "删除这笔供款记录？此操作无法撤销。",
       "deleteSuccess": "供款记录已删除",
       "deleteError": "无法删除供款记录"
+    },
+    "openingBalance": {
+      "title": "记录期初结余",
+      "addButton": "记录期初结余",
+      "description": "如果你在使用本应用前就已经有强积金供款，可以在这里为每只基金填写当前的本金和单位数，系统会据此算出平均买入价并计入历史仓位。",
+      "amountLabel": "本金",
+      "unitsLabel": "单位数",
+      "avgPriceLabel": "平均买入价",
+      "dateLabel": "结余日期",
+      "submit": "保存",
+      "success": "期初结余已记录",
+      "error": "无法记录期初结余",
+      "amountRequired": "请至少为一只基金填写本金和单位数",
+      "unitsRequired": "本金和单位数必须大于 0",
+      "historyBadge": "期初结余"
     }
   },
   "enums": {
@@ -843,7 +859,8 @@
       "BOND": "债券",
       "DERIVATIVE": "衍生品",
       "CREDIT": "授信",
-      "MARKET_FORECAST": "市场预测"
+      "MARKET_FORECAST": "市场预测",
+      "MPF": "强积金"
     },
     "assetType": {
       "EQUITY": "股票型",

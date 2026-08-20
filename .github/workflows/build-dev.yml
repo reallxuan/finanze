@@ -763,7 +763,7 @@ jobs:
       - name: Publish dev frontend image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze-frontend
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze-frontend
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: develop
@@ -775,7 +775,7 @@ jobs:
       - name: Publish selenium image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: develop
@@ -786,7 +786,7 @@ jobs:
       - name: Publish no-selenium image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: develop
@@ -811,9 +811,9 @@ jobs:
               dockerContent = [
                 `| Image | Tag | Pull Command |`,
                 `|-------|-----|-------------|`,
-                `| \`finanze/finanze\` | \`${dockerTag}\` | \`docker pull finanze/finanze:${dockerTag}\` |`,
-                `| \`finanze/finanze\` | \`${dockerTag}-selenium\` | \`docker pull finanze/finanze:${dockerTag}-selenium\` |`,
-                `| \`finanze/finanze-frontend\` | \`${dockerTag}\` | \`docker pull finanze/finanze-frontend:${dockerTag}\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze\` | \`${dockerTag}\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze:${dockerTag}\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze\` | \`${dockerTag}-selenium\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze:${dockerTag}-selenium\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze-frontend\` | \`${dockerTag}\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze-frontend:${dockerTag}\` |`,
               ].join('\n');
             } else if (jobStatus === 'cancelled') {
               dockerContent = `⚪ Docker build was cancelled.`;
@@ -1000,9 +1000,9 @@ jobs:
               dockerSection = [
                 `| Image | Tag | Pull Command |`,
                 `|-------|-----|-------------|`,
-                `| \`finanze/finanze\` | \`next\` | \`docker pull finanze/finanze:next\` |`,
-                `| \`finanze/finanze\` | \`next-selenium\` | \`docker pull finanze/finanze:next-selenium\` |`,
-                `| \`finanze/finanze-frontend\` | \`next\` | \`docker pull finanze/finanze-frontend:next\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze\` | \`next\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze:next\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze\` | \`next-selenium\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze:next-selenium\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze-frontend\` | \`next\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze-frontend:next\` |`,
               ].join('\n');
             } else if (dockerResult === 'failure') {
               dockerSection = `❌ Docker build failed.`;

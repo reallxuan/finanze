@@ -43,7 +43,7 @@ import {
   type FundPortfolios,
   type CryptoCurrencies,
 } from "@/types/position"
-import { getIssuerIconPath } from "@/utils/issuerIcons"
+import { getIssuerIconPath, getTickerIconUrl } from "@/utils/issuerIcons"
 import { useFinancialData } from "@/context/FinancialDataContext"
 import {
   ManualTransactionPayload,
@@ -165,12 +165,8 @@ function SuggestionItemIcon({
         return issuerPath ? [`/${issuerPath}`] : []
       }
       return [
-        option.value?.trim()
-          ? `https://static.finanze.me/icons/ticker/${encodeURIComponent(option.value.trim())}.png`
-          : null,
-        option.ticker?.trim()
-          ? `https://static.finanze.me/icons/ticker/${encodeURIComponent(option.ticker.trim())}.png`
-          : null,
+        getTickerIconUrl(option.value),
+        getTickerIconUrl(option.ticker),
       ].filter((v): v is string => Boolean(v))
     }
     if (productType === ProductType.FUND) {

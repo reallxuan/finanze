@@ -26,7 +26,7 @@
     "logout": "Logout",
     "settings": "Settings",
     "dashboard": "Summary",
-    "entities": "Integrations",
+    "entities": "Institutions",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "light": "Light",
@@ -106,8 +106,6 @@
     "details": "Details",
     "unsupportedWebView": "Your Android System WebView is outdated and not supported. Please update it from the Play Store to use this app.",
     "updateWebView": "Update WebView",
-    "officialWebpage": "finanze.me",
-    "officialWebpageUrl": "https://finanze.me",
     "optional": "Optional",
     "clear": "Clear",
     "notAvailableOnPlatform": "Not available on this platform",
@@ -524,8 +522,6 @@
   },
   "entities": {
     "title": "Integrations",
-    "storeNotice": "This version does not support connections with financial entities. You can manage your data manually, import from files, visit {link} for more options.",
-    "storeNoticeLink": "finanze.me",
     "connected": "Connected",
     "requiresLogin": "Requires Login",
     "login": "Login Again",
@@ -1175,6 +1171,7 @@
     "includeRealEstateEquity": "Include real estate equity",
     "includeRealEstateEquityInfo": "Enabling this option means real estate equity is considered when computing the net worth. Real estate equity is defined as the real estate valuation minus the related loans outstanding principal. If you want to also consider the residences mark also the option below.",
     "includeResidences": "Include residences",
+    "includeMpf": "Include MPF",
     "compactNumbers": "Compact numbers",
     "privateMode": "Private mode"
   },
@@ -1782,8 +1779,10 @@
       "namePlaceholder": "e.g. Sun Life Rainbow MPF Scheme",
       "nameRequired": "Please enter a name",
       "submit": "Create",
+      "nextStep": "Next",
       "success": "MPF portfolio created",
-      "error": "Unable to create MPF portfolio"
+      "error": "Unable to create MPF portfolio",
+      "hasExistingBalanceLabel": "I already have MPF contributions and want to enter an opening balance"
     },
     "allocation": {
       "title": "Target allocation",
@@ -1818,6 +1817,21 @@
       "deleteConfirm": "Delete this contribution? This cannot be undone.",
       "deleteSuccess": "Contribution deleted",
       "deleteError": "Unable to delete contribution"
+    },
+    "openingBalance": {
+      "title": "Record opening balance",
+      "addButton": "Record opening balance",
+      "description": "If you already had MPF contributions before using this app, enter the current principal and unit count for each fund here — the average buy price is derived from that and added to your historical position.",
+      "amountLabel": "Principal",
+      "unitsLabel": "Units",
+      "avgPriceLabel": "Average buy price",
+      "dateLabel": "Balance date",
+      "submit": "Save",
+      "success": "Opening balance recorded",
+      "error": "Unable to record opening balance",
+      "amountRequired": "Enter the principal and units for at least one fund",
+      "unitsRequired": "Principal and units must be greater than 0",
+      "historyBadge": "Opening balance"
     }
   },
   "time": {
@@ -1906,7 +1920,8 @@
       "BOND": "Bond",
       "DERIVATIVE": "Derivative",
       "CREDIT": "Credit",
-      "MARKET_FORECAST": "Market Forecast"
+      "MARKET_FORECAST": "Market Forecast",
+      "MPF": "MPF"
     },
     "assetType": {
       "EQUITY": "Equity",

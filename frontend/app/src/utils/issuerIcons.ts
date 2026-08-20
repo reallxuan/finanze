@@ -47,3 +47,15 @@ export function getIssuerIconPath(
   if (!iconName) return null
   return `icons/issuers/${iconName}.png`
 }
+
+// Deliberately still defaults to the upstream finanze.me icon CDN — see the
+// "Ticker icons" note in README.md for why this one wasn't self-hosted.
+const TICKER_ICON_BASE_URL =
+  (import.meta.env.VITE_TICKER_ICON_BASE_URL as string | undefined) ||
+  "https://static.finanze.me/icons/ticker"
+
+export function getTickerIconUrl(token: string | null | undefined): string | null {
+  const trimmed = token?.trim()
+  if (!trimmed) return null
+  return `${TICKER_ICON_BASE_URL}/${encodeURIComponent(trimmed)}.png`
+}

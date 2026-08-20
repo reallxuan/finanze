@@ -280,7 +280,7 @@ jobs:
       - name: Publish frontend image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze-frontend
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze-frontend
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: main
@@ -293,7 +293,7 @@ jobs:
       - name: Publish selenium image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: main
@@ -305,7 +305,7 @@ jobs:
       - name: Publish no-selenium image
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: finanze/finanze
+          name: ${{ secrets.DOCKER_USERNAME }}/finanze
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           default_branch: main
@@ -411,8 +411,8 @@ jobs:
               dockerSection = [
                 `| Image | Tag | Pull Command |`,
                 `|-------|-----|-------------|`,
-                `| \`finanze/finanze\` | \`${version}\` | \`docker pull finanze/finanze:${version}\` |`,
-                `| \`finanze/finanze-frontend\` | \`${version}\` | \`docker pull finanze/finanze-frontend:${version}\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze\` | \`${version}\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze:${version}\` |`,
+                `| \`${{ secrets.DOCKER_USERNAME }}/finanze-frontend\` | \`${version}\` | \`docker pull ${{ secrets.DOCKER_USERNAME }}/finanze-frontend:${version}\` |`,
               ].join('\n');
             } else if (dockerResult === 'failure') {
               dockerSection = `❌ Docker build failed.`;

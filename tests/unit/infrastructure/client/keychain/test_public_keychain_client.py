@@ -6,8 +6,11 @@ import pytest
 from infrastructure.client.keychain.public_keychain_client import PublicKeychainClient
 
 
-def _make_client_with_mock_session(response_json: dict, ok: bool = True):
+def _make_client_with_mock_session(
+    response_json: dict, ok: bool = True, keychain_url: str = "https://example.com/keys"
+):
     client = PublicKeychainClient()
+    client._keychain_url = keychain_url
     mock_response = MagicMock()
     mock_response.ok = ok
     mock_response.json = AsyncMock(return_value=response_json)
@@ -57,6 +60,7 @@ class TestFetchHandlesError:
     @pytest.mark.asyncio
     async def test_returns_empty_list_on_exception(self):
         client = PublicKeychainClient()
+        client._keychain_url = "https://example.com/keys"
         mock_session = MagicMock()
         mock_session.get = AsyncMock(side_effect=Exception("Network error"))
         client._session = mock_session
@@ -66,14 +70,31 @@ class TestFetchHandlesError:
         assert result == []
 
 
+class TestFetchNoUrlConfigured:
+    @pytest.mark.asyncio
+    async def test_returns_empty_list_without_calling_session(self):
+        client = PublicKeychainClient()
+        client._keychain_url = None
+        mock_session = MagicMock()
+        mock_session.get = AsyncMock()
+        client._session = mock_session
+
+        result = await client.fetch()
+
+        assert result == []
+        mock_session.get.assert_not_called()
+
+
 class TestFetchCallsCorrectUrl:
     @pytest.mark.asyncio
     async def test_uses_correct_url_and_timeout(self):
         response = {"version": 1, "algo": 1, "entries": {}}
-        client, mock_session = _make_client_with_mock_session(response)
+        client, mock_session = _make_client_with_mock_session(
+            response, keychain_url="https://example.com/keys"
+        )
 
         await client.fetch()
 
         mock_session.get.assert_called_once_with(
-            "https://features.api.finanze.me/keys", timeout=2
+            "https://example.com/keys", timeout=2
         )

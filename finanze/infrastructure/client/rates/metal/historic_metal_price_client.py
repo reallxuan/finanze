@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import date
 from typing import Optional
 
@@ -13,7 +14,7 @@ from infrastructure.client.http.http_session import get_http_session
 
 
 class HistoricMetalPriceClient(HistoricMetalPriceProvider):
-    BASE_URL = "https://static.finanze.me/rates/metals"
+    BASE_URL = os.getenv("METAL_RATES_URL")
     TIMEOUT = 10
     CACHE_TTL = 12 * 60 * 60  # 12 hours; the dataset is historical and static
 

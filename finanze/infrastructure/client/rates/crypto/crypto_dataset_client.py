@@ -126,7 +126,7 @@ class CryptoDataset:
 
 
 class CryptoDatasetClient:
-    BASE_URL = os.getenv("CRYPTO_DATASET_URL") or "https://static.finanze.me/crypto/v1"
+    BASE_URL = os.getenv("CRYPTO_DATASET_URL")
     TIMEOUT = 10
 
     # Structural data (coin list, platforms) barely changes, so a stale local copy

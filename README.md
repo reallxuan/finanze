@@ -1,11 +1,11 @@
 <p align="center"><img src="frontend/app/public/finanze-app.png" alt="Finanze logo — self-hosted personal finance and net worth tracker" width="220px"></p>
-<h1 align="center">Finanze (personal fork)</h1>
+<h1 align="center">Finanze</h1>
 
-> **This is a personal fork of [finanze/finanze](https://github.com/finanze/finanze), and it has diverged significantly from the upstream project.**
+> **This is a personal, independently maintained build, not published or distributed anywhere.** Build it yourself from source (see [Development](#development)).
 >
-> Most notably, this fork **removed all automated bank/broker/crypto-exchange login and scraping** (PSD2, Enable Banking, GoCardless, entity credential login, background data fetching) in favor of a **manual-entities-only** workflow — see [`c0e2108`](../../commit/c0e2108) "simplify app to manual institutions and positions". It also changes the default currency to **HKD** and adds **Chinese localization**. Anything in the upstream README about connecting real financial entities, 2FA, or automated syncing **does not apply here**.
+> It defaults to a **manual-entities-only** workflow for most position types, uses **HKD** as the default currency, and includes **Chinese localization**. Cloud-dependent features (crypto/metal price mirrors, feature flags, public keychain, cloud backup) point to no server by default — set the corresponding env vars (see client classes under `finanze/infrastructure/client/`) if you stand up your own backend for them.
 >
-> The links, badges, and download channels from the original project (official releases, Uptodown, TestFlight, App Store, Docker Hub images) point to the **upstream** project, not this fork — this fork is not published anywhere; build it yourself from source (see [Development](#development)).
+> **Ticker icons** are the one exception: `getTickerIconUrl()` in [issuerIcons.ts](frontend/app/src/utils/issuerIcons.ts) still defaults to the upstream `static.finanze.me/icons/ticker` CDN (kept intentionally, not self-hosted — it's just logo images keyed by ticker/ISIN, no account or financial data involved). Override with `VITE_TICKER_ICON_BASE_URL` if you'd rather point it at your own mirror.
 
 <p align="center">
 A private, self-hosted personal finance and net worth tracker. You manually create institutions/entities and their positions (accounts, stocks, funds, real estate, commodities, crypto...), and the app tracks value, multicurrency conversion, earnings/expenses, and forecasts over time. Everything is stored in a local encrypted database.
@@ -138,11 +138,9 @@ Checkout example [docker-compose.yml](docker-compose.yml) for the environment va
 
 ### Docker
 
-`docker-compose.yml` references the upstream `finanze/finanze` Docker Hub images by default — those do **not** contain this fork's changes. Build your own images from this repo's `Dockerfile` / `frontend/app/Dockerfile` instead of pulling the upstream tags.
+`docker-compose.yml` builds images from this repo's `Dockerfile` / `frontend/app/Dockerfile` by default — there are no published images for this fork, so nothing is pulled from a registry.
 
 ## Credits
-
-This project is a fork of [finanze/finanze](https://github.com/finanze/finanze).
 
 - Powered by [CoinGecko](https://www.coingecko.com/).
 - Powered by [CoinMarketCap](https://coinmarketcap.com/).

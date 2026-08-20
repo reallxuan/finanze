@@ -1,6 +1,6 @@
 [project]
 name = "finanze"
-authors = [{ name = "Marcos Alvarez", email = "contact@finanze.me" }]
+authors = [{ name = "reallxuan" }]
 version = "0.10.2"
 description = "Self-hosted personal finance and net worth tracker that aggregates assets and investments across banks, brokers, crypto and real estate."
 readme = "README.md"

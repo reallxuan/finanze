@@ -14,9 +14,7 @@ class FeatureFlagClient(FeatureFlagPort):
         self._log = logging.getLogger(__name__)
         self._users = users
         self._os = operative_system
-        self._feature_flag_url = (
-            os.getenv("FEATURE_FLAG_URL") or "https://features.api.finanze.me"
-        )
+        self._feature_flag_url = os.getenv("FEATURE_FLAG_URL")
         self._features = {}
         self._session = None
 

@@ -26,7 +26,7 @@ from infrastructure.client.http.http_session import get_http_session
 
 
 class BackupClient(BackupRepository):
-    BASE_URL = os.getenv("CLOUD_URL") or "https://api.finanze.me"
+    BASE_URL = os.getenv("CLOUD_URL")
     TIMEOUT = 60
 
     def __init__(self, file_transfer_strategy: FileTransferStrategy):

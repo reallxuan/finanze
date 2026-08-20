@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import type { FFValue } from "@/types"
 
-const PLUS_JOIN_EMAIL = "joinplus@finanze.me"
+const PLUS_JOIN_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? ""
 
 const PlusBadge = () => (
   <span className="inline-flex items-center align-baseline">

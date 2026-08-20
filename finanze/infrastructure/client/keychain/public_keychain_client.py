@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 
 from aiocache import cached, Cache
@@ -8,7 +9,6 @@ from application.ports.public_keychain_fetcher_port import PublicKeychainFetcher
 from domain.public_keychain import PublicKeyEntry
 from infrastructure.client.http.http_session import get_http_session
 
-KEYCHAIN_URL = "https://features.api.finanze.me/keys"
 CACHE_TTL = 21600
 
 
@@ -16,6 +16,7 @@ class PublicKeychainClient(PublicKeychainFetcherPort):
     def __init__(self):
         self._log = logging.getLogger(__name__)
         self._session = None
+        self._keychain_url = os.getenv("PUBLIC_KEYCHAIN_URL")
 
     def _get_session(self):
         if not self._session:
@@ -24,8 +25,11 @@ class PublicKeychainClient(PublicKeychainFetcherPort):
 
     @cached(cache=Cache.MEMORY, ttl=CACHE_TTL, skip_cache_func=lambda r: not r)
     async def fetch(self) -> list[PublicKeyEntry]:
+        if not self._keychain_url:
+            self._log.info("No public keychain URL configured, skipping fetch")
+            return []
         try:
-            response = await self._get_session().get(KEYCHAIN_URL, timeout=2)
+            response = await self._get_session().get(self._keychain_url, timeout=2)
             data = await response.json()
         except Exception as e:
             self._log.error(

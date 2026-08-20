@@ -38,7 +38,7 @@ import {
   ExternalLink,
 } from "lucide-react"
 import { getIconForAssetType } from "@/utils/dashboardUtils"
-import { getIssuerIconPath } from "@/utils/issuerIcons"
+import { getIssuerIconPath, getTickerIconUrl } from "@/utils/issuerIcons"
 import { isMostlyWhiteLogo, isMostlyBlackLogo } from "@/utils/iconAnalysis"
 import { PinAssetButton } from "@/components/ui/PinAssetButton"
 import { useNavigate } from "react-router-dom"
@@ -96,14 +96,9 @@ function StockPositionLogo({
       ? issuerIcon
         ? [issuerIcon]
         : []
-      : [
-          position.isin?.trim()
-            ? `https://static.finanze.me/icons/ticker/${encodeURIComponent(position.isin.trim())}.png`
-            : null,
-          tickerToken
-            ? `https://static.finanze.me/icons/ticker/${encodeURIComponent(tickerToken)}.png`
-            : null,
-        ].filter((value): value is string => Boolean(value))
+      : [getTickerIconUrl(position.isin), getTickerIconUrl(tickerToken)].filter(
+          (value): value is string => Boolean(value),
+        )
   const [sourceIndex, setSourceIndex] = useState(0)
   const [shouldInvert, setShouldInvert] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -541,19 +536,7 @@ function StocksViewContent({
       }
       const tickerToken = p.symbol?.split(".")[0]?.trim()
       const isinTrimmed = p.isin?.trim()
-      if (isinTrimmed) {
-        iconMap.set(
-          key,
-          `https://static.finanze.me/icons/ticker/${encodeURIComponent(isinTrimmed)}.png`,
-        )
-      } else if (tickerToken) {
-        iconMap.set(
-          key,
-          `https://static.finanze.me/icons/ticker/${encodeURIComponent(tickerToken)}.png`,
-        )
-      } else {
-        iconMap.set(key, null)
-      }
+      iconMap.set(key, getTickerIconUrl(isinTrimmed) ?? getTickerIconUrl(tickerToken))
     })
     return chartData.map(entry => ({
       ...entry,

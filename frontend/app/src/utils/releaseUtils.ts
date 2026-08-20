@@ -5,7 +5,9 @@ import { formatDate } from "@/lib/formatters"
 export type { GitHubRelease, ReleaseUpdateInfo } from "@/types/release"
 
 const GITHUB_API_URL =
-  "https://api.github.com/repos/finanze/finanze/releases/latest"
+  import.meta.env.VITE_UPDATE_CHECK_REPO
+    ? `https://api.github.com/repos/${import.meta.env.VITE_UPDATE_CHECK_REPO}/releases/latest`
+    : "https://api.github.com/repos/reallxuan/finanze/releases/latest"
 
 /**
  * Compares two semantic version strings with prerelease support
