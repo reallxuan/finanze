@@ -1,12 +1,6 @@
 import { MoneyEventType, type ForecastResult } from "@/types"
 import { ProductType, AccountType } from "@/types/position"
-import {
-  getForecast,
-  getMoneyEvents,
-  getTransactions,
-  getMpfPortfolios,
-} from "@/services/api"
-import type { MpfPortfolioSummary } from "@/types/mpf"
+import { getForecast, getMoneyEvents, getTransactions } from "@/services/api"
 import { TransactionsResult } from "@/types/transactions"
 import { useEffect, useRef, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
@@ -86,6 +80,8 @@ export default function DashboardPage() {
     error: financialDataError,
     refreshData: refreshFinancialData,
     realEstateList,
+    mpfSummaries,
+    ensureMpfSummaries,
     cachedLastTransactions,
     fetchCachedTransactions,
     invalidateTransactionsCache,
@@ -120,20 +116,9 @@ export default function DashboardPage() {
   )
   const forecastMode = !!forecastResult
 
-  const [mpfSummaries, setMpfSummaries] = useState<MpfPortfolioSummary[]>([])
   useEffect(() => {
-    let cancelled = false
-    getMpfPortfolios()
-      .then(({ portfolios }) => {
-        if (!cancelled) setMpfSummaries(portfolios)
-      })
-      .catch(() => {
-        if (!cancelled) setMpfSummaries([])
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+    ensureMpfSummaries()
+  }, [ensureMpfSummaries])
 
   const [transactionsLoading, setTransactionsLoading] = useState(false)
   const [transactionsError, setTransactionsError] = useState<string | null>(
@@ -519,32 +504,25 @@ export default function DashboardPage() {
     [mpfSummaries, targetCurrency, exchangeRates],
   )
   const appliedMpfTotalValue = dashboardOptions.includeMpf ? mpfTotalValue : 0
-  const assetDistributionBase = useMemo(() => {
-    const base = getAssetDistribution(
+  const assetDistributionBase = useMemo(
+    () =>
+      getAssetDistribution(
+        effectivePositionsData,
+        targetCurrency,
+        exchangeRates,
+        appliedPendingFlows,
+        appliedRealEstateList,
+        appliedMpfTotalValue,
+      ),
+    [
       effectivePositionsData,
       targetCurrency,
       exchangeRates,
       appliedPendingFlows,
       appliedRealEstateList,
-    )
-    if (appliedMpfTotalValue <= 0) return base
-    const merged = [
-      ...base,
-      { type: "MPF", value: appliedMpfTotalValue, percentage: 0, change: 0 },
-    ]
-    const total = merged.reduce((sum, item) => sum + item.value, 0)
-    return merged.map(item => ({
-      ...item,
-      percentage: total > 0 ? Math.round((item.value / total) * 100) : 0,
-    }))
-  }, [
-    effectivePositionsData,
-    targetCurrency,
-    exchangeRates,
-    appliedPendingFlows,
-    appliedRealEstateList,
-    appliedMpfTotalValue,
-  ])
+      appliedMpfTotalValue,
+    ],
+  )
   const assetDistribution = useMemo(() => {
     if (!forecastMode || !forecastResult) {
       // Round percentages to 1 decimal also in non-forecast mode

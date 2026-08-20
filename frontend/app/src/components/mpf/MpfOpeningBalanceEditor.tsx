@@ -14,6 +14,39 @@ export interface MpfOpeningBalanceRow {
   units: number | null
 }
 
+export interface MpfOpeningBalanceLineItem {
+  fund_cd: string
+  amount: number
+  units: number
+}
+
+/**
+ * Turns editor rows into API line items, or reports which
+ * `t.mpf.openingBalance.*` message the caller should show. Shared so the
+ * validation rule lives next to the editor that produces the rows.
+ */
+export type MpfOpeningBalanceResult =
+  | { ok: true; lineItems: MpfOpeningBalanceLineItem[] }
+  | { ok: false; errorKey: "amountRequired" | "unitsRequired" }
+
+export function buildMpfOpeningBalanceLineItems(
+  rows: Record<string, MpfOpeningBalanceRow>,
+): MpfOpeningBalanceResult {
+  const lineItems = Object.entries(rows)
+    .filter(([, row]) => row.amount != null || row.units != null)
+    .map(([fund_cd, row]) => ({
+      fund_cd,
+      amount: row.amount ?? 0,
+      units: row.units ?? 0,
+    }))
+
+  if (lineItems.length === 0) return { ok: false, errorKey: "amountRequired" }
+  if (lineItems.some(item => item.amount <= 0 || item.units <= 0)) {
+    return { ok: false, errorKey: "unitsRequired" }
+  }
+  return { ok: true, lineItems }
+}
+
 interface MpfOpeningBalanceEditorProps {
   funds: OpeningBalanceFund[]
   value: Record<string, MpfOpeningBalanceRow>

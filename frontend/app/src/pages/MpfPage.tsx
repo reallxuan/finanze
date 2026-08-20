@@ -8,13 +8,13 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { Sensitive } from "@/components/ui/Sensitive"
 import { formatCurrency } from "@/lib/formatters"
 import {
-  getMpfPortfolios,
   getMpfFundQuotes,
   getMpfContributions,
   updateMpfPortfolio,
   deleteMpfPortfolio,
   deleteMpfContribution,
 } from "@/services/api"
+import { useFinancialData } from "@/context/FinancialDataContext"
 import type {
   MpfContribution,
   MpfFundQuote,
@@ -29,9 +29,11 @@ export default function MpfPage() {
   const { t, locale } = useI18n()
   const { showToast } = useAppContext()
 
-  const [summaries, setSummaries] = useState<MpfPortfolioSummary[] | null>(
-    null,
-  )
+  // MPF summaries live in FinancialDataContext so the dashboard rollup and this
+  // page share one fetch, and mutations here invalidate the dashboard's copy.
+  const { mpfSummaries, ensureMpfSummaries, refreshMpfSummaries } =
+    useFinancialData()
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [contributions, setContributions] = useState<MpfContribution[]>([])
@@ -48,20 +50,30 @@ export default function MpfPage() {
   const loadPortfolios = async () => {
     setLoading(true)
     try {
-      const result = await getMpfPortfolios()
-      setSummaries(result.portfolios)
-    } catch (error) {
-      console.error("Error loading MPF portfolios:", error)
-      showToast(t.common.unexpectedError, "error")
+      if (!(await refreshMpfSummaries())) {
+        showToast(t.common.unexpectedError, "error")
+      }
     } finally {
+      setHasLoadedOnce(true)
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadPortfolios()
-  }, [])
+    let cancelled = false
+    setLoading(true)
+    ensureMpfSummaries().then(ok => {
+      if (cancelled) return
+      if (!ok) showToast(t.common.unexpectedError, "error")
+      setHasLoadedOnce(true)
+      setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [ensureMpfSummaries])
 
+  const summaries = hasLoadedOnce ? mpfSummaries : null
   const selected = summaries?.find(s => s.portfolio.id === selectedId) ?? null
 
   const loadContributions = async (portfolioId: string) => {
