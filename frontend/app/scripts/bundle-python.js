@@ -40,13 +40,6 @@ const CACHE_DIRS = ["__pycache__", ".pytest_cache", ".git", ".ruff_cache"]
 
 const INCLUDE_CONNECTIONS = process.env.INCLUDE_CONNECTIONS === "1"
 
-const CONNECTION_EXCLUDED_PATTERNS = [
-  "infrastructure/client/entity/crypto/",
-  "infrastructure/client/entity/financial/",
-  "infrastructure/client/entity/exchange/",
-  "infrastructure/client/entity/psd2/",
-]
-
 const CORE_PATTERNS = [
   "finanze/app.py",
   "finanze/app_core.py",
@@ -84,27 +77,14 @@ const CORE_PATTERNS = [
 
 const LAZY_PATTERNS = [
   "finanze/app_lazy.py",
-  // Infrastructure - entity fetchers & crypto
-  "finanze/infrastructure/client/entity/crypto/",
-  "finanze/infrastructure/client/entity/financial/",
-  "finanze/infrastructure/client/entity/exchange/",
-  "finanze/infrastructure/client/crypto/",
-  "finanze/infrastructure/crypto/",
-  // Enable Banking external entity client (scoped subdir only; the sibling
-  // gocardless/ depends on nordigen/requests and is NOT Pyodide-compatible)
-  "finanze/infrastructure/client/financial/enablebanking/",
-  // Infrastructure - table, templating, interests, keychain, backup processor, file storage (mobile)
+  // Infrastructure - table, templating, interests, backup processor, file storage (mobile)
   "finanze/infrastructure/table/xlsx_file_table_adapter.py",
   "finanze/infrastructure/templating/",
   "finanze/infrastructure/client/interests/",
-  "finanze/infrastructure/client/keychain/",
-  "finanze/infrastructure/keychain/",
   "finanze/infrastructure/cloud/backup/capacitor_backup_processor.py",
   "finanze/infrastructure/file_storage/mobile_file_storage.py",
   // Infrastructure - repositories (lazy-only)
-  "finanze/infrastructure/repository/keychain/",
   "finanze/infrastructure/repository/historic/",
-  "finanze/infrastructure/repository/sessions/",
   "finanze/infrastructure/repository/crypto/crypto_asset_repository.py",
   "finanze/infrastructure/repository/templates/",
   "finanze/infrastructure/repository/networth_timeline/",
@@ -117,27 +97,13 @@ const LAZY_PATTERNS = [
   "finanze/infrastructure/client/rates/metal/historic_metal_price_client.py",
   "finanze/infrastructure/controller/routes/networth_timeline.py",
   // Use cases (original 9)
-  "finanze/application/use_cases/add_entity_credentials.py",
-  "finanze/application/use_cases/connect_crypto_wallet.py",
-  "finanze/application/use_cases/derive_crypto_addresses.py",
   "finanze/application/use_cases/export_file.py",
-  "finanze/application/use_cases/fetch_crypto_data.py",
-  "finanze/application/use_cases/fetch_financial_data.py",
   "finanze/application/use_cases/import_file.py",
   "finanze/application/use_cases/import_backup.py",
   "finanze/application/use_cases/upload_backup.py",
   // Use cases (expanded lazy)
   "finanze/application/use_cases/update_settings.py",
-  "finanze/application/use_cases/disconnect_entity.py",
-  "finanze/application/use_cases/update_crypto_wallet.py",
-  "finanze/application/use_cases/delete_crypto_wallet.py",
   "finanze/application/use_cases/save_commodities.py",
-  "finanze/application/use_cases/connect_external_integration.py",
-  "finanze/application/use_cases/disconnect_external_integration.py",
-  "finanze/application/use_cases/connect_external_entity.py",
-  "finanze/application/use_cases/complete_external_entity_connection.py",
-  "finanze/application/use_cases/delete_external_entity.py",
-  "finanze/application/use_cases/get_available_external_entities.py",
   "finanze/application/use_cases/save_periodic_flow.py",
   "finanze/application/use_cases/update_periodic_flow.py",
   "finanze/application/use_cases/delete_periodic_flow.py",
@@ -173,27 +139,13 @@ const LAZY_PATTERNS = [
   "finanze/application/use_cases/get_template_fields.py",
   "finanze/application/use_cases/save_backup_settings.py",
   // Route handlers (original 9)
-  "finanze/infrastructure/controller/routes/add_entity_login.py",
-  "finanze/infrastructure/controller/routes/fetch_financial_data.py",
-  "finanze/infrastructure/controller/routes/fetch_crypto_data.py",
   "finanze/infrastructure/controller/routes/import_file.py",
   "finanze/infrastructure/controller/routes/export_file.py",
-  "finanze/infrastructure/controller/routes/connect_crypto_wallet.py",
-  "finanze/infrastructure/controller/routes/derive_crypto_addresses.py",
   "finanze/infrastructure/controller/routes/upload_backup.py",
   "finanze/infrastructure/controller/routes/import_backup.py",
   // Route handlers (expanded lazy)
   "finanze/infrastructure/controller/routes/update_settings.py",
-  "finanze/infrastructure/controller/routes/disconnect_entity.py",
-  "finanze/infrastructure/controller/routes/update_crypto_wallet.py",
-  "finanze/infrastructure/controller/routes/delete_crypto_wallet.py",
   "finanze/infrastructure/controller/routes/save_commodities.py",
-  "finanze/infrastructure/controller/routes/connect_external_integration.py",
-  "finanze/infrastructure/controller/routes/disconnect_external_integration.py",
-  "finanze/infrastructure/controller/routes/connect_external_entity.py",
-  "finanze/infrastructure/controller/routes/complete_external_entity_connection.py",
-  "finanze/infrastructure/controller/routes/delete_external_entity.py",
-  "finanze/infrastructure/controller/routes/get_available_external_entities.py",
   "finanze/infrastructure/controller/routes/save_periodic_flow.py",
   "finanze/infrastructure/controller/routes/update_periodic_flow.py",
   "finanze/infrastructure/controller/routes/delete_periodic_flow.py",
@@ -455,14 +407,6 @@ function copyRecursive(source, dest, rootPath, isCustom = false) {
 
     // Only copy python files or strictly necessary data files
     if (!source.endsWith(".py") && !source.endsWith(".pkl")) return
-
-    // Exclude connection-related files in store builds
-    if (!INCLUDE_CONNECTIONS) {
-      const relToCheck = isCustom
-        ? path.relative(CUSTOM_PYTHON_ROOT, source)
-        : path.relative(SOURCE_ROOT, source)
-      if (matchesPatterns(relToCheck, CONNECTION_EXCLUDED_PATTERNS)) return
-    }
 
     fs.copyFileSync(source, dest)
 

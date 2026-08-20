@@ -7,28 +7,13 @@ from pathlib import Path
 import uvicorn
 
 import domain.native_entities
-from application.use_cases.add_entity_credentials import AddEntityCredentialsImpl
-from application.use_cases.cancel_entity_login import CancelEntityLoginImpl
 from application.use_cases.add_manual_transaction import AddManualTransactionImpl
 from application.use_cases.adjust_account_balance import AdjustAccountBalanceImpl
 from application.use_cases.calculate_loan import CalculateLoanImpl
 from application.use_cases.calculate_savings import CalculateSavingsImpl
 from application.use_cases.change_user_password import ChangeUserPasswordImpl
-from application.use_cases.complete_external_entity_connection import (
-    CompleteExternalEntityConnectionImpl,
-)
-from application.use_cases.connect_crypto_wallet import ConnectCryptoWalletImpl
-from application.use_cases.connect_external_entity import ConnectExternalEntityImpl
-from application.use_cases.connect_external_integration import (
-    ConnectExternalIntegrationImpl,
-)
 from application.use_cases.create_real_estate import CreateRealEstateImpl
 from application.use_cases.create_template import CreateTemplateImpl
-from application.use_cases.delete_crypto_wallet import DeleteCryptoWalletConnectionImpl
-from application.use_cases.get_crypto_wallet_addresses import (
-    GetCryptoWalletAddressesImpl,
-)
-from application.use_cases.delete_external_entity import DeleteExternalEntityImpl
 from application.use_cases.delete_manual_transaction import DeleteManualTransactionImpl
 from application.use_cases.settle_manual_investment import SettleManualInvestmentImpl
 from application.use_cases.partial_amortize_manual_investment import (
@@ -41,25 +26,12 @@ from application.use_cases.delete_manual_historic_entry import (
     DeleteManualHistoricEntryImpl,
 )
 from application.use_cases.delete_periodic_flow import DeletePeriodicFlowImpl
-from application.use_cases.derive_crypto_addresses import DeriveCryptoAddressesImpl
 from application.use_cases.delete_real_estate import DeleteRealEstateImpl
 from application.use_cases.delete_template import DeleteTemplateImpl
-from application.use_cases.disconnect_entity import DisconnectEntityImpl
-from application.use_cases.disconnect_external_integration import (
-    DisconnectExternalIntegrationImpl,
-)
 from application.use_cases.export_file import ExportFileImpl
 from application.use_cases.export_sheets import ExportSheetsImpl
-from application.use_cases.fetch_crypto_data import FetchCryptoDataImpl
-from application.use_cases.fetch_external_financial_data import (
-    FetchExternalFinancialDataImpl,
-)
-from application.use_cases.fetch_financial_data import FetchFinancialDataImpl
 from application.use_cases.forecast import ForecastImpl
 from application.use_cases.get_available_entities import GetAvailableEntitiesImpl
-from application.use_cases.get_available_external_entities import (
-    GetAvailableExternalEntitiesImpl,
-)
 from application.use_cases.get_backup_settings import GetBackupSettingsImpl
 from application.use_cases.get_backups import GetBackupsImpl
 from application.use_cases.get_cloud_auth import GetCloudAuthImpl
@@ -67,16 +39,11 @@ from application.use_cases.get_contributions import GetContributionsImpl
 from application.use_cases.get_crypto_asset_details import GetCryptoAssetDetailsImpl
 from application.use_cases.get_exchange_rates import GetExchangeRatesImpl
 from application.use_cases.get_euribor_rates import GetEuriborRatesImpl
-from application.use_cases.get_external_integrations import GetExternalIntegrationsImpl
 from application.use_cases.get_historic import GetHistoricImpl
 from application.use_cases.get_networth_timeline import GetNetworthTimelineImpl
 from application.use_cases.get_instrument_history import GetInstrumentHistoryImpl
 from application.use_cases.get_instrument_info import GetInstrumentInfoImpl
 from application.use_cases.get_instruments import GetInstrumentsImpl
-from application.use_cases.get_market_forecast_closed_positions import (
-    GetMarketForecastClosedPositionsImpl,
-)
-from application.use_cases.get_market_forecast_pnl import GetMarketForecastPnlImpl
 from application.use_cases.get_money_events import GetMoneyEventsImpl
 from application.use_cases.get_periodic_flows import GetPeriodicFlowsImpl
 from application.use_cases.get_position import GetPositionImpl
@@ -113,7 +80,6 @@ from application.use_cases.query_pending_flows import QueryPendingFlowsImpl
 from application.use_cases.save_periodic_flow import SavePeriodicFlowImpl
 from application.use_cases.search_crypto_assets import SearchCryptoAssetsImpl
 from application.use_cases.update_contributions import UpdateContributionsImpl
-from application.use_cases.update_crypto_wallet import UpdateCryptoWalletConnectionImpl
 from application.use_cases.update_manual_transaction import UpdateManualTransactionImpl
 from application.use_cases.manual_position_snapshot import ManualPositionSnapshotWriter
 from application.use_cases.manual_historic_common import ManualHistoricWriter
@@ -136,65 +102,8 @@ from infrastructure.client.cloud.backup.backup_client import BackupClient
 from infrastructure.client.cloud.backup.http_file_transfer_strategy import (
     HttpFileTransferStrategy,
 )
-from infrastructure.client.crypto.etherscan.etherscan_client import EtherscanClient
-from infrastructure.client.crypto.ethplorer.ethplorer_client import EthplorerClient
-from infrastructure.client.entity.crypto.bitcoin.bitcoin_fetcher import BitcoinFetcher
-from infrastructure.client.entity.crypto.bsc.bsc_fetcher import BSCFetcher
-from infrastructure.client.entity.crypto.ethereum.ethereum_fetcher import (
-    EthereumFetcher,
-)
-from infrastructure.client.entity.crypto.litecoin.litecoin_fetcher import (
-    LitecoinFetcher,
-)
-from infrastructure.client.entity.crypto.tron.tron_fetcher import TronFetcher
-from infrastructure.client.entity.exchange.binance.binance_fetcher import (
-    BinanceFetcher,
-)
-from infrastructure.client.entity.exchange.polymarket.polymarket_fetcher import (
-    PolymarketFetcher,
-)
-from infrastructure.client.entity.financial.cajamar.cajamar_fetcher import (
-    CajamarFetcher,
-)
-from infrastructure.client.entity.financial.b100.b100_fetcher import B100Fetcher
-from infrastructure.client.entity.financial.crescenta.crescenta_fetcher import (
-    CrescentaFetcher,
-)
-from infrastructure.client.entity.financial.degiro.degiro_fetcher import DegiroFetcher
-from infrastructure.client.entity.financial.ibkr.ibkr_fetcher import IBKRFetcher
-from infrastructure.client.entity.financial.f24.f24_fetcher import F24Fetcher
-from infrastructure.client.entity.financial.indexa_capital.indexa_capital_fetcher import (
-    IndexaCapitalFetcher,
-)
-from infrastructure.client.entity.financial.ing.ing_fetcher import INGFetcher
-from infrastructure.client.entity.financial.mintos.mintos_fetcher import MintosFetcher
-from infrastructure.client.entity.financial.myinvestor import MyInvestorScraper
-from infrastructure.client.entity.financial.psd2.enablebanking_fetcher import (
-    EnableBankingFetcher,
-)
-from infrastructure.client.entity.financial.psd2.gocardless_fetcher import (
-    GoCardlessFetcher,
-)
-from infrastructure.client.entity.financial.sego.sego_fetcher import SegoFetcher
-from infrastructure.client.entity.financial.tr.trade_republic_fetcher import (
-    TradeRepublicFetcher,
-)
-from infrastructure.client.entity.financial.unicaja.unicaja_fetcher import (
-    UnicajaFetcher,
-)
-from infrastructure.client.entity.financial.urbanitae.urbanitae_fetcher import (
-    UrbanitaeFetcher,
-)
-from infrastructure.client.entity.financial.wecity.wecity_fetcher import WecityFetcher
 from infrastructure.client.features.feature_flag_client import FeatureFlagClient
 from infrastructure.client.interests.ecb_client import ECBClient
-from infrastructure.client.keychain.public_keychain_client import PublicKeychainClient
-from infrastructure.client.financial.gocardless.gocardless_client import (
-    GoCardlessClient,
-)
-from infrastructure.client.financial.enablebanking.enablebanking_client import (
-    EnableBankingClient,
-)
 from infrastructure.client.instrument.instrument_provider_adapter import (
     InstrumentProviderAdapter,
 )
@@ -215,11 +124,7 @@ from infrastructure.config.config_loader import ConfigLoader
 from infrastructure.config.server_details_adapter import ServerDetailsAdapter
 from infrastructure.controller.config import quart
 from infrastructure.controller.controllers import register_routes
-from infrastructure.crypto.public_key_derivation_adapter import (
-    PublicKeyDerivationAdapter,
-)
 from infrastructure.features.env_feature_flag_adapter import EnvFeatureFlagAdapter
-from infrastructure.keychain.public_keychain_adapter import PublicKeychainAdapter
 from infrastructure.file_storage.exchange_rate_file_storage import (
     ExchangeRateFileStorage,
 )
@@ -262,9 +167,6 @@ from infrastructure.repository.external_integration.external_integration_reposit
 from infrastructure.repository.fetch.last_fetches_repository import (
     LastFetchesRepository,
 )
-from infrastructure.repository.keychain.public_keychain_repository import (
-    PublicKeychainRepository,
-)
 from infrastructure.repository.position.manual_position_data_repository import (
     ManualPositionDataSQLRepository,
 )
@@ -274,7 +176,6 @@ from infrastructure.repository.real_estate.real_estate_repository import (
 from infrastructure.repository.networth_timeline.networth_timeline_repository import (
     NetworthTimelineSQLRepository,
 )
-from infrastructure.repository.sessions.sessions_repository import SessionsRepository
 from infrastructure.repository.templates.template_repository import TemplateRepository
 from infrastructure.repository.tracked_updates.tracked_updates_repository import (
     TrackedUpdatesRepository,
@@ -315,55 +216,6 @@ class FinanzeServer:
         config_loader = ConfigLoader()
         sheets_initiator = SheetsServiceLoader()
         cloud_register = CloudDataRegister()
-        etherscan_client = EtherscanClient()
-        ethplorer_client = EthplorerClient()
-        gocardless_client = GoCardlessClient(port=args.port)
-        enablebanking_client = EnableBankingClient()
-        polymarket_fetcher = PolymarketFetcher()
-
-        crypto_entity_fetchers = {
-            domain.native_entities.BITCOIN: BitcoinFetcher(),
-            domain.native_entities.ETHEREUM: EthereumFetcher(
-                etherscan_client, ethplorer_client
-            ),
-            domain.native_entities.LITECOIN: LitecoinFetcher(),
-            domain.native_entities.TRON: TronFetcher(),
-            domain.native_entities.BSC: BSCFetcher(etherscan_client, ethplorer_client),
-        }
-
-        if os.getenv("E2E_TEST_MODE", "").strip() == "1":
-            from e2e.test_mode import get_e2e_financial_fetchers
-
-            self._log.warning("E2E TEST MODE ACTIVE - using mock fetchers")
-            financial_entity_fetchers = get_e2e_financial_fetchers()
-        else:
-            financial_entity_fetchers = {
-                domain.native_entities.MY_INVESTOR: MyInvestorScraper(),
-                domain.native_entities.TRADE_REPUBLIC: TradeRepublicFetcher(),
-                domain.native_entities.UNICAJA: UnicajaFetcher(),
-                domain.native_entities.URBANITAE: UrbanitaeFetcher(),
-                domain.native_entities.WECITY: WecityFetcher(),
-                domain.native_entities.SEGO: SegoFetcher(),
-                domain.native_entities.MINTOS: MintosFetcher(),
-                domain.native_entities.F24: F24Fetcher(),
-                domain.native_entities.INDEXA_CAPITAL: IndexaCapitalFetcher(),
-                domain.native_entities.ING: INGFetcher(),
-                domain.native_entities.CAJAMAR: CajamarFetcher(),
-                domain.native_entities.DEGIRO: DegiroFetcher(),
-                domain.native_entities.IBKR: IBKRFetcher(),
-                domain.native_entities.B100: B100Fetcher(),
-                domain.native_entities.CRESCENTA: CrescentaFetcher(),
-                domain.native_entities.BINANCE: BinanceFetcher(),
-                domain.native_entities.POLYMARKET: polymarket_fetcher,
-            }
-
-        external_entity_fetchers = {
-            ExternalIntegrationId.GOCARDLESS: GoCardlessFetcher(gocardless_client),
-            ExternalIntegrationId.ENABLE_BANKING: EnableBankingFetcher(
-                enablebanking_client
-            ),
-        }
-
         sheets_adapter = SheetsAdapter(sheets_initiator)
         csv_tsv_adapter = CSVFileTableAdapter()
         table_rw_adapter = TableRWDispatcher(
@@ -385,7 +237,6 @@ class FinanzeServer:
         transaction_repository = TransactionRepository(client=db_client)
         historic_repository = HistoricRepository(client=db_client)
         entity_repository = EntityRepository(client=db_client)
-        sessions_repository = SessionsRepository(client=db_client)
         virtual_import_registry = VirtualImportRepository(client=db_client)
         crypto_wallet_repository = CryptoWalletRepository(client=db_client)
         crypto_asset_repository = CryptoAssetRegistryRepository(client=db_client)
@@ -402,13 +253,6 @@ class FinanzeServer:
         template_repository = TemplateRepository(client=db_client)
         entity_account_repository = EntityAccountRepository(client=db_client)
 
-        public_keychain_data_repository = PublicKeychainRepository(client=db_client)
-        public_keychain_fetcher_client = PublicKeychainClient()
-        public_keychain = PublicKeychainAdapter(
-            data_port=public_keychain_data_repository,
-            fetcher_port=public_keychain_fetcher_client,
-        )
-
         file_storage_repository = LocalFileStorage(
             upload_dir=static_upload_dir, static_url_prefix="/static"
         )
@@ -422,7 +266,6 @@ class FinanzeServer:
         metal_price_client = MetalPriceClient()
         historic_metal_price_client = HistoricMetalPriceClient()
         instrument_provider = InstrumentProviderAdapter()
-        public_key_derivation = PublicKeyDerivationAdapter()
 
         credentials_port = CredentialsRepository(client=db_client)
 
@@ -474,10 +317,10 @@ class FinanzeServer:
             crypto_wallet_repository,
             last_fetches_repository,
             virtual_import_registry,
-            financial_entity_fetchers,
-            external_entity_fetchers,
+            {},
+            {},
             entity_account_repository,
-            crypto_entity_fetchers,
+            {},
         )
         loan_calculator = LoanCalculator()
         export_sheets = ExportSheetsImpl(

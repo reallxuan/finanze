@@ -11,91 +11,7 @@ class LazyComponents:
         self._deferred = deferred
 
     async def initialize(self):
-        from finanze.build_config import INCLUDE_CONNECTIONS
-        import domain.native_entities
         from domain.export import FileFormat
-        from domain.external_integration import ExternalIntegrationId
-
-        if INCLUDE_CONNECTIONS:
-            from infrastructure.client.crypto.etherscan.etherscan_client import (
-                EtherscanClient,
-            )
-            from infrastructure.client.crypto.ethplorer.ethplorer_client import (
-                EthplorerClient,
-            )
-            from infrastructure.client.entity.crypto.bitcoin.bitcoin_fetcher import (
-                BitcoinFetcher,
-            )
-            from infrastructure.client.entity.crypto.bsc.bsc_fetcher import BSCFetcher
-            from infrastructure.client.entity.crypto.ethereum.ethereum_fetcher import (
-                EthereumFetcher,
-            )
-            from infrastructure.client.entity.crypto.litecoin.litecoin_fetcher import (
-                LitecoinFetcher,
-            )
-            from infrastructure.client.entity.crypto.tron.tron_fetcher import (
-                TronFetcher,
-            )
-            from infrastructure.client.entity.financial.cajamar.cajamar_fetcher import (
-                CajamarFetcher,
-            )
-            from infrastructure.client.entity.financial.f24.f24_fetcher import (
-                F24Fetcher,
-            )
-            from infrastructure.client.entity.financial.indexa_capital.indexa_capital_fetcher import (
-                IndexaCapitalFetcher,
-            )
-            from infrastructure.client.entity.financial.myinvestor import (
-                MyInvestorScraper,
-            )
-            from infrastructure.client.entity.financial.sego.sego_fetcher import (
-                SegoFetcher,
-            )
-            from infrastructure.client.entity.financial.urbanitae.urbanitae_fetcher import (
-                UrbanitaeFetcher,
-            )
-            from infrastructure.client.entity.financial.unicaja.unicaja_fetcher import (
-                UnicajaFetcher,
-            )
-            from infrastructure.client.entity.financial.tr.trade_republic_fetcher import (
-                TradeRepublicFetcher,
-            )
-            from infrastructure.client.entity.financial.ing.ing_fetcher import (
-                INGFetcher,
-            )
-            from infrastructure.client.entity.financial.mintos.mintos_fetcher import (
-                MintosFetcher,
-            )
-            from infrastructure.client.entity.financial.ibkr.ibkr_fetcher import (
-                IBKRFetcher,
-            )
-            from infrastructure.client.entity.financial.b100.b100_fetcher import (
-                B100Fetcher,
-            )
-            from infrastructure.client.entity.financial.crescenta.crescenta_fetcher import (
-                CrescentaFetcher,
-            )
-            from infrastructure.client.entity.financial.wecity.wecity_fetcher import (
-                WecityFetcher,
-            )
-            from finanze.infrastructure.client.entity.exchange.binance.binance_fetcher import (
-                BinanceFetcher,
-            )
-            from infrastructure.client.entity.exchange.polymarket.polymarket_fetcher import (
-                PolymarketFetcher,
-            )
-            from infrastructure.client.financial.enablebanking.enablebanking_client import (
-                EnableBankingClient,
-            )
-            from infrastructure.client.entity.financial.psd2.enablebanking_fetcher import (
-                EnableBankingFetcher,
-            )
-        from infrastructure.crypto.public_key_derivation_adapter import (
-            PublicKeyDerivationAdapter,
-        )
-        from application.use_cases.derive_crypto_addresses import (
-            DeriveCryptoAddressesImpl,
-        )
         from infrastructure.table.csv_file_table_adapter import CSVFileTableAdapter
         from infrastructure.table.table_rw_dispatcher import TableRWDispatcher
         from infrastructure.table.xlsx_file_table_adapter import XLSXFileTableAdapter
@@ -118,75 +34,12 @@ class LazyComponents:
         )
         from infrastructure.client.interests.ecb_client import ECBClient
 
-        if INCLUDE_CONNECTIONS:
-            from infrastructure.repository.keychain.public_keychain_repository import (
-                PublicKeychainRepository,
-            )
-            from infrastructure.client.keychain.public_keychain_client import (
-                PublicKeychainClient,
-            )
-            from infrastructure.keychain.public_keychain_adapter import (
-                PublicKeychainAdapter,
-            )
-            from infrastructure.repository.sessions.sessions_repository import (
-                SessionsRepository,
-            )
-            from application.use_cases.add_entity_credentials import (
-                AddEntityCredentialsImpl,
-            )
-            from application.use_cases.connect_crypto_wallet import (
-                ConnectCryptoWalletImpl,
-            )
-            from application.use_cases.fetch_crypto_data import FetchCryptoDataImpl
-            from application.use_cases.fetch_financial_data import (
-                FetchFinancialDataImpl,
-            )
-            from application.use_cases.fetch_external_financial_data import (
-                FetchExternalFinancialDataImpl,
-            )
-            from application.use_cases.get_market_forecast_closed_positions import (
-                GetMarketForecastClosedPositionsImpl,
-            )
-            from application.use_cases.get_market_forecast_pnl import (
-                GetMarketForecastPnlImpl,
-            )
-            from application.use_cases.disconnect_entity import DisconnectEntityImpl
-            from application.use_cases.cancel_entity_login import (
-                CancelEntityLoginImpl,
-            )
-            from application.use_cases.connect_external_entity import (
-                ConnectExternalEntityImpl,
-            )
-            from application.use_cases.complete_external_entity_connection import (
-                CompleteExternalEntityConnectionImpl,
-            )
-            from application.use_cases.delete_external_entity import (
-                DeleteExternalEntityImpl,
-            )
-            from application.use_cases.get_available_external_entities import (
-                GetAvailableExternalEntitiesImpl,
-            )
         from application.use_cases.export_file import ExportFileImpl
         from application.use_cases.import_file import ImportFileImpl
         from application.use_cases.import_backup import ImportBackupImpl
         from application.use_cases.upload_backup import UploadBackupImpl
         from application.use_cases.update_settings import UpdateSettingsImpl
-        from application.use_cases.update_crypto_wallet import (
-            UpdateCryptoWalletConnectionImpl,
-        )
-        from application.use_cases.delete_crypto_wallet import (
-            DeleteCryptoWalletConnectionImpl,
-        )
-        from application.use_cases.get_crypto_wallet_addresses import (
-            GetCryptoWalletAddressesImpl,
-        )
         from application.use_cases.save_commodities import SaveCommoditiesImpl
-        from application.use_cases.connect_external_integration import (
-            ConnectExternalIntegrationImpl,
-        )
-        from application.use_cases.disconnect_external_integration import (
-            DisconnectExternalIntegrationImpl,
-        )
         from application.use_cases.save_periodic_flow import SavePeriodicFlowImpl
         from application.use_cases.update_periodic_flow import UpdatePeriodicFlowImpl
         from application.use_cases.delete_periodic_flow import DeletePeriodicFlowImpl
@@ -278,58 +131,6 @@ class LazyComponents:
         core = self._core
         db_client = core.db_client
 
-        if INCLUDE_CONNECTIONS:
-            etherscan_client = EtherscanClient()
-            ethplorer_client = EthplorerClient()
-
-            enablebanking_client = EnableBankingClient()
-            polymarket_fetcher = PolymarketFetcher()
-            external_entity_fetchers = {
-                ExternalIntegrationId.ENABLE_BANKING: EnableBankingFetcher(
-                    enablebanking_client
-                ),
-            }
-
-            crypto_entity_fetchers = {
-                domain.native_entities.BITCOIN: BitcoinFetcher(),
-                domain.native_entities.ETHEREUM: EthereumFetcher(
-                    etherscan_client, ethplorer_client
-                ),
-                domain.native_entities.LITECOIN: LitecoinFetcher(),
-                domain.native_entities.TRON: TronFetcher(),
-                domain.native_entities.BSC: BSCFetcher(
-                    etherscan_client, ethplorer_client
-                ),
-            }
-            financial_entity_fetchers = {
-                domain.native_entities.MY_INVESTOR: MyInvestorScraper(),
-                domain.native_entities.TRADE_REPUBLIC: TradeRepublicFetcher(),
-                domain.native_entities.URBANITAE: UrbanitaeFetcher(),
-                domain.native_entities.WECITY: WecityFetcher(),
-                domain.native_entities.SEGO: SegoFetcher(),
-                domain.native_entities.MINTOS: MintosFetcher(),
-                domain.native_entities.F24: F24Fetcher(),
-                domain.native_entities.INDEXA_CAPITAL: IndexaCapitalFetcher(),
-                domain.native_entities.ING: INGFetcher(),
-                domain.native_entities.CAJAMAR: CajamarFetcher(),
-                domain.native_entities.UNICAJA: UnicajaFetcher(use_mobile_client=True),
-                domain.native_entities.IBKR: IBKRFetcher(),
-                domain.native_entities.B100: B100Fetcher(),
-                domain.native_entities.CRESCENTA: CrescentaFetcher(),
-                domain.native_entities.BINANCE: BinanceFetcher(),
-                domain.native_entities.POLYMARKET: polymarket_fetcher,
-            }
-
-        public_key_derivation = PublicKeyDerivationAdapter()
-        external_integrations = {
-            ExternalIntegrationId.ETHERSCAN: True,
-            ExternalIntegrationId.ETHPLORER: True,
-        }
-        if INCLUDE_CONNECTIONS:
-            external_integrations[ExternalIntegrationId.ENABLE_BANKING] = (
-                enablebanking_client
-            )
-
         csv_tsv_adapter = CSVFileTableAdapter()
         table_rw_adapter = TableRWDispatcher(
             {
@@ -345,127 +146,9 @@ class LazyComponents:
         file_storage = MobileFileStorage()
         backup_processor = CapacitorBackupProcessorAdapter()
 
-        if INCLUDE_CONNECTIONS:
-            public_keychain_data_repo = PublicKeychainRepository(client=db_client)
-            public_keychain_fetcher = PublicKeychainClient()
-            public_keychain = PublicKeychainAdapter(
-                data_port=public_keychain_data_repo,
-                fetcher_port=public_keychain_fetcher,
-            )
-            sessions_repo = SessionsRepository(client=db_client)
-
         historic_repo = HistoricRepository(client=db_client)
         crypto_asset_repo = CryptoAssetRegistryRepository(client=db_client)
         temp_repo = TemplateRepository(client=db_client)
-
-        if INCLUDE_CONNECTIONS:
-            self.add_entity_creds = AddEntityCredentialsImpl(
-                financial_entity_fetchers,
-                d.creds_repo,
-                sessions_repo,
-                d.tx_handler,
-                public_keychain,
-                d.entity_account_repo,
-                self._core.ff_client,
-            )
-
-            self.fetch_financial = FetchFinancialDataImpl(
-                d.position_repo,
-                d.auto_repo,
-                d.tx_repo,
-                historic_repo,
-                financial_entity_fetchers,
-                d.config_loader,
-                d.creds_repo,
-                sessions_repo,
-                d.last_fetches_repo,
-                crypto_asset_repo,
-                d.crypto_info,
-                d.tx_handler,
-                public_keychain,
-                d.entity_account_repo,
-                d.loan_calculator,
-                d.re_repo,
-                self._core.ff_client,
-            )
-            self.fetch_crypto = FetchCryptoDataImpl(
-                d.position_repo,
-                crypto_entity_fetchers,
-                d.wallet_repo,
-                crypto_asset_repo,
-                d.crypto_info,
-                d.last_fetches_repo,
-                d.ext_int_repo,
-                d.tx_handler,
-                public_key_derivation,
-            )
-            self.conn_crypto = ConnectCryptoWalletImpl(
-                d.wallet_repo,
-                crypto_entity_fetchers,
-                d.ext_int_repo,
-                public_key_derivation,
-                d.tx_handler,
-            )
-            self.disconnect_entity = DisconnectEntityImpl(
-                d.creds_repo,
-                sessions_repo,
-                d.tx_handler,
-                d.entity_account_repo,
-                d.tx_repo,
-                d.auto_repo,
-                historic_repo,
-            )
-            self.cancel_entity_login = CancelEntityLoginImpl(financial_entity_fetchers)
-
-            self.conn_external_entity = ConnectExternalEntityImpl(
-                d.entity_repo,
-                d.ext_ent_repo,
-                external_entity_fetchers,
-                d.ext_int_repo,
-            )
-            self.complete_external_entity = CompleteExternalEntityConnectionImpl(
-                d.ext_ent_repo,
-                external_entity_fetchers,
-                d.ext_int_repo,
-            )
-            self.del_external_entity = DeleteExternalEntityImpl(
-                d.ext_ent_repo,
-                external_entity_fetchers,
-                d.ext_int_repo,
-            )
-            self.get_external_candidates = GetAvailableExternalEntitiesImpl(
-                d.entity_repo,
-                d.ext_ent_repo,
-                external_entity_fetchers,
-                d.ext_int_repo,
-            )
-            self.fetch_external = FetchExternalFinancialDataImpl(
-                d.entity_repo,
-                d.ext_ent_repo,
-                d.position_repo,
-                external_entity_fetchers,
-                d.ext_int_repo,
-                d.last_fetches_repo,
-                d.tx_handler,
-            )
-
-            market_forecast_provider = polymarket_fetcher
-            self.get_market_forecast_pnl = GetMarketForecastPnlImpl(
-                d.entity_account_repo,
-                d.creds_repo,
-                market_forecast_provider,
-            )
-            self.get_market_forecast_closed_positions = (
-                GetMarketForecastClosedPositionsImpl(
-                    d.entity_account_repo,
-                    d.creds_repo,
-                    market_forecast_provider,
-                )
-            )
-
-        self.derive_crypto = DeriveCryptoAddressesImpl(
-            public_key_derivation, d.entity_repo
-        )
 
         self.import_file = ImportFileImpl(
             d.position_repo,
@@ -507,14 +190,6 @@ class LazyComponents:
 
         self.update_settings = UpdateSettingsImpl(d.config_loader)
 
-        self.up_crypto = UpdateCryptoWalletConnectionImpl(d.wallet_repo)
-        self.del_crypto = DeleteCryptoWalletConnectionImpl(
-            d.wallet_repo,
-            d.position_repo,
-            d.tx_handler,
-        )
-        self.get_wallet_addrs = GetCryptoWalletAddressesImpl(d.wallet_repo)
-
         self.save_commodities = SaveCommoditiesImpl(
             d.position_repo,
             d.ex_client,
@@ -522,11 +197,6 @@ class LazyComponents:
             d.last_fetches_repo,
             d.tx_handler,
         )
-
-        self.conn_integration = ConnectExternalIntegrationImpl(
-            d.ext_int_repo, external_integrations
-        )
-        self.disconn_integration = DisconnectExternalIntegrationImpl(d.ext_int_repo)
 
         self.save_periodic = SavePeriodicFlowImpl(d.period_repo)
         self.up_periodic = UpdatePeriodicFlowImpl(d.period_repo)

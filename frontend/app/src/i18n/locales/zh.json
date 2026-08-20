@@ -25,7 +25,6 @@
     "fundsInvestments": "基金",
     "depositsInvestments": "存款",
     "cryptoInvestments": "加密资产",
-    "marketForecast": "市场预测",
     "distributionByEntity": "按机构分布",
     "distributionByAsset": "按资产分布",
     "distribution": "分布",
@@ -1871,66 +1870,6 @@
       "YTD": "今年以来"
     }
   },
-  "walletForm": {
-    "title": "向{entityName}添加钱包",
-    "fields": {
-      "name": "钱包名称",
-      "address": "地址",
-      "addresses": "地址",
-      "addressNumber": "地址 {number}"
-    },
-    "placeholders": {
-      "name": "输入钱包名称",
-      "address": "输入钱包地址"
-    },
-    "actions": {
-      "addAddress": "添加地址",
-      "removeAddress": "移除"
-    },
-    "errors": {
-      "nameRequired": "钱包名称为必填项。",
-      "addressRequired": "地址为必填项。",
-      "addressTooShort": "地址至少需要 10 个字符。",
-      "addressDuplicate": "地址重复，请移除或编辑后继续。",
-      "maxAddresses": "每个钱包最多添加 10 个地址。",
-      "allFailed": "无法添加任何地址，请检查下面的错误。",
-      "generic": "无法添加钱包，请重试。"
-    },
-    "addressErrors": {
-      "ADDRESS_ALREADY_EXISTS": "此地址已经连接。",
-      "ADDRESS_NOT_FOUND": "找不到此地址，请检查后重试。",
-      "TOO_MANY_REQUESTS": "尝试次数过多，请稍后重试。",
-      "XPUB_ALREADY_EXISTS": "此密钥已经连接。"
-    },
-    "toasts": {
-      "allSuccess": "钱包添加成功。",
-      "partialSuccessSingle": "成功添加 1 个地址。",
-      "partialSuccessMultiple": "成功添加 {count} 个地址。",
-      "allFailed": "没有添加任何地址。"
-    },
-    "submit": "添加钱包",
-    "derived": {
-      "useXpub": "使用扩展公钥（xpub）",
-      "manualTab": "地址",
-      "xpubTab": "XPUB",
-      "xpubLabel": "扩展公钥",
-      "xpubPlaceholder": "xpub6...",
-      "xpubRequired": "扩展公钥为必填项。",
-      "scriptTypeLabel": "脚本类型",
-      "scriptTypePlaceholder": "选择脚本类型",
-      "scriptTypeRequired": "脚本类型为必填项。",
-      "advancedOptions": "高级选项",
-      "accountLabel": "账户索引",
-      "accountHint": "默认为 0，只有在需要时才修改。",
-      "previewButton": "预览地址",
-      "previewError": "地址推导失败，请检查 xpub 后重试。",
-      "invalidXpub": "扩展公钥无效，请检查后重试。",
-      "previewFirst": "请先预览地址，再添加钱包。",
-      "basePath": "基础路径",
-      "receivingAddresses": "收款地址",
-      "changeAddresses": "找零地址"
-    }
-  },
   "calculations": {
     "title": "计算工具",
     "savings": {
@@ -2006,36 +1945,6 @@
       "retirementModeInfo": "将根据退休目标计算供款"
     }
   },
-  "marketForecast": {
-    "untitledMarket": "未命名市场",
-    "chartPreviewUnavailable": "此市场预测暂时无法显示图表预览。",
-    "status": { "open": "进行中", "closed": "已结束" },
-    "labels": {
-      "shares": "份额", "entry": "入场", "initialInvestment": "初始投资", "realizedPnl": "已实现盈亏",
-      "tradingActivity": "交易活动", "mark": "标记价", "resolves": "结算", "closed": "已结束", "value": "价值",
-      "bought": "买入", "sold": "卖出", "viewMarket": "查看市场"
-    },
-    "summary": {
-      "openExposure": "未平仓敞口", "costBasis": "成本基础", "openPositions": "未平仓仓位",
-      "closedPositions": "个已平仓仓位", "realizedPnl": "已实现", "pnlHistory": "盈亏",
-      "unrealizedPnl": "未实现盈亏", "averageExposure": "平均敞口"
-    },
-    "empty": {
-      "connectionTitle": "连接市场预测平台",
-      "connectionDescription": "市场预测需要连接的数据，不能手动录入。",
-      "openTitle": "没有未平仓市场预测",
-      "openDescription": "已连接账户目前没有活跃的市场预测。",
-      "pnlTitle": "暂时没有盈亏记录",
-      "pnlDescription": "有市场预测活动后，盈亏记录会显示在这里。"
-    },
-    "sections": {
-      "openTitle": "未平仓",
-      "openDescription": "当前市场及按市值计价的表现。",
-      "closedTitle": "已平仓",
-      "closedDescription": "已结算市场及已实现的损益。",
-      "positions": "个仓位"
-    }
-  },
   "advancedSettings": {
     "title": "高级设置",
     "subtitle": "调整数据位置、后端日志和服务器等技术设置。",
@@ -2088,15 +1997,6 @@
     "DISABLED": "设置中已停用数据导入。",
     "UNSUPPORTED_FILE_FORMAT": "不支持所选文件类型，请上传 CSV、TSV 或 XLSX。",
     "INVALID_TEMPLATE": "所选模板不适用于此导入，请选择其他模板。"
-  },
-  "pinpad": {
-    "enterCode": "请输入{entity}的 {length} 位验证码",
-    "codeDelayTip": "提示：双重验证代码有时需要一点时间才能收到",
-    "cancelConfirmationTitle": "取消验证？",
-    "cancelLoginDescription": "确定要离开登录流程吗？",
-    "cancelFetchDescription": "确定要离开数据获取流程吗？",
-    "pendingRequests": "其他机构需要验证码",
-    "switchToEntity": "切换到{entity}"
   },
   "features": {
     "POSITION": "仓位",

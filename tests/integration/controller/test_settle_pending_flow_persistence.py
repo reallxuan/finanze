@@ -166,7 +166,7 @@ class _RealStack:
 @pytest_asyncio.fixture
 async def stack(client):
     await _signup(client)
-    # db_client is app[1]; reuse the migrated schema.
+    # db_client is app.db_client; reuse the migrated schema.
     from tests.integration.controller.conftest import DBClient  # noqa
 
     return None
@@ -212,7 +212,7 @@ class TestSettlePendingFlowPersistence:
     @pytest.mark.asyncio
     async def test_settle_does_not_duplicate_real_products(self, client, app):
         await _signup(client)
-        db_client = app[1]
+        db_client = app.db_client
         s = _RealStack(db_client)
         entity = _make_entity()
 
@@ -256,7 +256,7 @@ class TestSettlePendingFlowPersistence:
     @pytest.mark.asyncio
     async def test_expense_subtracts_without_side_effects(self, client, app):
         await _signup(client)
-        db_client = app[1]
+        db_client = app.db_client
         s = _RealStack(db_client)
         entity = _make_entity()
 
@@ -282,7 +282,7 @@ class TestSettlePendingFlowPersistence:
     @pytest.mark.asyncio
     async def test_only_target_entity_manual_snapshot_changes(self, client, app):
         await _signup(client)
-        db_client = app[1]
+        db_client = app.db_client
         s = _RealStack(db_client)
         target = _make_entity()
         other = _make_entity()
@@ -316,7 +316,7 @@ class TestSettlePendingFlowPersistence:
     @pytest.mark.asyncio
     async def test_flow_not_found(self, client, app):
         await _signup(client)
-        db_client = app[1]
+        db_client = app.db_client
         s = _RealStack(db_client)
         entity = _make_entity()
         await _seed(s, entity)
@@ -330,7 +330,7 @@ class TestSettlePendingFlowPersistence:
     @pytest.mark.asyncio
     async def test_real_account_id_is_rejected(self, client, app):
         await _signup(client)
-        db_client = app[1]
+        db_client = app.db_client
         s = _RealStack(db_client)
         entity = _make_entity()
         real_position = _real_position(entity)

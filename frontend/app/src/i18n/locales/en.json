@@ -68,7 +68,6 @@
     "factoringInvestments": "Factoring",
     "realEstateCfInvestments": "Real Estate CF",
     "cryptoInvestments": "Crypto",
-    "marketForecast": "Market Forecast",
     "distributionByEntity": "Distribution by Entity",
     "distributionByAsset": "Distribution by Asset",
     "distribution": "Distribution",
@@ -339,53 +338,6 @@
       "sortInvested": "Amount"
     }
   },
-  "marketForecast": {
-    "untitledMarket": "Untitled market",
-    "chartPreviewUnavailable": "Chart preview is not available for this market forecast.",
-    "status": {
-      "open": "Open",
-      "closed": "Closed"
-    },
-    "labels": {
-      "shares": "Shares",
-      "entry": "Entry",
-      "initialInvestment": "Initial investment",
-      "realizedPnl": "Realized P&L",
-      "tradingActivity": "Trading activity",
-      "mark": "Mark",
-      "resolves": "Resolves",
-      "closed": "Closed",
-      "value": "Value",
-      "bought": "Bought",
-      "sold": "Sold",
-      "viewMarket": "View market"
-    },
-    "summary": {
-      "openExposure": "Open exposure",
-      "costBasis": "Cost basis",
-      "openPositions": "Open positions",
-      "closedPositions": "positions",
-      "realizedPnl": "realized",
-      "pnlHistory": "PnL",
-      "unrealizedPnl": "Unrealized PnL",
-      "averageExposure": "Average exposure"
-    },
-    "empty": {
-      "connectionTitle": "Connect a market forecast platform",
-      "connectionDescription": "Market forecasts use connected data and cannot be entered manually.",
-      "openTitle": "No open market forecasts",
-      "openDescription": "Connected accounts have no active market forecasts right now.",
-      "pnlTitle": "No PnL history yet",
-      "pnlDescription": "PnL history will appear after market forecast activity is available."
-    },
-    "sections": {
-      "openTitle": "Open",
-      "openDescription": "Active markets with current mark-to-market performance.",
-      "closedTitle": "Closed",
-      "closedDescription": "Settled markets and realized profit or loss.",
-      "positions": "positions"
-    }
-  },
   "toast": {
     "success": "Success",
     "warning": "Warning",
@@ -393,38 +345,12 @@
     "info": "Info"
   },
   "login": {
-    "enterCredentials": "Enter credentials for",
-    "externalLogin": "External Login for",
-    "externalLoginInProgress": "Login in progress. Please complete the login in the opened window.",
-    "externalLoginComplete": "Login completed successfully.",
-    "credentials": {
-      "PASSWORD": "Password",
-      "PIN": "PIN",
-      "EMAIL": "Email",
-      "PHONE": "Phone Number",
-      "ID": "Identity Document",
-      "USER": "Username",
-      "API_TOKEN": "API Token"
-    },
-    "credentialFields": {
-      "apiKey": "API Key",
-      "secretKey": "Secret Key",
-      "identifier": "Username or wallet address"
-    },
-    "entityNotes": {
-      "e0000000-0000-0000-0000-000000000003": "Include the international prefix in the phone number (e.g. +34612345678)"
-    },
-    "addAccountName": "Name this account",
-    "accountNamePlaceholder": "Account name (optional)",
-    "credentialsSecurityTitle": "Your data is safe",
-    "credentialsSecurityBody": "Your credentials and all data shown here are stored locally in encrypted storage. They will never be shared with anyone or anything unless you explicitly choose to do so. Never share your app password with anyone, as it would grant access to all this data. Also, this app is open source and you can check yourself how data is stored and handled.",
     "title": "Welcome to Finanze",
     "subtitle": "Your financial data is encrypted",
     "welcomeBack": "Welcome back, {username}!",
     "signupTitle": "Create Finanze account",
     "signupSubtitle": "Set up your account to manage your finances",
     "changePasswordTitle": "Change Encryption Key",
-    "changePasswordSubtitle": "Enter your current and new encryption key",
     "usernameLabel": "Username",
     "usernamePlaceholder": "Enter your username",
     "nameLabel": "Name",
@@ -442,12 +368,10 @@
     "invalidCredentials": "Invalid credentials",
     "userNotFound": "User not found",
     "unexpectedErrorContact": "Something went wrong, please contact the Finanze team.",
-    "serverError": "An unexpected error occurred. Please try again.",
     "changePasswordSuccess": "Encryption key changed successfully",
     "changePasswordError": "Failed to change encryption key",
     "changePassword": "Change encryption key",
     "signup": "Sign Up",
-    "login": "Log In",
     "viewErrorDetails": "View technical details",
     "errorDetailsTitle": "Technical details",
     "syncPasswordHint": "Use the same encryption key across devices if sync is enabled",
@@ -456,16 +380,10 @@
     "biometricFingerprint": "Fingerprint",
     "biometricAuth": "Biometric",
     "biometricLoginReason": "Unlock Finanze",
-    "biometricSaved": "Biometric login enabled",
-    "biometricError": "Could not enable biometric login",
     "biometricLoginFailed": "Biometric authentication failed",
     "usernameInfoTooltip": "This is not an email or cloud account. Just a local name like a nickname or your name.",
     "invalidUsername": "Username must be at least 2 characters and can only contain letters, numbers, and _ - . $ € #",
     "invalidPasswordFormat": "Encryption key must be at least 8 characters",
-    "inAppConfirmationTitle": "Confirm login in",
-    "inAppConfirmationMessage": "Open the financial institution app on your phone and confirm the login request.",
-    "challengeTitle": "Security verification for",
-    "challengeMessage": "Please complete the security verification to continue.",
     "cloudRestore": {
       "trigger": "Have a Cloud account? Restore your data",
       "title": "Restore from Cloud",
@@ -474,7 +392,6 @@
       "noBackupsFound": "No backups found for this account. You can go back and create a new account instead.",
       "backupCheckFailed": "Failed to check for backups. Please try again.",
       "backupFound": "Backup found!",
-      "enterCredentials": "Enter the username and encryption key you used when creating the backup.",
       "encryptionKeyLabel": "Encryption key",
       "encryptionKeyPlaceholder": "Your account encryption key",
       "encryptionKeyHint": "This is the encryption key you used in the app, not your Cloud account password.",
@@ -488,15 +405,6 @@
       "loginAfterRestoreFailed": "Data restored but login failed. Please try logging in manually.",
       "backToSignup": "Back to sign up"
     }
-  },
-  "pinpad": {
-    "enterCode": "Enter {length}-digit code for",
-    "codeDelayTip": "Info: Sometimes the 2FA code can take a bit to arrive",
-    "cancelConfirmationTitle": "Cancel verification?",
-    "cancelLoginDescription": "Do you want to leave the login process?",
-    "cancelFetchDescription": "Do you want to leave the fetch process?",
-    "pendingRequests": "Other entities need a code",
-    "switchToEntity": "{entity}"
   },
   "errors": {
     "INVALID_CODE": "Invalid code provided",
@@ -522,96 +430,24 @@
   },
   "entities": {
     "title": "Integrations",
-    "connected": "Connected",
-    "requiresLogin": "Requires Login",
-    "login": "Login Again",
-    "fetchData": "Fetch",
     "connect": "Connect",
     "requires": "Requires",
-    "integrations": "integrations",
-    "cannotConnect": "Cannot Connect",
-    "requiresExternalIntegrations": "Requires integration setup",
     "setupIntegrationsMessage": "Setup required integrations to connect this entity:",
     "goToSettings": "Go to Settings",
-    "userEntered": "User Entered",
-    "importData": "Import",
-    "runImport": "Import data",
     "confirmUserEntered": "Import data",
     "confirmUserEnteredDescription": "This will import data from your configured Google Sheets.",
     "available": "Available Entities",
-    "setupUserEntered": "Setup User Data",
-    "userEnteredDescription": "Import data from your configured Google Sheets for manual tracking.",
-    "userEnteredAvailableDescription": "Configure Google Sheets to import financial data.",
-    "configureInSettings": "Configure in Settings",
-    "relogin": "Relogin",
     "disconnect": "Disconnect",
-    "confirmDisconnect": "Confirm Disconnect",
-    "confirmDisconnectMessage": "Are you sure you want to disconnect {entity}? You will need to log in again to access its data, and once disconnected it will not be shown.",
-    "refreshEntity": "Update data",
-    "autoRefreshWaiting": "About to update...",
-    "autoRefreshCountdown": "Auto-update in {countdown}s...",
-    "cancelAutoRefresh": "Cancel auto-update",
-    "financialInstitutions": "Financial Institutions",
-    "cryptoWallets": "Crypto Wallets",
-    "cryptoExchanges": "Crypto Exchanges",
-    "commodities": "Commodities",
-    "commoditiesDescription": "Integrate your commodities with live market value",
-    "manualDataEntry": "User data",
-    "manage": "Manage",
-    "addAccount": "Add Account",
-    "manageAccounts": "Manage Accounts",
     "account": "Account",
-    "noAccounts": "No accounts connected",
-    "moreFinancialInstitutionsCard": "More Banks",
-    "addExternalEntity": "Financial institutions",
-    "requiresProviderIntegration": "Requires integration",
-    "via": "via {provider}",
-    "selectProvider": "Select Provider",
-    "selectCountry": "Select Country",
-    "selectInstitution": "Select Institution",
-    "loadingInstitutions": "Loading institutions...",
-    "noInstitutionsFound": "No institutions found",
-    "searchInstitutions": "Search by name or BIC...",
-    "changeCountry": "Change",
-    "providedBy": "Provided by {provider}",
-    "connecting": "Connecting...",
-    "alreadyLinked": "Already linked",
-    "enableBankingPrelinkTitle": "Have you already linked this bank in Enable Banking?",
-    "enableBankingPrelinkMessageBefore": "Enable Banking only returns data for institutions you have already linked in your",
-    "enableBankingPrelinkMessageLinkLabel": "Enable Banking dashboard",
-    "enableBankingPrelinkMessageAfter": ".",
-    "enableBankingPrelinkWarning": "Make sure this bank is already linked in the Enable Banking dashboard before continuing, otherwise no data will be returned.",
-    "enableBankingNoLinkedAccountsBefore": "You may not have linked this bank yet in the",
-    "enableBankingNoLinkedAccountsLinkLabel": "Enable Banking dashboard",
-    "enableBankingNoLinkedAccountsAfter": ". Link it there first, then try again.",
-    "confirmConnection": "Complete Connection",
-    "providerLinkInstructions": "Finish the process in the opened window then confirm the connection.",
-    "openLink": "Open Link",
-    "dismiss": "Dismiss",
-    "continueLink": "Continue link",
-    "relink": "Relink",
-    "confirmRelink": "Confirm Relink",
-    "confirmRelinkMessage": "Relinking will refresh the external connection for {entity}. Continue?",
-    "sessionExpiredHint": "Session expired. Please log in again to enable automatic updates.",
-    "externalLinkSuccess": "Bank connection completed successfully.",
-    "externalLinkError": "Could not complete the bank connection. Please try again."
+    "cryptoWallets": "Crypto Wallets"
   },
   "features": {
     "POSITION": "Positions",
     "AUTO_CONTRIBUTIONS": "Auto Contributions",
     "TRANSACTIONS": "Transactions",
     "HISTORIC": "Historic Data",
-    "selectFeatures": "Select features to fetch from",
-    "selectAll": "Select all",
-    "unselectAll": "Unselect all",
-    "fetchSelected": "Fetch",
-    "deepScrape": "Force full fetch",
-    "deepScrapeDescription": "Re-fetch previous data (could take a long time, be blocked and its not recommended)",
-    "advancedOptions": "Advanced options",
     "availableFeatures": "Available Features",
-    "supportedProducts": "Supported Products",
-    "transactionsLoadingNotice": "Fetching transactions for the first time or forcing a full fetch can take several minutes depending on the amount of data.",
-    "jumpToPin": "Already have the 2FA code? Jump to PIN"
+    "supportedProducts": "Supported Products"
   },
   "settings": {
     "title": "Settings",
@@ -949,146 +785,6 @@
     "integration": {
       "GOOGLE_SHEETS": {
         "description": "Configure your Google Sheets API to enable data import and export."
-      },
-      "ETHERSCAN": {
-        "description": "Configure your Etherscan API to increase data fetch rate for ETH and BSC (paid) nets (recommended only if standard fetch fails, or if using a paid API).",
-        "help": "How to get an API key",
-        "hint": {
-          "title": "Generate an Etherscan API key",
-          "parts": [
-            {
-              "type": "text",
-              "value": "Visit "
-            },
-            {
-              "type": "link",
-              "label": "etherscan.io docs",
-              "url": "https://docs.etherscan.io/getting-an-api-key"
-            },
-            {
-              "type": "text",
-              "value": " to create a new API key and paste it below."
-            }
-          ]
-        }
-      },
-      "ETHPLORER": {
-        "description": "Configure your Ethplorer API to increase data fetch rate for ETH and BSC nets.",
-        "help": "How to get an API key",
-        "hint": {
-          "title": "Get an Ethplorer API key",
-          "parts": [
-            {
-              "type": "text",
-              "value": "Create a free account at "
-            },
-            {
-              "type": "link",
-              "label": "ethplorer.io",
-              "url": "https://ethplorer.io/wallet/#"
-            },
-            {
-              "type": "text",
-              "value": ", log in, and generate an API key in "
-            },
-            {
-              "type": "link",
-              "label": "the API Panel section",
-              "url": "https://ethplorer.io/wallet/#screen=api"
-            }
-          ]
-        }
-      },
-      "GOCARDLESS": {
-        "description": "Configure GoCardless so you can connect bank accounts from any unsupported banks. Use ONLY if you already have GoCardless account.",
-        "help": "How to generate credentials",
-        "hint": {
-          "title": "Create GoCardless credentials",
-          "parts": [
-            {
-              "type": "text",
-              "value": "Register at "
-            },
-            {
-              "type": "link",
-              "label": "bankaccountdata.gocardless.com",
-              "url": "https://bankaccountdata.gocardless.com"
-            },
-            {
-              "type": "text",
-              "value": ", then generate user secrets at "
-            },
-            {
-              "type": "link",
-              "label": "Developers > User secrets",
-              "url": "https://bankaccountdata.gocardless.com/user-secrets/"
-            },
-            {
-              "type": "text",
-              "value": " and create a new secret to obtain the credentials. Unfortunately, GoCardless no longer allows creating these credentials, so this will only work if you already had an account."
-            }
-          ]
-        }
-      },
-      "ENABLE_BANKING": {
-        "description": "Connect bank accounts across Europe through Enable Banking's PSD2 access.",
-        "help": "How to set up Enable Banking",
-        "hint": {
-          "title": "Set up Enable Banking",
-          "steps": [
-            [
-              "Create an account or log in at ",
-              {
-                "type": "link",
-                "label": "Enable Banking",
-                "url": "https://enablebanking.com/sign-in/"
-              },
-              ", then register a new application in the ",
-              {
-                "type": "link",
-                "label": "API Applications panel",
-                "url": "https://enablebanking.com/cp/applications"
-              },
-              "."
-            ],
-            [
-              "When creating the application, choose **PRODUCTION** and keep the default key option."
-            ],
-            [
-              "Add this URL to the allowed redirect URLs ",
-              {
-                "type": "copylink",
-                "label": "https://finanze.me/eb/v1/entity/callback/",
-                "url": "https://finanze.me/eb/v1/entity/callback/"
-              },
-              ". This field is **so important**."
-            ],
-            [
-              "As Privacy URL you can use ",
-              {
-                "type": "copylink",
-                "label": "https://finanze.me/privacy/",
-                "url": "https://finanze.me/privacy/"
-              },
-              " and as Terms URL ",
-              {
-                "type": "copylink",
-                "label": "https://finanze.me/terms/",
-                "url": "https://finanze.me/terms/"
-              },
-              "."
-            ],
-            [
-              "The application's private key in PEM format will be downloaded automatically, keep it safe!"
-            ],
-            [
-              "Copy the **Application ID** (top alphanumeric dashed string) of your application and paste it in the field below, then upload the private key file below and save."
-            ],
-            [
-              "*Remember: Click \"Activate by linking accounts\", before linking a bank in the app, as you must first link an institution in the Enable Banking web panel so it returns data.*"
-            ]
-          ]
-        }
       }
     },
     "disableIntegration": "Disable integration",
@@ -2000,92 +1696,13 @@
       "RENT": "Rent"
     }
   },
-  "walletForm": {
-    "title": "Add wallet to {entityName}",
-    "fields": {
-      "name": "Wallet name",
-      "address": "Address",
-      "addresses": "Addresses",
-      "addressNumber": "Address {number}"
-    },
-    "placeholders": {
-      "name": "Enter wallet name",
-      "address": "Enter wallet address"
-    },
-    "actions": {
-      "addAddress": "Add address",
-      "removeAddress": "Remove"
-    },
-    "errors": {
-      "nameRequired": "Wallet name is required.",
-      "addressRequired": "Address is required.",
-      "addressTooShort": "Address must be at least 10 characters.",
-      "addressDuplicate": "Duplicate address. Remove or edit it before continuing.",
-      "maxAddresses": "You can add up to 10 addresses per wallet.",
-      "allFailed": "We could not add any of the addresses. Review the errors below.",
-      "generic": "Unable to add the wallet. Please try again."
-    },
-    "addressErrors": {
-      "ADDRESS_ALREADY_EXISTS": "This address is already connected.",
-      "ADDRESS_NOT_FOUND": "We could not find this address. Check it and try again.",
-      "TOO_MANY_REQUESTS": "Too many attempts. Wait a moment and try again.",
-      "XPUB_ALREADY_EXISTS": "This key is already connected."
-    },
-    "toasts": {
-      "allSuccess": "Wallet added successfully.",
-      "partialSuccessSingle": "1 address added successfully.",
-      "partialSuccessMultiple": "{count} addresses added successfully.",
-      "allFailed": "No addresses were added."
-    },
-    "submit": "Add wallet",
-    "derived": {
-      "useXpub": "Use extended public key (xpub)",
-      "manualTab": "Address",
-      "xpubTab": "XPUB",
-      "xpubLabel": "Extended Public Key",
-      "xpubPlaceholder": "xpub6...",
-      "xpubRequired": "Extended public key is required.",
-      "scriptTypeLabel": "Script Type",
-      "scriptTypePlaceholder": "Select script type",
-      "scriptTypeRequired": "Script type is required.",
-      "advancedOptions": "Advanced options",
-      "accountLabel": "Account index",
-      "accountHint": "Default is 0. Change only if needed.",
-      "previewButton": "Preview addresses",
-      "previewError": "Failed to derive addresses. Check the xpub and try again.",
-      "invalidXpub": "Invalid extended public key. Check it and try again.",
-      "previewFirst": "Preview addresses before adding the wallet.",
-      "basePath": "Base path",
-      "receivingAddresses": "Receiving addresses",
-      "changeAddresses": "Change addresses"
-    }
-  },
   "walletManagement": {
-    "title": "Manage Wallets",
-    "subtitle": "Wallets for {{entityName}}",
-    "addWallet": "Add",
-    "noWallets": "No wallets connected",
-    "noWalletsDescription": "Start by adding your first wallet to this crypto entity",
-    "addFirstWallet": "Add Your First Wallet",
     "tokens": "Tokens",
     "totalValue": "Total Value",
-    "deleteWalletConfirm": "Are you sure you want to delete the wallet \"{{walletName}}\"? This action cannot be undone.",
-    "editWalletName": "Edit Wallet Name",
-    "walletNamePlaceholder": "Enter wallet name",
     "wallets": "wallets",
     "wallet": "wallet",
-    "manage": "Manage",
-    "filterByWallet": "Filter by wallet",
     "walletFilterPlaceholder": "Select wallets",
-    "clearFilters": "Clear filters",
-    "viewAllTokens": "View all tokens",
-    "viewAddresses": "View addresses",
-    "showAddresses": "Show addresses",
-    "hideAddresses": "Hide addresses",
-    "receivingAddresses": "Receiving addresses",
-    "changeAddresses": "Change addresses",
-    "noAddresses": "No derived addresses found",
-    "addressesError": "Failed to load addresses. Please try again."
+    "viewAllTokens": "View all tokens"
   },
   "commodityManagement": {
     "title": "Commodities",

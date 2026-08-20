@@ -10,7 +10,6 @@ from application.ports.entity_account_port import EntityAccountPort
 from application.ports.entity_port import EntityPort
 from application.ports.external_entity_port import ExternalEntityPort
 from application.ports.external_integration_port import ExternalIntegrationPort
-from application.ports.financial_entity_fetcher import FinancialEntityFetcher
 from application.ports.last_fetches_port import LastFetchesPort
 from application.ports.virtual_import_registry import VirtualImportRegistry
 from domain.available_sources import (
@@ -19,7 +18,7 @@ from domain.available_sources import (
     EntityAccountInfo,
     FinancialEntityStatus,
 )
-from domain.entity import EntityOrigin, EntityType, Feature, Entity
+from domain.entity import EntityOrigin, EntityType, Feature
 from domain.external_entity import EXTERNAL_ENTITY_FEATURES, ExternalEntityStatus
 from domain.external_integration import ExternalIntegrationType
 from domain.global_position import ProductType
@@ -58,7 +57,7 @@ class GetAvailableEntitiesImpl(GetAvailableEntities):
         crypto_wallet_port: CryptoWalletPort,
         last_fetches_port: LastFetchesPort,
         virtual_import_registry: VirtualImportRegistry,
-        entity_fetchers: dict[Entity, FinancialEntityFetcher],
+        entity_fetchers: dict,
         external_entity_fetchers: dict,
         entity_account_port: EntityAccountPort,
         crypto_entity_fetchers: dict | None = None,

@@ -130,9 +130,6 @@ class DeferredComponents:
         from application.use_cases.get_cloud_auth import GetCloudAuthImpl
         from application.use_cases.get_contributions import GetContributionsImpl
         from application.use_cases.get_exchange_rates import GetExchangeRatesImpl
-        from application.use_cases.get_external_integrations import (
-            GetExternalIntegrationsImpl,
-        )
         from application.use_cases.get_money_events import GetMoneyEventsImpl
         from application.use_cases.query_pending_flows import QueryPendingFlowsImpl
         from application.use_cases.get_periodic_flows import GetPeriodicFlowsImpl
@@ -219,12 +216,6 @@ class DeferredComponents:
             financial_entity_fetcher_stubs = {}
             crypto_entity_fetcher_stubs = {}
             external_entity_fetcher_stubs = {}
-        external_integrations = {
-            ExternalIntegrationId.ETHERSCAN: True,
-            ExternalIntegrationId.ETHPLORER: True,
-        }
-        if INCLUDE_CONNECTIONS:
-            external_integrations[ExternalIntegrationId.ENABLE_BANKING] = True
 
         self.position_repo = PositionRepository(client=db_client)
         self.manual_repo = ManualPositionDataSQLRepository(client=db_client)
@@ -296,10 +287,6 @@ class DeferredComponents:
             self.query_pending,
             self.entity_repo,
             self.position_repo,
-        )
-
-        self.get_integrations = GetExternalIntegrationsImpl(
-            self.ext_int_repo, external_integrations
         )
 
         self.get_periodic = GetPeriodicFlowsImpl(self.period_repo)

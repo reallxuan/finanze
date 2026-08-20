@@ -1,9 +1,5 @@
 import {
   EntitiesResponse,
-  LoginRequest,
-  FetchRequest,
-  FetchResponse,
-  LoginResponse,
   AuthRequest,
   ChangePasswordRequest,
   StatusResponse,
@@ -29,9 +25,6 @@ import {
   LoanCalculationResult,
   ForecastRequest,
   ForecastResult,
-  ExternalEntityCandidates,
-  ConnectExternalEntityRequest,
-  ExternalEntityConnectionResult,
   AuthResultCode,
   InstrumentDataRequest,
   InstrumentOverview,
@@ -68,11 +61,6 @@ import {
   ContributionQueryRequest,
   ManualContributionsRequest,
 } from "../types/contributions"
-import type {
-  MarketForecastClosedPositionsResponse,
-  MarketForecastPnlResponse,
-  MarketForecastPnlInterval,
-} from "../types/marketForecast"
 import {
   EntitiesPosition,
   PositionQueryRequest,
@@ -147,41 +135,6 @@ export async function renameManualEntity(
 
 export async function deleteManualEntity(entityId: string): Promise<void> {
   await (await getApiClient()).delete(`/entities/${entityId}`)
-}
-
-export async function loginEntity(
-  request: LoginRequest,
-): Promise<LoginResponse> {
-  try {
-    return await (await getApiClient()).post("/entities/login", request)
-  } catch (error: any) {
-    if (error.data && error.data.code) {
-      return error.data
-    }
-    throw error
-  }
-}
-
-export async function cancelEntityLogin(entityId: string): Promise<void> {
-  await (
-    await getApiClient()
-  ).post("/entities/login/cancel", { entity: entityId })
-}
-
-export async function disconnectEntity(entityAccountId: string): Promise<void> {
-  await (await getApiClient()).delete("/entities/login", { entityAccountId })
-}
-
-export async function fetchFinancialEntity(
-  request: FetchRequest,
-): Promise<FetchResponse> {
-  return (await getApiClient()).post("/data/fetch/financial", request)
-}
-
-export async function fetchCryptoEntity(
-  request: FetchRequest,
-): Promise<FetchResponse> {
-  return (await getApiClient()).post("/data/fetch/crypto", request)
 }
 
 export async function importFetch(): Promise<ImportResult> {
@@ -469,32 +422,6 @@ export async function deleteMpfContribution(
   contributionId: string,
 ): Promise<void> {
   return (await getApiClient()).delete(`/mpf/contributions/${contributionId}`)
-}
-
-export async function getMarketForecastPnl(
-  entityAccountIds?: string[],
-  interval: MarketForecastPnlInterval = "all",
-): Promise<MarketForecastPnlResponse> {
-  const params = new URLSearchParams()
-  entityAccountIds?.forEach(entityAccountId =>
-    params.append("entity_account_id", entityAccountId),
-  )
-  params.append("interval", interval)
-  const queryString = params.toString() ? `?${params.toString()}` : ""
-  return (await getApiClient()).get(`/market-forecast/pnl${queryString}`)
-}
-
-export async function getMarketForecastClosedPositions(
-  entityAccountIds?: string[],
-): Promise<MarketForecastClosedPositionsResponse> {
-  const params = new URLSearchParams()
-  entityAccountIds?.forEach(entityAccountId =>
-    params.append("entity_account_id", entityAccountId),
-  )
-  const queryString = params.toString() ? `?${params.toString()}` : ""
-  return (await getApiClient()).get(
-    `/market-forecast/closed-positions${queryString}`,
-  )
 }
 
 export async function getHistoric(
@@ -831,65 +758,6 @@ export async function getCryptoAssets(
 
   const queryString = params.toString() ? `?${params.toString()}` : ""
   return (await getApiClient()).get(`/assets/crypto${queryString}`)
-}
-
-// External entity endpoints
-export async function getExternalEntityCandidates(
-  country: string,
-  provider?: string | null,
-): Promise<ExternalEntityCandidates> {
-  const params = new URLSearchParams({ country })
-  if (provider) {
-    params.set("provider", provider)
-  }
-  return (await getApiClient()).get(
-    `/entities/external/candidates?${params.toString()}`,
-  )
-}
-
-export async function connectExternalEntity(
-  request: ConnectExternalEntityRequest,
-): Promise<ExternalEntityConnectionResult> {
-  const locale =
-    (typeof window !== "undefined" &&
-      typeof localStorage !== "undefined" &&
-      (localStorage.getItem("locale") || undefined)) ||
-    "en-US"
-
-  return (await getApiClient()).post("/entities/external", request, {
-    headers: { "Accept-Language": locale },
-  })
-}
-
-export async function completeExternalEntityConnection(
-  externalEntityId: string,
-  code?: string | null,
-): Promise<void> {
-  const params = new URLSearchParams({
-    external_entity_id: externalEntityId,
-  })
-  if (code) {
-    params.set("code", code)
-  }
-  // The endpoint responds with an HTML body (browser-redirect friendly), so
-  // request it as text to avoid the JSON parser throwing on a successful call.
-  await (
-    await getApiClient()
-  ).get(`/entities/external/complete?${params.toString()}`, {
-    responseType: "text",
-  })
-}
-
-export async function disconnectExternalEntity(
-  externalEntityId: string,
-): Promise<void> {
-  return (await getApiClient()).delete(`/entities/external/${externalEntityId}`)
-}
-
-export async function fetchExternalEntity(
-  externalEntityId: string,
-): Promise<FetchResponse> {
-  return (await getApiClient()).post(`/data/fetch/external/${externalEntityId}`)
 }
 
 export async function getInstruments(

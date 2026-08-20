@@ -113,11 +113,6 @@ class MobileAppCore:
 
         await self.ff_client.load()
 
-        from finanze.build_config import INCLUDE_CONNECTIONS
-
-        if not INCLUDE_CONNECTIONS:
-            self.ff_client._features["CONNECTIONS"] = "OFF"
-
         self._deferred_ready.set()
         print("MobileApp Deferred Components Initialized")
 
@@ -132,15 +127,6 @@ class MobileAppCore:
             return
 
         self._lazy_loading = True
-
-        from finanze.build_config import INCLUDE_CONNECTIONS
-
-        if INCLUDE_CONNECTIONS:
-            from infrastructure.client.entity.financial.tr.tr_websocket_patch import (
-                apply_traderepublic_websocket_patch,
-            )
-
-            apply_traderepublic_websocket_patch()
 
         from finanze.app_lazy import LazyComponents
 
